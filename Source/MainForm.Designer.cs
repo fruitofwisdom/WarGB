@@ -28,6 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
 			menuStrip = new MenuStrip();
 			fileToolStripMenuItem = new ToolStripMenuItem();
 			loadROMToolStripMenuItem = new ToolStripMenuItem();
@@ -56,7 +57,7 @@
 			// loadROMToolStripMenuItem
 			// 
 			loadROMToolStripMenuItem.Name = "loadROMToolStripMenuItem";
-			loadROMToolStripMenuItem.Size = new Size(180, 22);
+			loadROMToolStripMenuItem.Size = new Size(139, 22);
 			loadROMToolStripMenuItem.Text = "Load ROM...";
 			loadROMToolStripMenuItem.Click += loadROMToolStripMenuItem_Click;
 			// 
@@ -64,7 +65,7 @@
 			// 
 			exitToolStripMenuItem.Name = "exitToolStripMenuItem";
 			exitToolStripMenuItem.ShortcutKeys = Keys.Alt | Keys.F4;
-			exitToolStripMenuItem.Size = new Size(180, 22);
+			exitToolStripMenuItem.Size = new Size(139, 22);
 			exitToolStripMenuItem.Text = "Exit";
 			exitToolStripMenuItem.Click += exitToolStripMenuItem_Click;
 			// 
@@ -78,7 +79,7 @@
 			// aboutGBSharpToolStripMenuItem
 			// 
 			aboutGBSharpToolStripMenuItem.Name = "aboutGBSharpToolStripMenuItem";
-			aboutGBSharpToolStripMenuItem.Size = new Size(180, 22);
+			aboutGBSharpToolStripMenuItem.Size = new Size(155, 22);
 			aboutGBSharpToolStripMenuItem.Text = "About GBSharp";
 			aboutGBSharpToolStripMenuItem.Click += aboutGBSharpToolStripMenuItem_Click;
 			// 
@@ -88,9 +89,10 @@
 			AutoScaleMode = AutoScaleMode.Font;
 			ClientSize = new Size(800, 450);
 			Controls.Add(menuStrip);
+			Icon = (Icon)resources.GetObject("$this.Icon");
 			MainMenuStrip = menuStrip;
 			Name = "MainForm";
-			Text = "GBSharp";
+			Text = "GB#";
 			menuStrip.ResumeLayout(false);
 			menuStrip.PerformLayout();
 			ResumeLayout(false);
