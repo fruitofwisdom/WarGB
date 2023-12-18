@@ -29,7 +29,8 @@ namespace GBSharp
 
 		private void aboutGBSharpToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			// TODO: Implement about.
+			AboutBox aboutBox = new AboutBox();
+			aboutBox.ShowDialog();
 		}
 	}
 }
