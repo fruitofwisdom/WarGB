@@ -17,7 +17,8 @@ namespace GBSharp
 			{
 				if (ROM.Instance.Load(openFileDialog.FileName))
 				{
-					// TODO: ROM is loaded.
+					Text = "GB# - " + ROM.Instance.Title;
+					playButton.Enabled = true;
 				}
 			}
 		}
@@ -31,6 +32,11 @@ namespace GBSharp
 		{
 			AboutBox aboutBox = new AboutBox();
 			aboutBox.ShowDialog();
+		}
+
+		private void playButton_Click(object sender, EventArgs e)
+		{
+			CPU.Instance.Play();
 		}
 	}
 }

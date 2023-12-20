@@ -35,7 +35,10 @@
 			exitToolStripMenuItem = new ToolStripMenuItem();
 			helpToolStripMenuItem = new ToolStripMenuItem();
 			aboutGBSharpToolStripMenuItem = new ToolStripMenuItem();
+			toolStrip = new ToolStrip();
+			playButton = new ToolStripButton();
 			menuStrip.SuspendLayout();
+			toolStrip.SuspendLayout();
 			SuspendLayout();
 			// 
 			// menuStrip
@@ -83,11 +86,32 @@
 			aboutGBSharpToolStripMenuItem.Text = "About GBSharp";
 			aboutGBSharpToolStripMenuItem.Click += aboutGBSharpToolStripMenuItem_Click;
 			// 
+			// toolStrip
+			// 
+			toolStrip.Items.AddRange(new ToolStripItem[] { playButton });
+			toolStrip.Location = new Point(0, 24);
+			toolStrip.Name = "toolStrip";
+			toolStrip.Size = new Size(800, 25);
+			toolStrip.TabIndex = 1;
+			toolStrip.Text = "toolStrip";
+			// 
+			// playButton
+			// 
+			playButton.DisplayStyle = ToolStripItemDisplayStyle.Text;
+			playButton.Enabled = false;
+			playButton.Font = new Font("Segoe MDL2 Assets", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+			playButton.ImageTransparentColor = Color.Magenta;
+			playButton.Name = "playButton";
+			playButton.Size = new Size(23, 22);
+			playButton.Text = "";
+			playButton.Click += playButton_Click;
+			// 
 			// MainForm
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
 			ClientSize = new Size(800, 450);
+			Controls.Add(toolStrip);
 			Controls.Add(menuStrip);
 			Icon = (Icon)resources.GetObject("$this.Icon");
 			MainMenuStrip = menuStrip;
@@ -95,6 +119,8 @@
 			Text = "GB#";
 			menuStrip.ResumeLayout(false);
 			menuStrip.PerformLayout();
+			toolStrip.ResumeLayout(false);
+			toolStrip.PerformLayout();
 			ResumeLayout(false);
 			PerformLayout();
 		}
@@ -107,5 +133,7 @@
 		private ToolStripMenuItem exitToolStripMenuItem;
 		private ToolStripMenuItem helpToolStripMenuItem;
 		private ToolStripMenuItem aboutGBSharpToolStripMenuItem;
+		private ToolStrip toolStrip;
+		private ToolStripButton playButton;
 	}
 }

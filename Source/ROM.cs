@@ -2,7 +2,7 @@
 {
 	internal class ROM
 	{
-		private byte[]? Data = null;
+		public byte[]? Data {  get; private set; }
 		public string Title { get; private set; }
 		public bool CGBCompatible { get; private set; }
 		public bool CGBOnly { get; private set; }
