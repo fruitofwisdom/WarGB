@@ -1,7 +1,11 @@
-﻿namespace GBSharp
+﻿using System.Media;
+
+namespace GBSharp
 {
 	internal class CPU
 	{
+		public bool Playing;
+
 		// NOTE: Original Game Boy CPU frequency.
 		private uint Frequency = 4194304;
 
@@ -61,8 +65,9 @@
 
 			// NOTE: We skip any validation or BIOS handling.
 			Initialize();
+			Playing = true;
 			int cycles = 0;
-			while (true)
+			while (Playing)
 			{
 				byte instruction = ROM.Instance.Data[PC];
 				switch (instruction)
@@ -86,20 +91,25 @@
 						break;
 
 					case 0x66:      // LD H, (HL)
-						// TODO: Memory.
-						//byte memory = RAM[HL];
-						//HL = memory & 0xFF00;
+						ushort memory = (ushort)(Memory.Instance.Read(HL) << 8);
 						// NOTE: H is the higher byte of register HL.
-						HL = 0xFFFF & 0xFF00;
+						HL = memory;
 						PC++;
 						cycles += 2;
 						break;
 
-					case 0xc3:      // INC A
-						A++;
-						PC++;
-						cycles++;
+					case 0xC3:      // JP a16
+						byte lower = ROM.Instance.Data[PC + 1];
+						ushort higher = (ushort)(ROM.Instance.Data[PC + 2] << 8);
+						PC = (ushort)(higher + lower);
+						cycles += 4;
 						break;
+				}
+
+				// PC went out of bounds.
+				if (PC >= ROM.Instance.Data.Length)
+				{
+					Playing = false;
 				}
 
 				// TODO: Sleep once we've accumulated enough cycles to match the CPU speed?
