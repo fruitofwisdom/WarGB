@@ -37,6 +37,8 @@
 			aboutGBSharpToolStripMenuItem = new ToolStripMenuItem();
 			toolStrip = new ToolStrip();
 			playButton = new ToolStripButton();
+			pauseButton = new ToolStripButton();
+			debugRichTextBox = new RichTextBox();
 			menuStrip.SuspendLayout();
 			toolStrip.SuspendLayout();
 			SuspendLayout();
@@ -62,7 +64,7 @@
 			loadROMToolStripMenuItem.Name = "loadROMToolStripMenuItem";
 			loadROMToolStripMenuItem.Size = new Size(139, 22);
 			loadROMToolStripMenuItem.Text = "Load ROM...";
-			loadROMToolStripMenuItem.Click += loadROMToolStripMenuItem_Click;
+			loadROMToolStripMenuItem.Click += LoadROMToolStripMenuItemClick;
 			// 
 			// exitToolStripMenuItem
 			// 
@@ -70,7 +72,7 @@
 			exitToolStripMenuItem.ShortcutKeys = Keys.Alt | Keys.F4;
 			exitToolStripMenuItem.Size = new Size(139, 22);
 			exitToolStripMenuItem.Text = "Exit";
-			exitToolStripMenuItem.Click += exitToolStripMenuItem_Click;
+			exitToolStripMenuItem.Click += ExitToolStripMenuItemClick;
 			// 
 			// helpToolStripMenuItem
 			// 
@@ -84,11 +86,11 @@
 			aboutGBSharpToolStripMenuItem.Name = "aboutGBSharpToolStripMenuItem";
 			aboutGBSharpToolStripMenuItem.Size = new Size(155, 22);
 			aboutGBSharpToolStripMenuItem.Text = "About GBSharp";
-			aboutGBSharpToolStripMenuItem.Click += aboutGBSharpToolStripMenuItem_Click;
+			aboutGBSharpToolStripMenuItem.Click += AboutGBSharpToolStripMenuItemClick;
 			// 
 			// toolStrip
 			// 
-			toolStrip.Items.AddRange(new ToolStripItem[] { playButton });
+			toolStrip.Items.AddRange(new ToolStripItem[] { playButton, pauseButton });
 			toolStrip.Location = new Point(0, 24);
 			toolStrip.Name = "toolStrip";
 			toolStrip.Size = new Size(800, 25);
@@ -104,13 +106,37 @@
 			playButton.Name = "playButton";
 			playButton.Size = new Size(23, 22);
 			playButton.Text = "";
-			playButton.Click += playButton_Click;
+			playButton.ToolTipText = "Play";
+			playButton.Click += PlayButtonClick;
+			// 
+			// pauseButton
+			// 
+			pauseButton.DisplayStyle = ToolStripItemDisplayStyle.Text;
+			pauseButton.Enabled = false;
+			pauseButton.Font = new Font("Segoe MDL2 Assets", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+			pauseButton.ImageTransparentColor = Color.Magenta;
+			pauseButton.Name = "pauseButton";
+			pauseButton.Size = new Size(23, 22);
+			pauseButton.Text = "";
+			pauseButton.ToolTipText = "Pause";
+			pauseButton.Click += PauseButtonClick;
+			// 
+			// debugRichTextBox
+			// 
+			debugRichTextBox.Font = new Font("Cascadia Code", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+			debugRichTextBox.Location = new Point(538, 27);
+			debugRichTextBox.Name = "debugRichTextBox";
+			debugRichTextBox.ReadOnly = true;
+			debugRichTextBox.Size = new Size(250, 411);
+			debugRichTextBox.TabIndex = 2;
+			debugRichTextBox.Text = "";
 			// 
 			// MainForm
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
 			ClientSize = new Size(800, 450);
+			Controls.Add(debugRichTextBox);
 			Controls.Add(toolStrip);
 			Controls.Add(menuStrip);
 			Icon = (Icon)resources.GetObject("$this.Icon");
@@ -135,5 +161,7 @@
 		private ToolStripMenuItem aboutGBSharpToolStripMenuItem;
 		private ToolStrip toolStrip;
 		private ToolStripButton playButton;
+		private ToolStripButton pauseButton;
+		private RichTextBox debugRichTextBox;
 	}
 }

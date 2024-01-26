@@ -1,41 +1,49 @@
-﻿using System.Media;
-
-namespace GBSharp
+﻿namespace GBSharp
 {
 	internal class CPU
 	{
-		public bool Playing;
+		private bool NeedToStop;
+		private bool Playing;
+
+		public MainForm.PrintDebugMessageCallback? PrintDebugMessageCallback;
 
 		// NOTE: Original DMG CPU frequency is 1.05 MHz.
 		// TODO: Support CGB double-speed mode also?
 		private uint Frequency = 4194304;		// four oscillations per
 		//private uint Frequency = 8388608;		// double-speed mode oscillations
 
-		// The AF register.
+		// The accumulator register.
 		private byte A;
-		// TODO: This is actually just four flags: Z, N, H, and CY.
+		// The auxiliary registers.
+		// The flag register is actually four flags.
 		private byte F;
-		// The BC register.
+		private bool Z;		// set to 1 when the result of an operation is 0, otherwise reset
+		private bool N;		// set to 1 following execution of the subtraction instruction, regardless of the result
+		private bool H;		// set to 1 when an operation results in carrying from or borrowing to bit 3
+		private bool CY;	// set to 1 when an operation results in carrying from or borrowing to bit 7
+		// BC, DE, and HL are register pairs.
 		private byte B;		// higher byte
 		private byte C;		// lower byte
-		// The DE register.
 		private byte D;
 		private byte E;
-		// The HL register.
 		private ushort HL;
-		// The stack pointer.
-		private ushort SP;
 		// The program counter.
 		private ushort PC;
+		// The stack pointer.
+		private ushort SP;
+
+		// TODO: The port/mode registers.
+
+		// TODO: The bank control registers for CGB?
 
 		// The interrupt flags.
-		private bool IF;		// interrupt request flag
-		private bool IE;		// interrupt enable flag
-		public bool IME;		// interrupt master enable flag
+		public bool IF;		// interrupt request flag (also 0xFF0F)
+		public bool IE;		// interrupt enable flag (also 0xFFFF)
+		private bool IME;		// interrupt master enable flag
 
-		// TODO: Add DIV, timer (TIMA, TMA, TAC) registers.
-		// TODO: Add LCD controller et al?
-		// TODO: Add sound synthesis, control, waveform RAM, etc?
+		// TODO: The LCD display registers.
+
+		// TODO: The sound registers.
 
 		private static CPU? _instance;
 		public static CPU Instance
@@ -55,15 +63,22 @@ namespace GBSharp
 		// Reset the CPU's registers and flags.
 		private void Initialize()
 		{
+			NeedToStop = false;
+			Playing = false;
+
 			A = 0x00;
-			F = 0x00;
+			F = 0xB0;
+			Z = true;
+			N = false;
+			H = true;
+			CY = true;
 			B = 0x00;
 			C = 0x00;
 			D = 0x00;
 			E = 0x00;
 			HL = 0x0000;
-			SP = 0xFFFE;
 			PC = 0x0100;
+			SP = 0xFFFE;
 
 			// The interrupt flags.
 			// TODO: Should these just reference their memory address? What about IME?
@@ -72,7 +87,8 @@ namespace GBSharp
 			IME = false;
 		}
 
-		public void Play()
+		// The CPU runs in its own thread.
+		public void Run()
 		{
 			if (ROM.Instance.Data is null)
 			{
@@ -80,59 +96,125 @@ namespace GBSharp
 			}
 
 			// NOTE: We skip any validation or BIOS handling.
+			Thread.CurrentThread.Name = "GB# CPU";
 			Initialize();
-			Playing = true;
 			int cycles = 0;
-			while (Playing)
+			PrintDebugMessage("Initialized.\n");
+
+			while (true)
 			{
+				// The thread needs to close.
+				if (NeedToStop)
+				{
+					return;
+				}
+
+				if (!Playing)
+				{
+					Thread.Sleep(1);
+					continue;
+				}
+
 				// TODO: Interrupt handling here?
 
 				byte instruction = ROM.Instance.Data[PC];
+				PrintDebugMessage($"[0x{PC:X4}] 0x{instruction:X2}: ");
 				switch (instruction)
 				{
 					case 0x00:      // NOP
-						PC++;
-						cycles++;
+						{
+							PrintDebugMessage("NOP");
+							PC++;
+							cycles++;
+						}
 						break;
 
 						/*
 					case 0x01:      // LD BC, d16
-						C = ROM.Instance.Data[PC + 1];
-						B = ROM.Instance.Data[PC + 2];
-						PC += 3;
-						cycles += 3;
+						{
+							C = ROM.Instance.Data[PC + 1];
+							B = ROM.Instance.Data[PC + 2];
+							PC += 3;
+							cycles += 3;
+						}
 						break;
 						*/
+
+					case 0x30:		// JR NC, s8
+						{
+							sbyte s8 = (sbyte)(ROM.Instance.Data[PC + 1] + 2);
+							ushort newPC = (ushort)(PC + s8);
+							PrintDebugMessage($"JR NC, 0x{newPC:X4}");
+							if (!CY)
+							{
+								PC = newPC;
+								cycles += 3;
+							}
+							else
+							{
+								PC += 2;
+								cycles += 2;
+							}
+						}
+						break;
 
 					case 0x31:      // LD SP, d16
 						{
 							byte lower = ROM.Instance.Data[PC + 1];
 							ushort higher = (ushort)(ROM.Instance.Data[PC + 2] << 8);
-							SP = (ushort)(higher + lower);
+							ushort d16 = (ushort)(higher + lower);
+							PrintDebugMessage($"LD SP, 0x{d16:X4}");
+							SP = d16;
 							PC += 3;
 							cycles += 3;
 						}
 						break;
 
+					case 0x38:      // JR C, s8
+						{
+							sbyte s8 = (sbyte)(ROM.Instance.Data[PC + 1] + 2);
+							ushort newPC = (ushort)(PC + s8);
+							PrintDebugMessage($"JR C, 0x{newPC:X4}");
+							if (CY)
+							{
+								PC = newPC;
+								cycles += 3;
+							}
+							else
+							{
+								PC += 2;
+								cycles += 2;
+							}
+						}
+						break;
+
 					case 0x3E:      // LD A, d8
-						A = ROM.Instance.Data[PC + 1];
-						PC += 2;
-						cycles += 2;
+						{
+							byte d8 = ROM.Instance.Data[PC + 1];
+							PrintDebugMessage($"LD A, 0x{d8:X2}");
+							A = d8;
+							PC += 2;
+							cycles += 2;
+						}
 						break;
 
 						/*
 					case 0x50:      // DEC B
-						B--;
-						PC++;
-						cycles++;
+						{
+							B--;
+							PC++;
+							cycles++;
+						}
 						break;
 
 					case 0x66:      // LD H, (HL)
-						ushort memory = (ushort)(Memory.Instance.Read(HL) << 8);
-						// NOTE: H is the higher byte of register HL.
-						HL = memory;
-						PC++;
-						cycles += 2;
+						{
+							ushort memory = (ushort)(Memory.Instance.Read(HL) << 8);
+							// NOTE: H is the higher byte of register HL.
+							HL = memory;
+							PC++;
+							cycles += 2;
+						}
 						break;
 						*/
 
@@ -140,7 +222,9 @@ namespace GBSharp
 						{
 							byte lower = ROM.Instance.Data[PC + 1];
 							ushort higher = (ushort)(ROM.Instance.Data[PC + 2] << 8);
-							PC = (ushort)(higher + lower);
+							ushort a16 = (ushort)(higher + lower);
+							PrintDebugMessage($"JP 0x{a16:X4}");
+							PC = a16;
 							cycles += 4;
 						}
 						break;
@@ -155,7 +239,9 @@ namespace GBSharp
 							SP -= 2;
 							byte lower = ROM.Instance.Data[PC + 1];
 							ushort higher = (ushort)(ROM.Instance.Data[PC + 2] << 8);
-							PC = (ushort)(higher + lower);
+							ushort a16 = (ushort)(higher + lower);
+							PrintDebugMessage($"CALL 0x{a16:X4}");
+							PC = a16;
 							cycles += 6;
 						}
 						break;
@@ -165,6 +251,7 @@ namespace GBSharp
 							byte lower = ROM.Instance.Data[PC + 1];
 							ushort higher = 0xFF00;
 							Memory.Instance.Write(higher + lower, A);
+							PrintDebugMessage($"LD (0x{lower:X2}), A");
 							PC += 2;
 							cycles += 3;
 						}
@@ -174,32 +261,71 @@ namespace GBSharp
 						{
 							byte lower = ROM.Instance.Data[PC + 1];
 							ushort higher = 0xFF00;
-							A = Memory.Instance.Read(higher + lower);
+							byte a8 = Memory.Instance.Read(higher + lower);
+							PrintDebugMessage($"LD A, (0x{a8:X2})");
+							A = a8;
 							PC += 2;
 							cycles += 3;
 						}
 						break;
 
 					case 0xF3:      // DI
-						IME = false;
-						PC++;
-						cycles++;
+						{
+							PrintDebugMessage("DI");
+							IME = false;
+							PC++;
+							cycles++;
+						}
+						break;
+
+					case 0xFE:      // CP d8
+						{
+							byte d8 = ROM.Instance.Data[PC + 1];
+							PrintDebugMessage($"CP 0x{d8:X2}");
+							Z = A == d8;
+							PC += 2;
+							cycles += 2;
+						}
 						break;
 
 					default:
+						PrintDebugMessage("Unknown opcode encountered!");
 						break;
 				}
+				PrintDebugMessage("\n");
 
 				// PC went out of bounds.
 				if (PC >= ROM.Instance.Data.Length)
 				{
 					Playing = false;
+					PrintDebugMessage("PC went out of bounds!\n");
 				}
 
 				// TODO: Sleep once we've accumulated enough cycles to match the CPU speed?
 				//if (cycles >= Frequency / 60)
-				Thread.Sleep(0);
+				Thread.Sleep(1);
 			}
+		}
+
+		// Stop the thread.
+		public void Stop()
+		{
+			NeedToStop = true;
+		}
+
+		public void Play()
+		{
+			Playing = true;
+		}
+
+		public void Pause()
+		{
+			Playing = false;
+		}
+
+		private void PrintDebugMessage(string debugMessage)
+		{
+			PrintDebugMessageCallback?.Invoke(debugMessage);
 		}
 	}
 }

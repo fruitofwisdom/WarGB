@@ -98,9 +98,14 @@
 			}
 			else if (address >= 0xFF00 && address <= 0xFF7F)
 			{
-				// TODO: Map controller data into here?
-				// TODO: Map other flags into here?
 				data = IOPorts[address - 0xFF00];
+
+				// Also read the appropriate registers.
+				if (address == 0xFF0F)
+				{
+					data = CPU.Instance.IF ? (byte)0x01 : (byte)0x00;
+				}
+				// TODO: The other registers.
 			}
 			else if (address >= 0xFF80 && address <= 0xFFFE)
 			{
@@ -108,7 +113,7 @@
 			}
 			else if (address == 0xFFFF)
 			{
-				data = CPU.Instance.IME ? (byte)0x01 : (byte)0x00;
+				data = CPU.Instance.IE ? (byte)0x01 : (byte)0x00;
 			}
 
 			return data;
@@ -165,6 +170,13 @@
 			else if (address >= 0xFF00 && address <= 0xFF7F)
 			{
 				IOPorts[address - 0xFF00] = data;
+
+				// Also write the appropriate registers.
+				if (address == 0xFF0F)
+				{
+					CPU.Instance.IF = data == 0x01;
+				}
+				// TODO: The other registers.
 			}
 			else if (address >= 0xFF80 && address <= 0xFFFE)
 			{
@@ -172,7 +184,7 @@
 			}
 			else if (address == 0xFFFF)
 			{
-				CPU.Instance.IME = data == 0x01;
+				CPU.Instance.IE = data == 0x01;
 			}
 
 			return wrote;
