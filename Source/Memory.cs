@@ -2,14 +2,19 @@
 {
 	internal class Memory
 	{
+		// Character data, BG display data, etc. - 0x8000 to 0x9FFF
 		private byte[] VRAM;
+		// External expansion working RAM - 0xA000 to 0xBFFF
 		private byte[] ExternalRAM;
-		private byte[] WRAMBank0;       // work RAM bank 0
+		// Unit working RAM - 0xC000 to 0xDFFF
+		private byte[] WRAMBank0;
+		// TODO: Support bank switching for CGB.
 		private byte[] WRAMBank1;
 		private byte[] OAM;             // sprite attribute table
+		// Port/mode registers, control register, and sound register - 0xFF00 to 0xFF7F
 		private byte[] IOPorts;
+		// Working and stack RAM - OxFF80 to 0xFFFE
 		private byte[] HRAM;            // high RAM
-		private bool InterruptEnable;   // register
 
 		private static Memory? _instance;
 		public static Memory Instance
@@ -23,19 +28,26 @@
 
 		public Memory()
 		{
+			// TODO: Support VRAM of 16 KB for CGB via bank switching.
 			VRAM = new byte[8 * 1024];
 			ExternalRAM = new byte[8 * 1024];
 			WRAMBank0 = new byte[4 * 1024];
+			// TODO: Support bank switching for CGB.
 			WRAMBank1 = new byte[4 * 1024];
 			OAM = new byte[159];
 			IOPorts = new byte[127];
-			HRAM = new byte[126];
-			InterruptEnable = false;
+			HRAM = new byte[127];
 		}
 
-		public byte Read(uint address)
+		public byte Read(int address)
 		{
 			byte data = 0x00;
+
+			// NOTE: address should be a ushort, but an int is cleaner in C#.
+			if (address < 0 || address > 0xFFFF)
+			{
+				return data;
+			}
 
 			if (address >= 0x0000 && address <= 0x3FFF)
 			{
@@ -50,6 +62,7 @@
 			}
 			else if (address >= 0x8000 && address <= 0x9FFF)
 			{
+				// TODO: Support VRAM of 16 KB for CGB via bank switching.
 				data = VRAM[address - 0x8000];
 			}
 			else if (address >= 0xA000 && address <= 0xBFFF)
@@ -62,6 +75,7 @@
 			}
 			else if (address >= 0xD000 && address <= 0xDFFF)
 			{
+				// TODO: Support WRAMBank1 switching for CGB.
 				data = WRAMBank1[address - 0xD000];
 			}
 			else if (address >= 0xE000 && address <= 0xEFFF)
@@ -84,6 +98,8 @@
 			}
 			else if (address >= 0xFF00 && address <= 0xFF7F)
 			{
+				// TODO: Map controller data into here?
+				// TODO: Map other flags into here?
 				data = IOPorts[address - 0xFF00];
 			}
 			else if (address >= 0xFF80 && address <= 0xFFFE)
@@ -92,7 +108,7 @@
 			}
 			else if (address == 0xFFFF)
 			{
-				data = InterruptEnable ? (byte)0x01 : (byte)0x00;
+				data = CPU.Instance.IME ? (byte)0x01 : (byte)0x00;
 			}
 
 			return data;
@@ -101,6 +117,12 @@
 		public bool Write(int address, byte data)
 		{
 			bool wrote = false;
+
+			// NOTE: address should be a ushort, but an int is cleaner in C#.
+			if (address < 0 || address > 0xFFFF)
+			{
+				return wrote;
+			}
 
 			if (address >= 0x0000 && address <= 0x7FFF)
 			{
@@ -142,7 +164,6 @@
 			}
 			else if (address >= 0xFF00 && address <= 0xFF7F)
 			{
-				// TODO: Can't write to I/O ports?
 				IOPorts[address - 0xFF00] = data;
 			}
 			else if (address >= 0xFF80 && address <= 0xFFFE)
@@ -151,8 +172,7 @@
 			}
 			else if (address == 0xFFFF)
 			{
-				// TODO: Is this possible?
-				InterruptEnable = data == 0x01;
+				CPU.Instance.IME = data == 0x01;
 			}
 
 			return wrote;
