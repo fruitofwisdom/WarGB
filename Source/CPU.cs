@@ -4,6 +4,7 @@
 	{
 		private bool NeedToStop;
 		private bool Playing;
+		private bool StepRequested;
 
 		public MainForm.PrintDebugMessageCallback? PrintDebugMessageCallback;
 
@@ -65,6 +66,7 @@
 		{
 			NeedToStop = false;
 			Playing = false;
+			StepRequested = false;
 
 			A = 0x00;
 			F = 0xB0;
@@ -109,7 +111,8 @@
 					return;
 				}
 
-				if (!Playing)
+				// Do nothing if we're paused, unless a step was requested.
+				if (!Playing && !StepRequested)
 				{
 					Thread.Sleep(1);
 					continue;
@@ -301,6 +304,12 @@
 					PrintDebugMessage("PC went out of bounds!\n");
 				}
 
+				if (StepRequested)
+				{
+					Playing = false;
+					StepRequested = false;
+				}
+
 				// TODO: Sleep once we've accumulated enough cycles to match the CPU speed?
 				//if (cycles >= Frequency / 60)
 				Thread.Sleep(1);
@@ -321,6 +330,11 @@
 		public void Pause()
 		{
 			Playing = false;
+		}
+
+		public void Step()
+		{
+			StepRequested = true;
 		}
 
 		private void PrintDebugMessage(string debugMessage)

@@ -38,6 +38,7 @@
 			toolStrip = new ToolStrip();
 			playButton = new ToolStripButton();
 			pauseButton = new ToolStripButton();
+			stepButton = new ToolStripButton();
 			debugRichTextBox = new RichTextBox();
 			menuStrip.SuspendLayout();
 			toolStrip.SuspendLayout();
@@ -90,7 +91,7 @@
 			// 
 			// toolStrip
 			// 
-			toolStrip.Items.AddRange(new ToolStripItem[] { playButton, pauseButton });
+			toolStrip.Items.AddRange(new ToolStripItem[] { playButton, pauseButton, stepButton });
 			toolStrip.Location = new Point(0, 24);
 			toolStrip.Name = "toolStrip";
 			toolStrip.Size = new Size(800, 25);
@@ -102,7 +103,6 @@
 			playButton.DisplayStyle = ToolStripItemDisplayStyle.Text;
 			playButton.Enabled = false;
 			playButton.Font = new Font("Segoe MDL2 Assets", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-			playButton.ImageTransparentColor = Color.Magenta;
 			playButton.Name = "playButton";
 			playButton.Size = new Size(23, 22);
 			playButton.Text = "";
@@ -114,12 +114,22 @@
 			pauseButton.DisplayStyle = ToolStripItemDisplayStyle.Text;
 			pauseButton.Enabled = false;
 			pauseButton.Font = new Font("Segoe MDL2 Assets", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-			pauseButton.ImageTransparentColor = Color.Magenta;
 			pauseButton.Name = "pauseButton";
 			pauseButton.Size = new Size(23, 22);
 			pauseButton.Text = "";
 			pauseButton.ToolTipText = "Pause";
 			pauseButton.Click += PauseButtonClick;
+			// 
+			// stepButton
+			// 
+			stepButton.DisplayStyle = ToolStripItemDisplayStyle.Text;
+			stepButton.Enabled = false;
+			stepButton.Font = new Font("Segoe MDL2 Assets", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+			stepButton.Name = "stepButton";
+			stepButton.Size = new Size(23, 22);
+			stepButton.Text = "";
+			stepButton.ToolTipText = "Step";
+			stepButton.Click += StepButtonClick;
 			// 
 			// debugRichTextBox
 			// 
@@ -162,6 +172,7 @@
 		private ToolStrip toolStrip;
 		private ToolStripButton playButton;
 		private ToolStripButton pauseButton;
+		private ToolStripButton stepButton;
 		private RichTextBox debugRichTextBox;
 	}
 }

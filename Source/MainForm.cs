@@ -18,6 +18,7 @@ namespace GBSharp
 			if (gameBoyThread != null)
 			{
 				CPU.Instance.Stop();
+				gameBoyThread.Join();
 			}
 
 			base.OnFormClosing(e);
@@ -46,6 +47,7 @@ namespace GBSharp
 					gameBoyThread.Start();
 					playButton.Enabled = true;
 					pauseButton.Enabled = false;
+					stepButton.Enabled = true;
 				}
 			}
 		}
@@ -66,6 +68,7 @@ namespace GBSharp
 			CPU.Instance.Play();
 			playButton.Enabled = false;
 			pauseButton.Enabled = true;
+			stepButton.Enabled = false;
 		}
 
 		private void PauseButtonClick(object sender, EventArgs e)
@@ -73,6 +76,15 @@ namespace GBSharp
 			CPU.Instance.Pause();
 			playButton.Enabled = true;
 			pauseButton.Enabled = false;
+			stepButton.Enabled = true;
+		}
+
+		private void StepButtonClick(object sender, EventArgs e)
+		{
+			CPU.Instance.Step();
+			playButton.Enabled = true;
+			pauseButton.Enabled = false;
+			stepButton.Enabled = true;
 		}
 
 		public void PrintDebugMessage(string debugMessage)
