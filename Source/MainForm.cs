@@ -4,13 +4,14 @@ namespace GBSharp
 	{
 		Thread? gameBoyThread;
 
-		public delegate void PrintDebugMessageCallback(string debugMessage);
+		private delegate void PrintDebugMessageCallback(string debugMessage);
+		private static PrintDebugMessageCallback? PrintDebugMessageCallbackInternal;
 
 		public MainForm()
 		{
 			InitializeComponent();
 
-			CPU.Instance.PrintDebugMessageCallback = PrintDebugMessage;
+			PrintDebugMessageCallbackInternal = PrintDebugMessageInternal;
 		}
 
 		protected override void OnFormClosing(FormClosingEventArgs e)
@@ -87,9 +88,14 @@ namespace GBSharp
 			stepButton.Enabled = true;
 		}
 
-		public void PrintDebugMessage(string debugMessage)
+		public static void PrintDebugMessage(string debugMessage)
 		{
-			// Since we're called from the Game Boy thread, invoke on this thread.
+			PrintDebugMessageCallbackInternal?.Invoke(debugMessage);
+		}
+
+		private void PrintDebugMessageInternal(string debugMessage)
+		{
+			// We must invoke on the UI thread.
 			debugRichTextBox.Invoke(new Action(() => debugRichTextBox.AppendText(debugMessage)));
 		}
 	}

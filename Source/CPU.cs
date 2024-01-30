@@ -6,8 +6,6 @@
 		private bool Playing;
 		private bool StepRequested;
 
-		public MainForm.PrintDebugMessageCallback? PrintDebugMessageCallback;
-
 		// NOTE: Original DMG CPU frequency is 1.05 MHz.
 		// TODO: Support CGB double-speed mode also?
 		private uint Frequency = 4194304;		// four oscillations per
@@ -101,7 +99,7 @@
 			Thread.CurrentThread.Name = "GB# CPU";
 			Initialize();
 			int cycles = 0;
-			PrintDebugMessage("Initialized.\n");
+			MainForm.PrintDebugMessage("Initialized.\n");
 
 			while (true)
 			{
@@ -121,12 +119,12 @@
 				// TODO: Interrupt handling here?
 
 				byte instruction = ROM.Instance.Data[PC];
-				PrintDebugMessage($"[0x{PC:X4}] 0x{instruction:X2}: ");
+				MainForm.PrintDebugMessage($"[0x{PC:X4}] 0x{instruction:X2}: ");
 				switch (instruction)
 				{
 					case 0x00:      // NOP
 						{
-							PrintDebugMessage("NOP");
+							MainForm.PrintDebugMessage("NOP\n");
 							PC++;
 							cycles++;
 						}
@@ -147,7 +145,7 @@
 						{
 							sbyte s8 = (sbyte)(ROM.Instance.Data[PC + 1] + 2);
 							ushort newPC = (ushort)(PC + s8);
-							PrintDebugMessage($"JR NC, 0x{newPC:X4}");
+							MainForm.PrintDebugMessage($"JR NC, 0x{newPC:X4}\n");
 							if (!CY)
 							{
 								PC = newPC;
@@ -166,7 +164,7 @@
 							byte lower = ROM.Instance.Data[PC + 1];
 							ushort higher = (ushort)(ROM.Instance.Data[PC + 2] << 8);
 							ushort d16 = (ushort)(higher + lower);
-							PrintDebugMessage($"LD SP, 0x{d16:X4}");
+							MainForm.PrintDebugMessage($"LD SP, 0x{d16:X4}\n");
 							SP = d16;
 							PC += 3;
 							cycles += 3;
@@ -177,7 +175,7 @@
 						{
 							sbyte s8 = (sbyte)(ROM.Instance.Data[PC + 1] + 2);
 							ushort newPC = (ushort)(PC + s8);
-							PrintDebugMessage($"JR C, 0x{newPC:X4}");
+							MainForm.PrintDebugMessage($"JR C, 0x{newPC:X4}\n");
 							if (CY)
 							{
 								PC = newPC;
@@ -194,7 +192,7 @@
 					case 0x3E:      // LD A, d8
 						{
 							byte d8 = ROM.Instance.Data[PC + 1];
-							PrintDebugMessage($"LD A, 0x{d8:X2}");
+							MainForm.PrintDebugMessage($"LD A, 0x{d8:X2}\n");
 							A = d8;
 							PC += 2;
 							cycles += 2;
@@ -226,7 +224,7 @@
 							byte lower = ROM.Instance.Data[PC + 1];
 							ushort higher = (ushort)(ROM.Instance.Data[PC + 2] << 8);
 							ushort a16 = (ushort)(higher + lower);
-							PrintDebugMessage($"JP 0x{a16:X4}");
+							MainForm.PrintDebugMessage($"JP 0x{a16:X4}\n");
 							PC = a16;
 							cycles += 4;
 						}
@@ -243,7 +241,7 @@
 							byte lower = ROM.Instance.Data[PC + 1];
 							ushort higher = (ushort)(ROM.Instance.Data[PC + 2] << 8);
 							ushort a16 = (ushort)(higher + lower);
-							PrintDebugMessage($"CALL 0x{a16:X4}");
+							MainForm.PrintDebugMessage($"CALL 0x{a16:X4}\n");
 							PC = a16;
 							cycles += 6;
 						}
@@ -253,8 +251,8 @@
 						{
 							byte lower = ROM.Instance.Data[PC + 1];
 							ushort higher = 0xFF00;
+							MainForm.PrintDebugMessage($"LD (0x{lower:X2}), A\n");
 							Memory.Instance.Write(higher + lower, A);
-							PrintDebugMessage($"LD (0x{lower:X2}), A");
 							PC += 2;
 							cycles += 3;
 						}
@@ -264,8 +262,8 @@
 						{
 							byte lower = ROM.Instance.Data[PC + 1];
 							ushort higher = 0xFF00;
+							MainForm.PrintDebugMessage($"LD A, (0x{lower:X2})\n");
 							byte a8 = Memory.Instance.Read(higher + lower);
-							PrintDebugMessage($"LD A, (0x{a8:X2})");
 							A = a8;
 							PC += 2;
 							cycles += 3;
@@ -274,7 +272,7 @@
 
 					case 0xF3:      // DI
 						{
-							PrintDebugMessage("DI");
+							MainForm.PrintDebugMessage("DI\n");
 							IME = false;
 							PC++;
 							cycles++;
@@ -284,24 +282,25 @@
 					case 0xFE:      // CP d8
 						{
 							byte d8 = ROM.Instance.Data[PC + 1];
-							PrintDebugMessage($"CP 0x{d8:X2}");
-							Z = A == d8;
+							MainForm.PrintDebugMessage($"CP 0x{d8:X2}\n");
+							int cp = A - d8;
+							Z = cp == 0;
+							CY = cp < 0;
 							PC += 2;
 							cycles += 2;
 						}
 						break;
 
 					default:
-						PrintDebugMessage("Unknown opcode encountered!");
+						MainForm.PrintDebugMessage("Unknown opcode encountered!\n");
 						break;
 				}
-				PrintDebugMessage("\n");
 
 				// PC went out of bounds.
 				if (PC >= ROM.Instance.Data.Length)
 				{
 					Playing = false;
-					PrintDebugMessage("PC went out of bounds!\n");
+					MainForm.PrintDebugMessage("PC went out of bounds!\n");
 				}
 
 				if (StepRequested)
@@ -335,11 +334,6 @@
 		public void Step()
 		{
 			StepRequested = true;
-		}
-
-		private void PrintDebugMessage(string debugMessage)
-		{
-			PrintDebugMessageCallback?.Invoke(debugMessage);
 		}
 	}
 }

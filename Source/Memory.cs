@@ -106,6 +106,10 @@
 					data = CPU.Instance.IF ? (byte)0x01 : (byte)0x00;
 				}
 				// TODO: The other registers.
+				else
+				{
+					MainForm.PrintDebugMessage($"Unimplemented register: 0x{address:X4}!\n");
+				}
 			}
 			else if (address >= 0xFF80 && address <= 0xFFFE)
 			{
@@ -177,6 +181,10 @@
 					CPU.Instance.IF = data == 0x01;
 				}
 				// TODO: The other registers.
+				else
+				{
+					MainForm.PrintDebugMessage($"Unimplemented register: 0x{address:X4}!\n");
+				}
 			}
 			else if (address >= 0xFF80 && address <= 0xFFFE)
 			{
