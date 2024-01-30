@@ -40,8 +40,11 @@
 			pauseButton = new ToolStripButton();
 			stepButton = new ToolStripButton();
 			debugRichTextBox = new RichTextBox();
+			statusStrip = new StatusStrip();
+			debugToolStripStatusLabel = new ToolStripStatusLabel();
 			menuStrip.SuspendLayout();
 			toolStrip.SuspendLayout();
+			statusStrip.SuspendLayout();
 			SuspendLayout();
 			// 
 			// menuStrip
@@ -137,15 +140,30 @@
 			debugRichTextBox.Location = new Point(538, 27);
 			debugRichTextBox.Name = "debugRichTextBox";
 			debugRichTextBox.ReadOnly = true;
-			debugRichTextBox.Size = new Size(250, 411);
+			debugRichTextBox.Size = new Size(250, 398);
 			debugRichTextBox.TabIndex = 2;
 			debugRichTextBox.Text = "";
+			// 
+			// statusStrip
+			// 
+			statusStrip.Items.AddRange(new ToolStripItem[] { debugToolStripStatusLabel });
+			statusStrip.Location = new Point(0, 428);
+			statusStrip.Name = "statusStrip";
+			statusStrip.Size = new Size(800, 22);
+			statusStrip.TabIndex = 3;
+			statusStrip.Text = "statusStrip";
+			// 
+			// debugToolStripStatusLabel
+			// 
+			debugToolStripStatusLabel.Name = "debugToolStripStatusLabel";
+			debugToolStripStatusLabel.Size = new Size(0, 17);
 			// 
 			// MainForm
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
 			ClientSize = new Size(800, 450);
+			Controls.Add(statusStrip);
 			Controls.Add(debugRichTextBox);
 			Controls.Add(toolStrip);
 			Controls.Add(menuStrip);
@@ -157,6 +175,8 @@
 			menuStrip.PerformLayout();
 			toolStrip.ResumeLayout(false);
 			toolStrip.PerformLayout();
+			statusStrip.ResumeLayout(false);
+			statusStrip.PerformLayout();
 			ResumeLayout(false);
 			PerformLayout();
 		}
@@ -174,5 +194,7 @@
 		private ToolStripButton pauseButton;
 		private ToolStripButton stepButton;
 		private RichTextBox debugRichTextBox;
+		private StatusStrip statusStrip;
+		private ToolStripStatusLabel debugToolStripStatusLabel;
 	}
 }

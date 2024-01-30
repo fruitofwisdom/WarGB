@@ -6,10 +6,11 @@
 		private bool Playing;
 		private bool StepRequested;
 
+		private bool ShouldPrintOpcodes = false;
+
 		// NOTE: Original DMG CPU frequency is 1.05 MHz.
 		// TODO: Support CGB double-speed mode also?
-		private uint Frequency = 4194304;		// four oscillations per
-		//private uint Frequency = 8388608;		// double-speed mode oscillations
+		private const uint Frequency = 4194304;		// cycles per second
 
 		// The accumulator register.
 		private byte A;
@@ -38,9 +39,10 @@
 		// The interrupt flags.
 		public bool IF;		// interrupt request flag (also 0xFF0F)
 		public bool IE;		// interrupt enable flag (also 0xFFFF)
-		private bool IME;		// interrupt master enable flag
+		private bool IME;	// interrupt master enable flag
 
 		// TODO: The LCD display registers.
+		public byte LY;		// LCDC y-coordinate
 
 		// TODO: The sound registers.
 
@@ -98,7 +100,7 @@
 			// NOTE: We skip any validation or BIOS handling.
 			Thread.CurrentThread.Name = "GB# CPU";
 			Initialize();
-			int cycles = 0;
+			uint cycles = 0;
 			MainForm.PrintDebugMessage("Initialized.\n");
 
 			while (true)
@@ -119,12 +121,11 @@
 				// TODO: Interrupt handling here?
 
 				byte instruction = ROM.Instance.Data[PC];
-				MainForm.PrintDebugMessage($"[0x{PC:X4}] 0x{instruction:X2}: ");
 				switch (instruction)
 				{
 					case 0x00:      // NOP
 						{
-							MainForm.PrintDebugMessage("NOP\n");
+							PrintOpcode(instruction, "NOP");
 							PC++;
 							cycles++;
 						}
@@ -145,7 +146,7 @@
 						{
 							sbyte s8 = (sbyte)(ROM.Instance.Data[PC + 1] + 2);
 							ushort newPC = (ushort)(PC + s8);
-							MainForm.PrintDebugMessage($"JR NC, 0x{newPC:X4}\n");
+							PrintOpcode(instruction, $"JR NC, 0x{newPC:X4}");
 							if (!CY)
 							{
 								PC = newPC;
@@ -164,7 +165,7 @@
 							byte lower = ROM.Instance.Data[PC + 1];
 							ushort higher = (ushort)(ROM.Instance.Data[PC + 2] << 8);
 							ushort d16 = (ushort)(higher + lower);
-							MainForm.PrintDebugMessage($"LD SP, 0x{d16:X4}\n");
+							PrintOpcode(instruction, $"LD SP, 0x{d16:X4}");
 							SP = d16;
 							PC += 3;
 							cycles += 3;
@@ -175,7 +176,7 @@
 						{
 							sbyte s8 = (sbyte)(ROM.Instance.Data[PC + 1] + 2);
 							ushort newPC = (ushort)(PC + s8);
-							MainForm.PrintDebugMessage($"JR C, 0x{newPC:X4}\n");
+							PrintOpcode(instruction, $"JR C, 0x{newPC:X4}");
 							if (CY)
 							{
 								PC = newPC;
@@ -192,7 +193,7 @@
 					case 0x3E:      // LD A, d8
 						{
 							byte d8 = ROM.Instance.Data[PC + 1];
-							MainForm.PrintDebugMessage($"LD A, 0x{d8:X2}\n");
+							PrintOpcode(instruction, $"LD A, 0x{d8:X2}");
 							A = d8;
 							PC += 2;
 							cycles += 2;
@@ -224,7 +225,7 @@
 							byte lower = ROM.Instance.Data[PC + 1];
 							ushort higher = (ushort)(ROM.Instance.Data[PC + 2] << 8);
 							ushort a16 = (ushort)(higher + lower);
-							MainForm.PrintDebugMessage($"JP 0x{a16:X4}\n");
+							PrintOpcode(instruction, $"JP 0x{a16:X4}");
 							PC = a16;
 							cycles += 4;
 						}
@@ -241,7 +242,7 @@
 							byte lower = ROM.Instance.Data[PC + 1];
 							ushort higher = (ushort)(ROM.Instance.Data[PC + 2] << 8);
 							ushort a16 = (ushort)(higher + lower);
-							MainForm.PrintDebugMessage($"CALL 0x{a16:X4}\n");
+							PrintOpcode(instruction, $"CALL 0x{a16:X4}");
 							PC = a16;
 							cycles += 6;
 						}
@@ -251,7 +252,7 @@
 						{
 							byte lower = ROM.Instance.Data[PC + 1];
 							ushort higher = 0xFF00;
-							MainForm.PrintDebugMessage($"LD (0x{lower:X2}), A\n");
+							PrintOpcode(instruction, $"LD (0x{lower:X2}), A");
 							Memory.Instance.Write(higher + lower, A);
 							PC += 2;
 							cycles += 3;
@@ -262,9 +263,8 @@
 						{
 							byte lower = ROM.Instance.Data[PC + 1];
 							ushort higher = 0xFF00;
-							MainForm.PrintDebugMessage($"LD A, (0x{lower:X2})\n");
-							byte a8 = Memory.Instance.Read(higher + lower);
-							A = a8;
+							PrintOpcode(instruction, $"LD A, (0x{lower:X2})");
+							A = Memory.Instance.Read(higher + lower);
 							PC += 2;
 							cycles += 3;
 						}
@@ -272,7 +272,7 @@
 
 					case 0xF3:      // DI
 						{
-							MainForm.PrintDebugMessage("DI\n");
+							PrintOpcode(instruction, "DI");
 							IME = false;
 							PC++;
 							cycles++;
@@ -282,7 +282,7 @@
 					case 0xFE:      // CP d8
 						{
 							byte d8 = ROM.Instance.Data[PC + 1];
-							MainForm.PrintDebugMessage($"CP 0x{d8:X2}\n");
+							PrintOpcode(instruction, $"CP 0x{d8:X2}");
 							int cp = A - d8;
 							Z = cp == 0;
 							CY = cp < 0;
@@ -292,8 +292,42 @@
 						break;
 
 					default:
-						MainForm.PrintDebugMessage("Unknown opcode encountered!\n");
+						MainForm.PrintDebugMessage($"Unimplemented opcode: 0x{instruction:X2}!\n");
+						MainForm.Pause();
 						break;
+				}
+
+				// TODO: Update LCD controller another way?
+				// 144 lines at 0.10875 lines per millisecond then 10 lines of v-blank.
+				// Every 456 cycles, we increment LY, possibly trigger v-blank, etc.
+				const uint cyclesPerLine = (uint)(Frequency / 1000.0f * 0.10875f);
+				byte newLY = (byte)(cycles / cyclesPerLine % 154);
+				MainForm.PrintDebugStatus("LY: " + LY);
+				if (newLY != LY)
+				{
+					LY = newLY;
+
+					// V-blank begins at line 144 through line 153
+					if (LY == 144)
+					{
+						// TODO: Set the v-blank interrupt flag.
+						MainForm.PrintDebugMessage("A v-blank occurred.\n");
+					}
+
+					// TODO: When is appropriate to sleep for performance?
+					Thread.Sleep(1);
+				}
+
+				// TODO: Handle interrupts.
+				if (IME)
+				{
+					// TODO: If IF flags match IE flags, trigger an interrupt.
+				}
+
+				// Prevent cycles overflowing.
+				if (cycles >= cyclesPerLine * 154)
+				{
+					cycles -= cyclesPerLine * 154;
 				}
 
 				// PC went out of bounds.
@@ -308,10 +342,6 @@
 					Playing = false;
 					StepRequested = false;
 				}
-
-				// TODO: Sleep once we've accumulated enough cycles to match the CPU speed?
-				//if (cycles >= Frequency / 60)
-				Thread.Sleep(1);
 			}
 		}
 
@@ -334,6 +364,14 @@
 		public void Step()
 		{
 			StepRequested = true;
+		}
+
+		private void PrintOpcode(byte instruction, string opcode)
+		{
+			if (ShouldPrintOpcodes)
+			{
+				MainForm.PrintDebugMessage($"[0x{PC:X4}] 0x{instruction:X2}: " + opcode + "\n");
+			}
 		}
 	}
 }

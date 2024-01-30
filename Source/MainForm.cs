@@ -2,24 +2,31 @@ namespace GBSharp
 {
 	public partial class MainForm : Form
 	{
-		Thread? gameBoyThread;
+		Thread? GameBoyThread;
 
+		// Available debug callbacks.
+		private delegate void PauseCallback();
+		private static PauseCallback? PauseCallbackInternal;
 		private delegate void PrintDebugMessageCallback(string debugMessage);
 		private static PrintDebugMessageCallback? PrintDebugMessageCallbackInternal;
+		private delegate void PrintDebugStatusCallback(string debugStatus);
+		private static PrintDebugStatusCallback? PrintDebugStatisCallbackInternal;
 
 		public MainForm()
 		{
 			InitializeComponent();
 
+			PauseCallbackInternal = PauseInternal;
 			PrintDebugMessageCallbackInternal = PrintDebugMessageInternal;
+			PrintDebugStatisCallbackInternal = PrintDebugStatusInternal;
 		}
 
 		protected override void OnFormClosing(FormClosingEventArgs e)
 		{
-			if (gameBoyThread != null)
+			if (GameBoyThread != null)
 			{
 				CPU.Instance.Stop();
-				gameBoyThread.Join();
+				GameBoyThread.Join();
 			}
 
 			base.OnFormClosing(e);
@@ -38,14 +45,14 @@ namespace GBSharp
 				if (ROM.Instance.Load(openFileDialog.FileName))
 				{
 					// Close any previously running threads.
-					if (gameBoyThread != null)
+					if (GameBoyThread != null)
 					{
 						CPU.Instance.Stop();
 					}
 
 					Text = "GB# - " + ROM.Instance.Title;
-					gameBoyThread = new Thread(new ThreadStart(CPU.Instance.Run));
-					gameBoyThread.Start();
+					GameBoyThread = new Thread(new ThreadStart(CPU.Instance.Run));
+					GameBoyThread.Start();
 					playButton.Enabled = true;
 					pauseButton.Enabled = false;
 					stepButton.Enabled = true;
@@ -88,6 +95,17 @@ namespace GBSharp
 			stepButton.Enabled = true;
 		}
 
+		public static void Pause()
+		{
+			PauseCallbackInternal?.Invoke();
+		}
+
+		private void PauseInternal()
+		{
+			// We must invoke on the UI thread.
+			Invoke(new Action(() => PauseButtonClick(this, EventArgs.Empty)));
+		}
+
 		public static void PrintDebugMessage(string debugMessage)
 		{
 			PrintDebugMessageCallbackInternal?.Invoke(debugMessage);
@@ -96,7 +114,18 @@ namespace GBSharp
 		private void PrintDebugMessageInternal(string debugMessage)
 		{
 			// We must invoke on the UI thread.
-			debugRichTextBox.Invoke(new Action(() => debugRichTextBox.AppendText(debugMessage)));
+			Invoke(new Action(() => debugRichTextBox.AppendText(debugMessage)));
+		}
+
+		public static void PrintDebugStatus(string debugStatus)
+		{
+			PrintDebugStatisCallbackInternal?.Invoke(debugStatus);
+		}
+
+		private void PrintDebugStatusInternal(string debugStatus)
+		{
+			// We must invoke on the UI thread.
+			Invoke(new Action(() => debugToolStripStatusLabel.Text = debugStatus));
 		}
 	}
 }
