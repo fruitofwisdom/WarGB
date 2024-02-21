@@ -37,8 +37,8 @@
 		// TODO: The bank control registers for CGB?
 
 		// The interrupt flags.
-		public bool IF;		// interrupt request flag (also 0xFF0F)
-		public bool IE;		// interrupt enable flag (also 0xFFFF)
+		public byte IF;		// interrupt request flag (also 0xFF0F)
+		public byte IE;		// interrupt enable flag (also 0xFFFF)
 		private bool IME;	// interrupt master enable flag
 
 		// TODO: The LCD display registers.
@@ -82,10 +82,8 @@
 			PC = 0x0100;
 			SP = 0xFFFE;
 
-			// The interrupt flags.
-			// TODO: Should these just reference their memory address? What about IME?
-			IF = false;
-			IE = false;
+			IF = 0x00;
+			IE = 0x00;
 			IME = false;
 		}
 
@@ -301,33 +299,42 @@
 				// 144 lines at 0.10875 lines per millisecond then 10 lines of v-blank.
 				// Every 456 cycles, we increment LY, possibly trigger v-blank, etc.
 				const uint cyclesPerLine = (uint)(Frequency / 1000.0f * 0.10875f);
-				byte newLY = (byte)(cycles / cyclesPerLine % 154);
+				const uint linesPerFrame = 154;
+				byte newLY = (byte)(cycles / cyclesPerLine % linesPerFrame);
 				MainForm.PrintDebugStatus("LY: " + LY);
 				if (newLY != LY)
 				{
 					LY = newLY;
 
-					// V-blank begins at line 144 through line 153
+					// V-blank begins at line 144
 					if (LY == 144)
 					{
-						// TODO: Set the v-blank interrupt flag.
-						MainForm.PrintDebugMessage("A v-blank occurred.\n");
+						// Set the v-blank IF flag.
+						IF |= 0x01;
 					}
-
-					// TODO: When is appropriate to sleep for performance?
-					Thread.Sleep(1);
 				}
 
-				// TODO: Handle interrupts.
 				if (IME)
 				{
-					// TODO: If IF flags match IE flags, trigger an interrupt.
+					if ((byte)(IF & 0x01) == 0x01 && (byte)(IE & 0x01) == 0x01)
+					{
+						// TODO: Handle the v-blank interrupt.
+						// NOP();
+						// NOP();
+						// CALL(0x0040);
+						// Should total 5 cycles.
+						MainForm.PrintDebugMessage("A v-blank interrupt occurred.\n");
+					}
+					// TODO: Handle other interrupt flags.
 				}
 
 				// Prevent cycles overflowing.
-				if (cycles >= cyclesPerLine * 154)
+				if (cycles >= cyclesPerLine * linesPerFrame)
 				{
-					cycles -= cyclesPerLine * 154;
+					cycles -= cyclesPerLine * linesPerFrame;
+
+					// TODO: When is appropriate to sleep for performance?
+					Thread.Sleep(1);
 				}
 
 				// PC went out of bounds.

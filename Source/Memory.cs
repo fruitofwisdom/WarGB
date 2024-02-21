@@ -94,16 +94,15 @@
 			}
 			else if (address >= 0xFEA0 && address <= 0xFEFF)
 			{
-				// TODO: Not usable.
+				MainForm.PrintDebugMessage($"Reading from unusable memory: 0x{address:X4}!\n");
 			}
 			else if (address >= 0xFF00 && address <= 0xFF7F)
 			{
 				data = IOPorts[address - 0xFF00];
 
-				// Also read the appropriate registers.
 				if (address == 0xFF0F)
 				{
-					data = CPU.Instance.IF ? (byte)0x01 : (byte)0x00;
+					data = CPU.Instance.IF;
 				}
 				if (address == 0xFF44)
 				{
@@ -121,7 +120,7 @@
 			}
 			else if (address == 0xFFFF)
 			{
-				data = CPU.Instance.IE ? (byte)0x01 : (byte)0x00;
+				data = CPU.Instance.IE;
 			}
 
 			return data;
@@ -173,16 +172,15 @@
 			}
 			else if (address >= 0xFEA0 && address <= 0xFEFF)
 			{
-				// TODO: Not usable.
+				MainForm.PrintDebugMessage($"Writing to unusable memory: 0x{address:X4}!\n");
 			}
 			else if (address >= 0xFF00 && address <= 0xFF7F)
 			{
 				IOPorts[address - 0xFF00] = data;
 
-				// Also write the appropriate registers.
 				if (address == 0xFF0F)
 				{
-					CPU.Instance.IF = data == 0x01;
+					CPU.Instance.IF = data;
 				}
 				else if (address == 0xFF44)
 				{
@@ -200,7 +198,7 @@
 			}
 			else if (address == 0xFFFF)
 			{
-				CPU.Instance.IE = data == 0x01;
+				CPU.Instance.IE = data;
 			}
 
 			return wrote;
