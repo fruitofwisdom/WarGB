@@ -104,7 +104,11 @@
 				{
 					data = CPU.Instance.IF;
 				}
-				if (address == 0xFF44)
+				else if (address == 0xFF40)
+				{
+					data = CPU.Instance.LCDC;
+				}
+				else if (address == 0xFF44)
 				{
 					data = CPU.Instance.LY;
 				}
@@ -182,9 +186,13 @@
 				{
 					CPU.Instance.IF = data;
 				}
+				else if (address == 0xFF40)
+				{
+					CPU.Instance.LCDC = data;
+				}
 				else if (address == 0xFF44)
 				{
-					MainForm.PrintDebugMessage($"Register 0xFF44 is read-only!\n");
+					MainForm.PrintDebugMessage("Register 0xFF44 is read-only!\n");
 				}
 				// TODO: The other registers.
 				else

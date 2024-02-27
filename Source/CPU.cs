@@ -16,7 +16,8 @@
 		private byte A;
 		// The auxiliary registers.
 		// The flag register is actually four flags.
-		private byte F;
+		// TODO: Just use the other flags?
+		//private byte F;
 		private bool Z;		// set to 1 when the result of an operation is 0, otherwise reset
 		private bool N;		// set to 1 following execution of the subtraction instruction, regardless of the result
 		private bool H;		// set to 1 when an operation results in carrying from or borrowing to bit 3
@@ -41,8 +42,10 @@
 		public byte IE;		// interrupt enable flag (also 0xFFFF)
 		private bool IME;	// interrupt master enable flag
 
-		// TODO: The LCD display registers.
+		// The LCD display registers.
+		public byte LCDC;
 		public byte LY;		// LCDC y-coordinate
+		// TODO: The other LCD display registers.
 
 		// TODO: The sound registers.
 
@@ -69,7 +72,7 @@
 			StepRequested = false;
 
 			A = 0x00;
-			F = 0xB0;
+			//F = 0xB0;		// TODO: Just use the other flags?
 			Z = true;
 			N = false;
 			H = true;
@@ -85,6 +88,9 @@
 			IF = 0x00;
 			IE = 0x00;
 			IME = false;
+
+			LCDC = 0x91;
+			LY = 0;
 		}
 
 		// The CPU runs in its own thread.
@@ -121,7 +127,7 @@
 				byte instruction = ROM.Instance.Data[PC];
 				switch (instruction)
 				{
-					case 0x00:      // NOP
+					case 0x00:		// NOP
 						{
 							PrintOpcode(instruction, "NOP");
 							PC++;
@@ -129,16 +135,49 @@
 						}
 						break;
 
-						/*
-					case 0x01:      // LD BC, d16
+					case 0x01:		// LD BC, d16
 						{
 							C = ROM.Instance.Data[PC + 1];
 							B = ROM.Instance.Data[PC + 2];
+							ushort d16 = (ushort)(B << 8 + C);
+							PrintOpcode(instruction, $"LD BC, 0x{d16:X4}");
 							PC += 3;
 							cycles += 3;
 						}
 						break;
-						*/
+
+					case 0x0B:		// DEC BC
+						{
+							ushort bc = (ushort)(B << 8 + C);
+							bc--;
+							B = (byte)((bc & 0xFF00) >> 8);
+							C = (byte)(bc & 0x00FF);
+							PrintOpcode(instruction, "DEC BC");
+							PC++;
+							cycles += 2;
+						}
+						break;
+
+					case 0x21:		// LD HL, d16
+						{
+							byte lower = ROM.Instance.Data[PC + 1];
+							ushort higher = (ushort)(ROM.Instance.Data[PC + 2] << 8);
+							ushort d16 = (ushort)(higher + lower);
+							PrintOpcode(instruction, $"LD HL, 0x{d16:X4}");
+							HL = d16;
+							PC += 3;
+							cycles += 3;
+						}
+						break;
+
+					case 0x23:		// INC HL
+						{
+							HL++;
+							PrintOpcode(instruction, "INC HL");
+							PC++;
+							cycles += 2;
+						}
+						break;
 
 					case 0x30:		// JR NC, s8
 						{
@@ -158,7 +197,7 @@
 						}
 						break;
 
-					case 0x31:      // LD SP, d16
+					case 0x31:		// LD SP, d16
 						{
 							byte lower = ROM.Instance.Data[PC + 1];
 							ushort higher = (ushort)(ROM.Instance.Data[PC + 2] << 8);
@@ -170,7 +209,7 @@
 						}
 						break;
 
-					case 0x38:      // JR C, s8
+					case 0x38:		// JR C, s8
 						{
 							sbyte s8 = (sbyte)(ROM.Instance.Data[PC + 1] + 2);
 							ushort newPC = (ushort)(PC + s8);
@@ -188,7 +227,7 @@
 						}
 						break;
 
-					case 0x3E:      // LD A, d8
+					case 0x3E:		// LD A, d8
 						{
 							byte d8 = ROM.Instance.Data[PC + 1];
 							PrintOpcode(instruction, $"LD A, 0x{d8:X2}");
@@ -198,16 +237,17 @@
 						}
 						break;
 
-						/*
-					case 0x50:      // DEC B
+					case 0x57:		// LD D, A
 						{
-							B--;
+							D = A;
+							PrintOpcode(instruction, "LD D, A");
 							PC++;
 							cycles++;
 						}
 						break;
 
-					case 0x66:      // LD H, (HL)
+						/*
+					case 0x66:		// LD H, (HL)
 						{
 							ushort memory = (ushort)(Memory.Instance.Read(HL) << 8);
 							// NOTE: H is the higher byte of register HL.
@@ -218,7 +258,35 @@
 						break;
 						*/
 
-					case 0xC3:      // JP a16
+					case 0x72:		// LD (HL), D
+						{
+							Memory.Instance.Write(HL, D);
+							PrintOpcode(instruction, "LD (HL), D");
+							PC++;
+							cycles += 2;
+						}
+						break;
+
+					case 0x78:		// LD A, B
+						{
+							A = B;
+							PrintOpcode(instruction, "LD A, B");
+							PC++;
+							cycles++;
+						}
+						break;
+
+					case 0xB1:		// OR C
+						{
+							A |= C;
+							Z = A == 0x00;
+							PrintOpcode(instruction, "OR C");
+							PC++;
+							cycles++;
+						}
+						break;
+
+					case 0xC3:		// JP a16
 						{
 							byte lower = ROM.Instance.Data[PC + 1];
 							ushort higher = (ushort)(ROM.Instance.Data[PC + 2] << 8);
@@ -229,7 +297,39 @@
 						}
 						break;
 
-					case 0xCD:      // CALL a16
+					case 0xC8:		// RET Z
+						{
+							PrintOpcode(instruction, "RET Z");
+							if (Z)
+							{
+								byte lower = Memory.Instance.Read(SP);
+								SP++;
+								ushort higher = (ushort)(Memory.Instance.Read(SP) << 8);
+								SP++;
+								PC = (ushort)(higher + lower);
+								cycles += 5;
+							}
+							else
+							{
+								PC++;
+								cycles += 2;
+							}
+						}
+						break;
+
+					case 0xC9:		// RET
+						{
+							byte lower = Memory.Instance.Read(SP);
+							SP++;
+							ushort higher = (ushort)(Memory.Instance.Read(SP) << 8);
+							SP++;
+							PrintOpcode(instruction, "RET");
+							PC = (ushort)(higher + lower);
+							cycles += 4;
+						}
+						break;
+
+					case 0xCD:		// CALL a16
 						{
 							ushort nextPC = (ushort)(PC + 3);
 							byte pcHigher = (byte)((nextPC & 0xFF00) >> 8);
@@ -246,7 +346,17 @@
 						}
 						break;
 
-					case 0xE0:      // LD (a8), A
+					case 0xE6:		// AND d8
+						{
+							byte d8 = ROM.Instance.Data[PC + 1];
+							PrintOpcode(instruction, $"AND 0x{d8:2}");
+							A &= d8;
+							PC += 2;
+							cycles += 3;
+						}
+						break;
+
+					case 0xE0:		// LD (a8), A
 						{
 							byte lower = ROM.Instance.Data[PC + 1];
 							ushort higher = 0xFF00;
@@ -257,7 +367,7 @@
 						}
 						break;
 
-					case 0xF0:      // LD A, (a8)
+					case 0xF0:		// LD A, (a8)
 						{
 							byte lower = ROM.Instance.Data[PC + 1];
 							ushort higher = 0xFF00;
@@ -268,7 +378,7 @@
 						}
 						break;
 
-					case 0xF3:      // DI
+					case 0xF3:		// DI
 						{
 							PrintOpcode(instruction, "DI");
 							IME = false;
@@ -277,7 +387,7 @@
 						}
 						break;
 
-					case 0xFE:      // CP d8
+					case 0xFE:		// CP d8
 						{
 							byte d8 = ROM.Instance.Data[PC + 1];
 							PrintOpcode(instruction, $"CP 0x{d8:X2}");
@@ -301,7 +411,6 @@
 				const uint cyclesPerLine = (uint)(Frequency / 1000.0f * 0.10875f);
 				const uint linesPerFrame = 154;
 				byte newLY = (byte)(cycles / cyclesPerLine % linesPerFrame);
-				MainForm.PrintDebugStatus("LY: " + LY);
 				if (newLY != LY)
 				{
 					LY = newLY;
