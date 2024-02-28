@@ -31,6 +31,38 @@
 					}
 					break;
 
+				case 0x04:      // INC B
+					{
+						B++;
+						Z = B == 0;
+						N = false;
+						// TODO: H?
+						PC++;
+						Cycles++;
+					}
+					break;
+
+				case 0x05:      // DEC B
+					{
+						B--;
+						Z = B == 0;
+						N = true;
+						// TODO: H?
+						PC++;
+						Cycles++;
+					}
+					break;
+
+				case 0x06:      // LD B, d8
+					{
+						byte d8 = ROM.Instance.Data[PC + 1];
+						B = d8;
+						PrintOpcode(instruction, $"LD B, 0x{d8:X2}");
+						PC += 2;
+						Cycles += 2;
+					}
+					break;
+
 				case 0x0B:      // DEC BC
 					{
 						ushort bc = (ushort)((B << 8) + C);
@@ -58,8 +90,8 @@
 						byte lower = ROM.Instance.Data[PC + 1];
 						ushort higher = (ushort)(ROM.Instance.Data[PC + 2] << 8);
 						ushort d16 = (ushort)(higher + lower);
-						PrintOpcode(instruction, $"LD HL, 0x{d16:X4}");
 						HL = d16;
+						PrintOpcode(instruction, $"LD HL, 0x{d16:X4}");
 						PC += 3;
 						Cycles += 3;
 					}
@@ -97,8 +129,8 @@
 						byte lower = ROM.Instance.Data[PC + 1];
 						ushort higher = (ushort)(ROM.Instance.Data[PC + 2] << 8);
 						ushort d16 = (ushort)(higher + lower);
-						PrintOpcode(instruction, $"LD SP, 0x{d16:X4}");
 						SP = d16;
+						PrintOpcode(instruction, $"LD SP, 0x{d16:X4}");
 						PC += 3;
 						Cycles += 3;
 					}
@@ -125,8 +157,8 @@
 				case 0x3E:      // LD A, d8
 					{
 						byte d8 = ROM.Instance.Data[PC + 1];
-						PrintOpcode(instruction, $"LD A, 0x{d8:X2}");
 						A = d8;
+						PrintOpcode(instruction, $"LD A, 0x{d8:X2}");
 						PC += 2;
 						Cycles += 2;
 					}
@@ -147,6 +179,7 @@
 						ushort memory = (ushort)(Memory.Instance.Read(HL) << 8);
 						// NOTE: H is the higher byte of register HL.
 						HL = memory;
+						PrintOpcode(instruction, ...);
 						PC++;
 						Cycles += 2;
 					}
@@ -175,6 +208,9 @@
 					{
 						A |= C;
 						Z = A == 0x00;
+						N = false;
+						H = false;
+						CY = false;
 						PrintOpcode(instruction, "OR C");
 						PC++;
 						Cycles++;
@@ -241,13 +277,26 @@
 					}
 					break;
 
-				case 0xE6:      // AND d8
+				case 0xD1:      // POP DE
 					{
-						byte d8 = ROM.Instance.Data[PC + 1];
-						PrintOpcode(instruction, $"AND 0x{d8:2}");
-						A &= d8;
-						PC += 2;
+						E = Memory.Instance.Read(SP);
+						SP++;
+						D = Memory.Instance.Read(SP);
+						SP++;
+						PrintOpcode(instruction, "POP DE");
+						PC++;
 						Cycles += 3;
+					}
+					break;
+
+				case 0xD5:      // PUSH DE
+					{
+						Memory.Instance.Write(SP - 1, D);
+						Memory.Instance.Write(SP - 2, E);
+						SP -= 2;
+						PrintOpcode(instruction, "PUSH DE");
+						PC++;
+						Cycles += 4;
 					}
 					break;
 
@@ -255,8 +304,22 @@
 					{
 						byte lower = ROM.Instance.Data[PC + 1];
 						ushort higher = 0xFF00;
-						PrintOpcode(instruction, $"LD (0x{lower:X2}), A");
 						Memory.Instance.Write(higher + lower, A);
+						PrintOpcode(instruction, $"LD (0x{lower:X2}), A");
+						PC += 2;
+						Cycles += 3;
+					}
+					break;
+
+				case 0xE6:      // AND d8
+					{
+						byte d8 = ROM.Instance.Data[PC + 1];
+						A &= d8;
+						Z = A == 0;
+						N = false;
+						H = true;
+						CY = false;
+						PrintOpcode(instruction, $"AND 0x{d8:2}");
 						PC += 2;
 						Cycles += 3;
 					}
@@ -266,8 +329,8 @@
 					{
 						byte lower = ROM.Instance.Data[PC + 1];
 						ushort higher = 0xFF00;
-						PrintOpcode(instruction, $"LD A, (0x{lower:X2})");
 						A = Memory.Instance.Read(higher + lower);
+						PrintOpcode(instruction, $"LD A, (0x{lower:X2})");
 						PC += 2;
 						Cycles += 3;
 					}
@@ -275,8 +338,8 @@
 
 				case 0xF3:      // DI
 					{
-						PrintOpcode(instruction, "DI");
 						IME = false;
+						PrintOpcode(instruction, "DI");
 						PC++;
 						Cycles++;
 					}
@@ -285,10 +348,11 @@
 				case 0xFE:      // CP d8
 					{
 						byte d8 = ROM.Instance.Data[PC + 1];
-						PrintOpcode(instruction, $"CP 0x{d8:X2}");
 						int cp = A - d8;
 						Z = cp == 0;
+						// TODO: H?
 						CY = cp < 0;
+						PrintOpcode(instruction, $"CP 0x{d8:X2}");
 						PC += 2;
 						Cycles += 2;
 					}
