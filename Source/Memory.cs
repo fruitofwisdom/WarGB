@@ -34,8 +34,8 @@
 			WRAMBank0 = new byte[4 * 1024];
 			// TODO: Support bank switching for CGB.
 			WRAMBank1 = new byte[4 * 1024];
-			OAM = new byte[159];
-			IOPorts = new byte[127];
+			OAM = new byte[160];
+			IOPorts = new byte[128];
 			HRAM = new byte[127];
 		}
 
