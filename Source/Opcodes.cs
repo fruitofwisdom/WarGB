@@ -75,6 +75,39 @@
 					}
 					break;
 
+				case 0x11:      // LD DE, d16
+					{
+						E = ROM.Instance.Data[PC + 1];
+						D = ROM.Instance.Data[PC + 2];
+						ushort d16 = (ushort)((D << 8) + E);
+						PrintOpcode(instruction, $"LD DE, 0x{d16:X4}");
+						PC += 3;
+						Cycles += 3;
+					}
+					break;
+
+				case 0x12:      // LD (DE), A
+					{
+						ushort de = (ushort)((D << 8) + E);
+						Memory.Instance.Write(de, A);
+						PrintOpcode(instruction, "LD (DE), A");
+						PC++;
+						Cycles += 2;
+					}
+					break;
+
+				case 0x13:      // INC DE
+					{
+						ushort de = (ushort)((D << 8) + E);
+						de++;
+						D = (byte)((de & 0xFF00) >> 8);
+						E = (byte)(de & 0x00FF);
+						PrintOpcode(instruction, "INC DE");
+						PC++;
+						Cycles += 2;
+					}
+					break;
+
 				case 0x18:      // JR s8
 					{
 						sbyte s8 = (sbyte)(ROM.Instance.Data[PC + 1] + 2);
@@ -97,10 +130,30 @@
 					}
 					break;
 
+				case 0x22:      // LD (HL+), A
+					{
+						Memory.Instance.Write(HL, A);
+						HL++;
+						PrintOpcode(instruction, "LD (HL+), A");
+						PC++;
+						Cycles += 2;
+					}
+					break;
+
 				case 0x23:      // INC HL
 					{
 						HL++;
 						PrintOpcode(instruction, "INC HL");
+						PC++;
+						Cycles += 2;
+					}
+					break;
+
+				case 0x2A:      // LD A, (HL+)
+					{
+						A = Memory.Instance.Read(HL);
+						HL++;
+						PrintOpcode(instruction, "LD A, (HL+)");
 						PC++;
 						Cycles += 2;
 					}
@@ -136,6 +189,16 @@
 					}
 					break;
 
+				case 0x36:      // LD (HL), d8
+					{
+						byte d8 = ROM.Instance.Data[PC + 1];
+						Memory.Instance.Write(HL, d8);
+						PrintOpcode(instruction, $"LD (HL), 0x{d8:2}");
+						PC += 2;
+						Cycles += 3;
+					}
+					break;
+
 				case 0x38:      // JR C, s8
 					{
 						sbyte s8 = (sbyte)(ROM.Instance.Data[PC + 1] + 2);
@@ -164,6 +227,15 @@
 					}
 					break;
 
+				case 0x56:      // LD D, (HL)
+					{
+						D = Memory.Instance.Read(HL);
+						PrintOpcode(instruction, "LD D, (HL)");
+						PC++;
+						Cycles += 2;
+					}
+					break;
+
 				case 0x57:      // LD D, A
 					{
 						D = A;
@@ -173,18 +245,14 @@
 					}
 					break;
 
-					/*
-				case 0x66:		// LD H, (HL)
+				case 0x5E:      // LD E, (HL)
 					{
-						ushort memory = (ushort)(Memory.Instance.Read(HL) << 8);
-						// NOTE: H is the higher byte of register HL.
-						HL = memory;
-						PrintOpcode(instruction, ...);
+						E = Memory.Instance.Read(HL);
+						PrintOpcode(instruction, "LD E, (HL)");
 						PC++;
 						Cycles += 2;
 					}
 					break;
-					*/
 
 				case 0x72:      // LD (HL), D
 					{
@@ -199,6 +267,16 @@
 					{
 						A = B;
 						PrintOpcode(instruction, "LD A, B");
+						PC++;
+						Cycles++;
+					}
+					break;
+
+				case 0x7D:      // LD A, L
+					{
+						byte l = (byte)(HL & 0x00FF);
+						A = l;
+						PrintOpcode(instruction, "LD A, L");
 						PC++;
 						Cycles++;
 					}
@@ -224,6 +302,18 @@
 						ushort a16 = (ushort)(higher + lower);
 						PrintOpcode(instruction, $"JP 0x{a16:X4}");
 						PC = a16;
+						Cycles += 4;
+					}
+					break;
+
+				case 0xC5:      // PUSH BC
+					{
+						SP--;
+						Memory.Instance.Write(SP, B);
+						SP--;
+						Memory.Instance.Write(SP, C);
+						PrintOpcode(instruction, "PUSH BC");
+						PC++;
 						Cycles += 4;
 					}
 					break;
@@ -291,9 +381,10 @@
 
 				case 0xD5:      // PUSH DE
 					{
-						Memory.Instance.Write(SP - 1, D);
-						Memory.Instance.Write(SP - 2, E);
-						SP -= 2;
+						SP--;
+						Memory.Instance.Write(SP, D);
+						SP--;
+						Memory.Instance.Write(SP, E);
 						PrintOpcode(instruction, "PUSH DE");
 						PC++;
 						Cycles += 4;
@@ -322,6 +413,18 @@
 						PrintOpcode(instruction, $"AND 0x{d8:2}");
 						PC += 2;
 						Cycles += 3;
+					}
+					break;
+
+				case 0xEA:      // LD (a16), A
+					{
+						byte lower = ROM.Instance.Data[PC + 1];
+						ushort higher = (ushort)(ROM.Instance.Data[PC + 2] << 8);
+						ushort a16 = (ushort)(higher + lower);
+						Memory.Instance.Write(a16, A);
+						PrintOpcode(instruction, $"LD (0x{a16:X4}), A");
+						PC += 3;
+						Cycles += 4;
 					}
 					break;
 
@@ -360,7 +463,7 @@
 
 				default:
 					{
-						MainForm.PrintDebugMessage($"Unimplemented opcode: 0x{instruction:X2}!\n");
+						MainForm.PrintDebugMessage($"[0x{PC:X4}] Unimplemented opcode: 0x{instruction:X2}!\n");
 						MainForm.Pause();
 					}
 					break;
