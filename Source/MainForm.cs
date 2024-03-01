@@ -50,7 +50,9 @@ namespace GBSharp
 						CPU.Instance.Stop();
 					}
 
-					Text = "GB# - " + ROM.Instance.Title;
+					// Put the game name and ROM type in our title.
+					Text = "GB# - " + ROM.Instance.Title + " (" + ROM.Instance.CartridgeType.ToString().Replace("_", "+") + ")";
+
 					GameBoyThread = new Thread(new ThreadStart(CPU.Instance.Run));
 					GameBoyThread.Start();
 					playButton.Enabled = true;
