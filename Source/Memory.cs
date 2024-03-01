@@ -142,7 +142,8 @@
 
 			if (address >= 0x0000 && address <= 0x7FFF)
 			{
-				// TODO: Can't write to ROM.
+				// TODO: Can't write to ROM... change ROM banks?
+				MainForm.PrintDebugMessage($"Writing to ROM: 0x{address:X4}!\n");
 			}
 			else if (address >= 0x8000 && address <= 0x9FFF)
 			{

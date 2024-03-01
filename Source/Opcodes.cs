@@ -118,6 +118,24 @@
 					}
 					break;
 
+				case 0x20:      // JR NZ, s8
+					{
+						sbyte s8 = (sbyte)(ROM.Instance.Data[PC + 1] + 2);
+						ushort newPC = (ushort)(PC + s8);
+						PrintOpcode(instruction, $"JR NZ, 0x{newPC:4}");
+						if (!Z)
+						{
+							PC = newPC;
+							Cycles += 3;
+						}
+						else
+						{
+							PC += 2;
+							Cycles += 2;
+						}
+					}
+					break;
+
 				case 0x21:      // LD HL, d16
 					{
 						byte lower = ROM.Instance.Data[PC + 1];
@@ -254,6 +272,28 @@
 					}
 					break;
 
+				case 0x66:      // LD H, (HL)
+					{
+						byte h = Memory.Instance.Read(HL);
+						byte l = (byte)(HL & 0x00FF);
+						HL = (ushort)((h << 8) + l);
+						PrintOpcode(instruction, "LD H, (HL)");
+						PC++;
+						Cycles += 2;
+					}
+					break;
+
+				case 0x6F:      // LD L, A
+					{
+						byte h = (byte)((HL & 0xFF00) >> 8);
+						byte l = A;
+						HL = (ushort)((h << 8) + l);
+						PrintOpcode(instruction, "LD L, A");
+						PC++;
+						Cycles++;
+					}
+					break;
+
 				case 0x72:      // LD (HL), D
 					{
 						Memory.Instance.Write(HL, D);
@@ -292,6 +332,18 @@
 						PrintOpcode(instruction, "OR C");
 						PC++;
 						Cycles++;
+					}
+					break;
+
+				case 0xC1:      // POP BC
+					{
+						C = Memory.Instance.Read(SP);
+						SP++;
+						B = Memory.Instance.Read(SP);
+						SP++;
+						PrintOpcode(instruction, "POP BC");
+						PC++;
+						Cycles += 3;
 					}
 					break;
 
@@ -399,6 +451,33 @@
 						PrintOpcode(instruction, $"LD (0x{lower:X2}), A");
 						PC += 2;
 						Cycles += 3;
+					}
+					break;
+
+				case 0xE1:      // POP HL
+					{
+						byte l = Memory.Instance.Read(SP);
+						SP++;
+						byte h = Memory.Instance.Read(SP);
+						SP++;
+						HL = (ushort)((h << 8) + l);
+						PrintOpcode(instruction, "POP HL");
+						PC++;
+						Cycles += 3;
+					}
+					break;
+
+				case 0xE5:      // PUSH HL
+					{
+						SP--;
+						byte l = (byte)(HL & 0x00FF);
+						Memory.Instance.Write(SP, l);
+						SP--;
+						byte h = (byte)((HL & 0xFF00) >> 8);
+						Memory.Instance.Write(SP, h);
+						PrintOpcode(instruction, "PUSH HL");
+						PC++;
+						Cycles += 4;
 					}
 					break;
 
