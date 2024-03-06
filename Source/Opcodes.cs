@@ -470,11 +470,11 @@
 				case 0xE5:      // PUSH HL
 					{
 						SP--;
-						byte l = (byte)(HL & 0x00FF);
-						Memory.Instance.Write(SP, l);
-						SP--;
 						byte h = (byte)((HL & 0xFF00) >> 8);
 						Memory.Instance.Write(SP, h);
+						SP--;
+						byte l = (byte)(HL & 0x00FF);
+						Memory.Instance.Write(SP, l);
 						PrintOpcode(instruction, "PUSH HL");
 						PC++;
 						Cycles += 4;
