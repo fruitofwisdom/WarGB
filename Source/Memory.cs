@@ -108,6 +108,7 @@
 			else if (address >= 0xFEA0 && address <= 0xFEFF)
 			{
 				MainForm.PrintDebugMessage($"Reading from unusable memory: 0x{address:X4}!\n");
+				MainForm.Pause();
 			}
 			else if (address >= 0xFF00 && address <= 0xFF7F)
 			{
@@ -129,6 +130,7 @@
 				else
 				{
 					MainForm.PrintDebugMessage($"Unimplemented register: 0x{address:X4}!\n");
+					MainForm.Pause();
 				}
 			}
 			else if (address >= 0xFF80 && address <= 0xFFFE)
@@ -157,6 +159,7 @@
 			{
 				// TODO: Enable or disable RAM.
 				MainForm.PrintDebugMessage($"Writing to ROM: 0x{address:X4}!\n");
+				MainForm.Pause();
 			}
 			else if (address >= 0x2000 && address <= 0x3FFF)
 			{
@@ -175,11 +178,13 @@
 			{
 				// TODO: ROM/RAM bank number.
 				MainForm.PrintDebugMessage($"Writing to ROM: 0x{address:X4}!\n");
+				MainForm.Pause();
 			}
 			else if (address >= 0x6000 && address <= 0x7FFF)
 			{
 				// TODO: ROM/RAM mode select.
 				MainForm.PrintDebugMessage($"Writing to ROM: 0x{address:X4}!\n");
+				MainForm.Pause();
 			}
 			else if (address >= 0x8000 && address <= 0x9FFF)
 			{
@@ -215,6 +220,7 @@
 			else if (address >= 0xFEA0 && address <= 0xFEFF)
 			{
 				MainForm.PrintDebugMessage($"Writing to unusable memory: 0x{address:X4}!\n");
+				MainForm.Pause();
 			}
 			else if (address >= 0xFF00 && address <= 0xFF7F)
 			{
@@ -244,6 +250,7 @@
 				else
 				{
 					MainForm.PrintDebugMessage($"Unimplemented register: 0x{address:X4}!\n");
+					MainForm.Pause();
 				}
 			}
 			else if (address >= 0xFF80 && address <= 0xFFFE)

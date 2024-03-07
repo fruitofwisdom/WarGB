@@ -31,6 +31,7 @@
 						Z = B == 0;
 						N = false;
 						// TODO: H?
+						PrintOpcode(instruction, "INC B");
 						PC++;
 						Cycles++;
 					}
@@ -42,6 +43,7 @@
 						Z = B == 0;
 						N = true;
 						// TODO: H?
+						PrintOpcode(instruction, "DEC B");
 						PC++;
 						Cycles++;
 					}
@@ -65,6 +67,28 @@
 						C = (byte)(bc & 0x00FF);
 						PrintOpcode(instruction, "DEC BC");
 						PC++;
+						Cycles += 2;
+					}
+					break;
+
+				case 0x0D:      // DEC C
+					{
+						C--;
+						Z = C == 0;
+						N = true;
+						// TODO: H?
+						PrintOpcode(instruction, "DEC C");
+						PC++;
+						Cycles++;
+					}
+					break;
+
+				case 0x0E:      // LD C, d8
+					{
+						byte d8 = Memory.Instance.Read(PC + 1);
+						C = d8;
+						PrintOpcode(instruction, $"LD C, 0x{d8:X2}");
+						PC += 2;
 						Cycles += 2;
 					}
 					break;
@@ -109,6 +133,28 @@
 						PrintOpcode(instruction, $"JR 0x{newPC:X4}");
 						PC = newPC;
 						Cycles += 3;
+					}
+					break;
+
+				case 0x1A:      // LD A, (DE)
+					{
+						ushort de = (ushort)((D << 8) + E);
+						A = Memory.Instance.Read(de);
+						PrintOpcode(instruction, "LD A, (DE)");
+						PC++;
+						Cycles += 2;
+					}
+					break;
+
+				case 0x1C:      // INC E
+					{
+						E++;
+						Z = E == 0;
+						N = false;
+						// TODO: H?
+						PrintOpcode(instruction, "INC E");
+						PC++;
+						Cycles++;
 					}
 					break;
 
