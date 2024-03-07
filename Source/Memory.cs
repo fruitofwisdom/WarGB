@@ -224,6 +224,14 @@
 				{
 					CPU.Instance.IF = data;
 				}
+				else if (address == 0xFF26)
+				{
+					Sound.Instance.AllSoundOn = (data & 0x80) == 0x80;
+					Sound.Instance.Sound1On = (data & 0x08) == 0x08;
+					Sound.Instance.Sound2On = (data & 0x04) == 0x04;
+					Sound.Instance.Sound3On = (data & 0x02) == 0x02;
+					Sound.Instance.Sound4On = (data & 0x01) == 0x01;
+				}
 				else if (address == 0xFF40)
 				{
 					CPU.Instance.LCDC = data;
