@@ -4,12 +4,6 @@
 	{
 		void HandleOpcode(byte instruction)
 		{
-			// Ensure ROM data was loaded.
-			if (ROM.Instance.Data is null)
-			{
-				return;
-			}
-
 			switch (instruction)
 			{
 				case 0x00:      // NOP
@@ -22,8 +16,8 @@
 
 				case 0x01:      // LD BC, d16
 					{
-						C = ROM.Instance.Data[PC + 1];
-						B = ROM.Instance.Data[PC + 2];
+						C = Memory.Instance.Read(PC + 1);
+						B = Memory.Instance.Read(PC + 2);
 						ushort d16 = (ushort)((B << 8) + C);
 						PrintOpcode(instruction, $"LD BC, 0x{d16:X4}");
 						PC += 3;
@@ -55,7 +49,7 @@
 
 				case 0x06:      // LD B, d8
 					{
-						byte d8 = ROM.Instance.Data[PC + 1];
+						byte d8 = Memory.Instance.Read(PC + 1);
 						B = d8;
 						PrintOpcode(instruction, $"LD B, 0x{d8:X2}");
 						PC += 2;
@@ -77,8 +71,8 @@
 
 				case 0x11:      // LD DE, d16
 					{
-						E = ROM.Instance.Data[PC + 1];
-						D = ROM.Instance.Data[PC + 2];
+						E = Memory.Instance.Read(PC + 1);
+						D = Memory.Instance.Read(PC + 2);
 						ushort d16 = (ushort)((D << 8) + E);
 						PrintOpcode(instruction, $"LD DE, 0x{d16:X4}");
 						PC += 3;
@@ -110,7 +104,7 @@
 
 				case 0x18:      // JR s8
 					{
-						sbyte s8 = (sbyte)(ROM.Instance.Data[PC + 1] + 2);
+						sbyte s8 = (sbyte)(Memory.Instance.Read(PC + 1) + 2);
 						ushort newPC = (ushort)(PC + s8);
 						PrintOpcode(instruction, $"JR 0x{newPC:X4}");
 						PC = newPC;
@@ -120,9 +114,9 @@
 
 				case 0x20:      // JR NZ, s8
 					{
-						sbyte s8 = (sbyte)(ROM.Instance.Data[PC + 1] + 2);
+						sbyte s8 = (sbyte)(Memory.Instance.Read(PC + 1) + 2);
 						ushort newPC = (ushort)(PC + s8);
-						PrintOpcode(instruction, $"JR NZ, 0x{newPC:4}");
+						PrintOpcode(instruction, $"JR NZ, 0x{newPC:X4}");
 						if (!Z)
 						{
 							PC = newPC;
@@ -138,8 +132,8 @@
 
 				case 0x21:      // LD HL, d16
 					{
-						byte lower = ROM.Instance.Data[PC + 1];
-						ushort higher = (ushort)(ROM.Instance.Data[PC + 2] << 8);
+						byte lower = Memory.Instance.Read(PC + 1);
+						ushort higher = (ushort)(Memory.Instance.Read(PC + 2) << 8);
 						ushort d16 = (ushort)(higher + lower);
 						HL = d16;
 						PrintOpcode(instruction, $"LD HL, 0x{d16:X4}");
@@ -179,7 +173,7 @@
 
 				case 0x30:      // JR NC, s8
 					{
-						sbyte s8 = (sbyte)(ROM.Instance.Data[PC + 1] + 2);
+						sbyte s8 = (sbyte)(Memory.Instance.Read(PC + 1) + 2);
 						ushort newPC = (ushort)(PC + s8);
 						PrintOpcode(instruction, $"JR NC, 0x{newPC:X4}");
 						if (!CY)
@@ -197,8 +191,8 @@
 
 				case 0x31:      // LD SP, d16
 					{
-						byte lower = ROM.Instance.Data[PC + 1];
-						ushort higher = (ushort)(ROM.Instance.Data[PC + 2] << 8);
+						byte lower = Memory.Instance.Read(PC + 1);
+						ushort higher = (ushort)(Memory.Instance.Read(PC + 2) << 8);
 						ushort d16 = (ushort)(higher + lower);
 						SP = d16;
 						PrintOpcode(instruction, $"LD SP, 0x{d16:X4}");
@@ -209,7 +203,7 @@
 
 				case 0x36:      // LD (HL), d8
 					{
-						byte d8 = ROM.Instance.Data[PC + 1];
+						byte d8 = Memory.Instance.Read(PC + 1);
 						Memory.Instance.Write(HL, d8);
 						PrintOpcode(instruction, $"LD (HL), 0x{d8:2}");
 						PC += 2;
@@ -219,7 +213,7 @@
 
 				case 0x38:      // JR C, s8
 					{
-						sbyte s8 = (sbyte)(ROM.Instance.Data[PC + 1] + 2);
+						sbyte s8 = (sbyte)(Memory.Instance.Read(PC + 1) + 2);
 						ushort newPC = (ushort)(PC + s8);
 						PrintOpcode(instruction, $"JR C, 0x{newPC:X4}");
 						if (CY)
@@ -237,7 +231,7 @@
 
 				case 0x3E:      // LD A, d8
 					{
-						byte d8 = ROM.Instance.Data[PC + 1];
+						byte d8 = Memory.Instance.Read(PC + 1);
 						A = d8;
 						PrintOpcode(instruction, $"LD A, 0x{d8:X2}");
 						PC += 2;
@@ -349,8 +343,8 @@
 
 				case 0xC3:      // JP a16
 					{
-						byte lower = ROM.Instance.Data[PC + 1];
-						ushort higher = (ushort)(ROM.Instance.Data[PC + 2] << 8);
+						byte lower = Memory.Instance.Read(PC + 1);
+						ushort higher = (ushort)(Memory.Instance.Read(PC + 2) << 8);
 						ushort a16 = (ushort)(higher + lower);
 						PrintOpcode(instruction, $"JP 0x{a16:X4}");
 						PC = a16;
@@ -410,8 +404,8 @@
 						byte pcLower = (byte)(nextPC & 0x00FF);
 						Memory.Instance.Write(SP - 2, pcLower);
 						SP -= 2;
-						byte lower = ROM.Instance.Data[PC + 1];
-						ushort higher = (ushort)(ROM.Instance.Data[PC + 2] << 8);
+						byte lower = Memory.Instance.Read(PC + 1);
+						ushort higher = (ushort)(Memory.Instance.Read(PC + 2) << 8);
 						ushort a16 = (ushort)(higher + lower);
 						PrintOpcode(instruction, $"CALL 0x{a16:X4}");
 						PC = a16;
@@ -445,7 +439,7 @@
 
 				case 0xE0:      // LD (a8), A
 					{
-						byte lower = ROM.Instance.Data[PC + 1];
+						byte lower = Memory.Instance.Read(PC + 1);
 						ushort higher = 0xFF00;
 						Memory.Instance.Write(higher + lower, A);
 						PrintOpcode(instruction, $"LD (0x{lower:X2}), A");
@@ -483,7 +477,7 @@
 
 				case 0xE6:      // AND d8
 					{
-						byte d8 = ROM.Instance.Data[PC + 1];
+						byte d8 = Memory.Instance.Read(PC + 1);
 						A &= d8;
 						Z = A == 0;
 						N = false;
@@ -497,8 +491,8 @@
 
 				case 0xEA:      // LD (a16), A
 					{
-						byte lower = ROM.Instance.Data[PC + 1];
-						ushort higher = (ushort)(ROM.Instance.Data[PC + 2] << 8);
+						byte lower = Memory.Instance.Read(PC + 1);
+						ushort higher = (ushort)(Memory.Instance.Read(PC + 2) << 8);
 						ushort a16 = (ushort)(higher + lower);
 						Memory.Instance.Write(a16, A);
 						PrintOpcode(instruction, $"LD (0x{a16:X4}), A");
@@ -509,7 +503,7 @@
 
 				case 0xF0:      // LD A, (a8)
 					{
-						byte lower = ROM.Instance.Data[PC + 1];
+						byte lower = Memory.Instance.Read(PC + 1);
 						ushort higher = 0xFF00;
 						A = Memory.Instance.Read(higher + lower);
 						PrintOpcode(instruction, $"LD A, (0x{lower:X2})");
@@ -529,7 +523,7 @@
 
 				case 0xFE:      // CP d8
 					{
-						byte d8 = ROM.Instance.Data[PC + 1];
+						byte d8 = Memory.Instance.Read(PC + 1);
 						int cp = A - d8;
 						Z = cp == 0;
 						// TODO: H?

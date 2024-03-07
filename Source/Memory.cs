@@ -16,6 +16,8 @@
 		// Working and stack RAM - OxFF80 to 0xFFFE
 		private byte[] HRAM;            // high RAM
 
+		public uint ROMBank { get; private set; }
+
 		private static Memory? _instance;
 		public static Memory Instance
 		{
@@ -37,11 +39,20 @@
 			OAM = new byte[160];
 			IOPorts = new byte[128];
 			HRAM = new byte[127];
+
+			// NOTE: By default, 0x4000 to 0x7FFF is mapped to bank 1.
+			ROMBank = 1;
 		}
 
 		public byte Read(int address)
 		{
 			byte data = 0x00;
+
+			// Ensure ROM data was loaded.
+			if (ROM.Instance.Data is null)
+			{
+				return data;
+			}
 
 			// NOTE: address should be a ushort, but an int is cleaner in C#.
 			if (address < 0 || address > 0xFFFF)
@@ -58,7 +69,9 @@
 			}
 			else if (address >= 0x4000 && address <= 0x7FFF)
 			{
-				// TODO: Handle switchable ROM banks.
+				// NOTE: Bank 1 maps to 0x4000 to 0x7FFF, bank 2 to 0x8000 to 0xBFFF, etc.
+				uint bankOffset = (ROMBank - 1) * 0x4000;
+				data = ROM.Instance.Data[bankOffset + address];
 			}
 			else if (address >= 0x8000 && address <= 0x9FFF)
 			{
@@ -140,9 +153,32 @@
 				return wrote;
 			}
 
-			if (address >= 0x0000 && address <= 0x7FFF)
+			if (address >= 0x0000 && address <= 0x1FFF)
 			{
-				// TODO: Can't write to ROM... change ROM banks?
+				// TODO: Enable or disable RAM.
+				MainForm.PrintDebugMessage($"Writing to ROM: 0x{address:X4}!\n");
+			}
+			else if (address >= 0x2000 && address <= 0x3FFF)
+			{
+				// Writing to this address range is a ROM bank select.
+				// NOTE: 0x00 is a special case.
+				if (data == 0x00)
+				{
+					ROMBank = 1;
+				}
+				else
+				{
+					ROMBank = (uint)data;
+				}
+			}
+			else if (address >= 0x4000 && address <= 0x5FFF)
+			{
+				// TODO: ROM/RAM bank number.
+				MainForm.PrintDebugMessage($"Writing to ROM: 0x{address:X4}!\n");
+			}
+			else if (address >= 0x6000 && address <= 0x7FFF)
+			{
+				// TODO: ROM/RAM mode select.
 				MainForm.PrintDebugMessage($"Writing to ROM: 0x{address:X4}!\n");
 			}
 			else if (address >= 0x8000 && address <= 0x9FFF)
@@ -151,6 +187,7 @@
 			}
 			else if (address >= 0xA000 && address <= 0xBFFF)
 			{
+				// TODO: Save data to backup RAM (a file).
 				ExternalRAM[address - 0xA000] = data;
 			}
 			else if (address >= 0xC000 && address <= 0xCFFF)

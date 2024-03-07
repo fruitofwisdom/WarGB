@@ -99,12 +99,6 @@
 		// The CPU runs in its own thread.
 		public void Run()
 		{
-			// Ensure ROM data was loaded.
-			if (ROM.Instance.Data is null)
-			{
-				return;
-			}
-
 			// NOTE: We skip any validation or BIOS handling.
 			Thread.CurrentThread.Name = "GB# CPU";
 			Initialize();
@@ -126,7 +120,7 @@
 				}
 
 				// Read and execute the next CPU instruction.
-				byte instruction = ROM.Instance.Data[PC];
+				byte instruction = Memory.Instance.Read(PC);
 				HandleOpcode(instruction);
 
 				// TODO: Update LCD controller another way?
@@ -168,13 +162,6 @@
 
 					// TODO: When is appropriate to sleep for performance?
 					Thread.Sleep(1);
-				}
-
-				// PC went out of bounds.
-				if (PC >= ROM.Instance.Data.Length)
-				{
-					Playing = false;
-					MainForm.PrintDebugMessage("PC went out of bounds!\n");
 				}
 
 				if (StepRequested)
