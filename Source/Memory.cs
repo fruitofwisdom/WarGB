@@ -12,7 +12,7 @@
 		private byte[] WRAMBank1;
 		private byte[] OAM;             // sprite attribute table
 		// Port/mode registers, control register, and sound register - 0xFF00 to 0xFF7F
-		private byte[] IOPorts;
+		private byte[] Registers;
 		// Working and stack RAM - OxFF80 to 0xFFFE
 		private byte[] HRAM;            // high RAM
 
@@ -37,7 +37,7 @@
 			// TODO: Support bank switching for CGB.
 			WRAMBank1 = new byte[4 * 1024];
 			OAM = new byte[160];
-			IOPorts = new byte[128];
+			Registers = new byte[128];
 			HRAM = new byte[127];
 
 			// NOTE: By default, 0x4000 to 0x7FFF is mapped to bank 1.
@@ -112,7 +112,7 @@
 			}
 			else if (address >= 0xFF00 && address <= 0xFF7F)
 			{
-				data = IOPorts[address - 0xFF00];
+				data = Registers[address - 0xFF00];
 
 				if (address == 0xFF0F)
 				{
@@ -129,7 +129,7 @@
 				// TODO: The other registers.
 				else
 				{
-					MainForm.PrintDebugMessage($"Unimplemented register: 0x{address:X4}!\n");
+					MainForm.PrintDebugMessage($"Reading from unimplemented register: 0x{address:X4}!\n");
 					MainForm.Pause();
 				}
 			}
@@ -145,14 +145,12 @@
 			return data;
 		}
 
-		public bool Write(int address, byte data)
+		public void Write(int address, byte data)
 		{
-			bool wrote = false;
-
 			// NOTE: address should be a ushort, but an int is cleaner in C#.
 			if (address < 0 || address > 0xFFFF)
 			{
-				return wrote;
+				return;
 			}
 
 			if (address >= 0x0000 && address <= 0x1FFF)
@@ -224,34 +222,10 @@
 			}
 			else if (address >= 0xFF00 && address <= 0xFF7F)
 			{
-				IOPorts[address - 0xFF00] = data;
+				Registers[address - 0xFF00] = data;
 
-				if (address == 0xFF0F)
-				{
-					CPU.Instance.IF = data;
-				}
-				else if (address == 0xFF26)
-				{
-					Sound.Instance.AllSoundOn = (data & 0x80) == 0x80;
-					Sound.Instance.Sound1On = (data & 0x08) == 0x08;
-					Sound.Instance.Sound2On = (data & 0x04) == 0x04;
-					Sound.Instance.Sound3On = (data & 0x02) == 0x02;
-					Sound.Instance.Sound4On = (data & 0x01) == 0x01;
-				}
-				else if (address == 0xFF40)
-				{
-					CPU.Instance.LCDC = data;
-				}
-				else if (address == 0xFF44)
-				{
-					MainForm.PrintDebugMessage("Register 0xFF44 is read-only!\n");
-				}
-				// TODO: The other registers.
-				else
-				{
-					MainForm.PrintDebugMessage($"Unimplemented register: 0x{address:X4}!\n");
-					MainForm.Pause();
-				}
+				// Actually handle the register changes.
+				HandleWriteToRegister(address, data);
 			}
 			else if (address >= 0xFF80 && address <= 0xFFFE)
 			{
@@ -261,8 +235,98 @@
 			{
 				CPU.Instance.IE = data;
 			}
+		}
 
-			return wrote;
+		// Handle the changes from writing to registers.
+		private void HandleWriteToRegister(int address, byte data)
+		{
+			if (address == 0xFF0F)
+			{
+				CPU.Instance.IF = data;
+			}
+			else if (address == 0xFF10)
+			{
+				// TODO: Implement sound 1 sweep settings.
+			}
+			else if (address == 0xFF12)
+			{
+				// TODO: Implement sound 1 envelope settings.
+			}
+			else if (address == 0xFF13)
+			{
+				// TODO: Implement sound 1 low-order frequency data (NR13).
+			}
+			else if (address == 0xFF14)
+			{
+				// TODO: Implement sound 1 high-order frequency data (NR14).
+			}
+			else if (address == 0xFF17)
+			{
+				// TODO: Implement sound 2 envelope settings.
+			}
+			else if (address == 0xFF18)
+			{
+				// TODO: Implement sound 2 low-order frequency data (NR23).
+			}
+			else if (address == 0xFF19)
+			{
+				// TODO: Implement sound 2 high-order frequency data (NR24).
+			}
+			else if (address == 0xFF1B)
+			{
+				// TODO: Implement sound 3 sound length.
+			}
+			else if (address == 0xFF1C)
+			{
+				// TODO: Implement sound 3 output levels.
+			}
+			else if (address == 0xFF1D)
+			{
+				// TODO: Implement sound 3 frequency data.
+			}
+			else if (address == 0xFF1E)
+			{
+				// TODO: Implement other sound 3 settings.
+			}
+			else if (address == 0xFF21)
+			{
+				// TODO: Implement sound 4 envelope settings.
+			}
+			else if (address == 0xFF23)
+			{
+				// TODO: Implement other sound 4 settings.
+			}
+			else if (address == 0xFF24)
+			{
+				// TODO: Implement all sound output levels.
+			}
+			else if (address == 0xFF25)
+			{
+				// TODO: Implement sound inputs and outputs.
+			}
+			else if (address == 0xFF26)
+			{
+				Sound.Instance.AllSoundOn = (data & 0x80) == 0x80;
+				Sound.Instance.Sound1On = (data & 0x08) == 0x08;
+				Sound.Instance.Sound2On = (data & 0x04) == 0x04;
+				Sound.Instance.Sound3On = (data & 0x02) == 0x02;
+				Sound.Instance.Sound4On = (data & 0x01) == 0x01;
+			}
+			else if (address == 0xFF40)
+			{
+				CPU.Instance.LCDC = data;
+			}
+			else if (address == 0xFF44)
+			{
+				MainForm.PrintDebugMessage("Register 0xFF44 is read-only!\n");
+				MainForm.Pause();
+			}
+			// TODO: The other registers.
+			else
+			{
+				MainForm.PrintDebugMessage($"Writing to unimplemented register: 0x{address:X4}!\n");
+				MainForm.Pause();
+			}
 		}
 	}
 }

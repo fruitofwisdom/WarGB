@@ -362,10 +362,23 @@
 					}
 					break;
 
+				case 0xAF:      // XOR A
+					{
+						A ^= A;
+						Z = A == 0;
+						N = false;
+						H = false;
+						CY = false;
+						PrintOpcode(instruction, "XOR A");
+						PC++;
+						Cycles++;
+					}
+					break;
+
 				case 0xB1:      // OR C
 					{
 						A |= C;
-						Z = A == 0x00;
+						Z = A == 0;
 						N = false;
 						H = false;
 						CY = false;
