@@ -246,31 +246,58 @@
 			}
 			else if (address == 0xFF10)
 			{
-				// TODO: Implement sound 1 sweep settings.
+				byte sweepTime = Utilities.GetBitsFromByte(data, 4, 6);
+				byte sweepIncDec = Utilities.GetBitsFromByte(data, 3, 3);
+				byte sweepShiftNumber = Utilities.GetBitsFromByte(data, 0, 2);
+				((SquareWave)Sound.Instance.Channels[0]).SweepTime = sweepTime;
+				((SquareWave)Sound.Instance.Channels[0]).SweepIncDec = sweepIncDec;
+				((SquareWave)Sound.Instance.Channels[0]).SweepShiftNumber = sweepShiftNumber;
 			}
 			else if (address == 0xFF12)
 			{
-				// TODO: Implement sound 1 envelope settings.
+				byte defaultEnvelopeValue = Utilities.GetBitsFromByte(data, 4, 7);
+				byte envelopeUpDown = Utilities.GetBitsFromByte(data, 3, 3);
+				byte lengthOfEnvelopeSteps = Utilities.GetBitsFromByte(data, 0, 2);
+				((SquareWave)Sound.Instance.Channels[0]).DefaultEnvelopeValue = defaultEnvelopeValue;
+				((SquareWave)Sound.Instance.Channels[0]).EnvelopeUpDown = envelopeUpDown;
+				((SquareWave)Sound.Instance.Channels[0]).LengthOfEnvelopeSteps = lengthOfEnvelopeSteps;
 			}
 			else if (address == 0xFF13)
 			{
-				// TODO: Implement sound 1 low-order frequency data (NR13).
+				byte lowOrderFrequencyData = data;
+				((SquareWave)Sound.Instance.Channels[0]).LowOrderFrequencyData = lowOrderFrequencyData;
 			}
 			else if (address == 0xFF14)
 			{
-				// TODO: Implement sound 1 high-order frequency data (NR14).
+				byte initialize = Utilities.GetBitsFromByte(data, 7, 7);
+				byte counterContinuousSelection = Utilities.GetBitsFromByte(data, 6, 6);
+				byte highOrderFrequencyData = Utilities.GetBitsFromByte(data, 0, 2);
+				((SquareWave)Sound.Instance.Channels[0]).Initialize = initialize;
+				((SquareWave)Sound.Instance.Channels[0]).CounterContinuousSelection = counterContinuousSelection;
+				((SquareWave)Sound.Instance.Channels[0]).HighOrderFrequencyData = highOrderFrequencyData;
 			}
 			else if (address == 0xFF17)
 			{
-				// TODO: Implement sound 2 envelope settings.
+				byte defaultEnvelopeValue = Utilities.GetBitsFromByte(data, 4, 7);
+				byte envelopeUpDown = Utilities.GetBitsFromByte(data, 3, 3);
+				byte lengthOfEnvelopeSteps = Utilities.GetBitsFromByte(data, 0, 2);
+				((SquareWave)Sound.Instance.Channels[1]).DefaultEnvelopeValue = defaultEnvelopeValue;
+				((SquareWave)Sound.Instance.Channels[1]).EnvelopeUpDown = envelopeUpDown;
+				((SquareWave)Sound.Instance.Channels[1]).LengthOfEnvelopeSteps = lengthOfEnvelopeSteps;
 			}
 			else if (address == 0xFF18)
 			{
-				// TODO: Implement sound 2 low-order frequency data (NR23).
+				byte lowOrderFrequencyData = data;
+				((SquareWave)Sound.Instance.Channels[1]).LowOrderFrequencyData = lowOrderFrequencyData;
 			}
 			else if (address == 0xFF19)
 			{
-				// TODO: Implement sound 2 high-order frequency data (NR24).
+				byte initialize = Utilities.GetBitsFromByte(data, 7, 7);
+				byte counterContinuousSelection = Utilities.GetBitsFromByte(data, 6, 6);
+				byte highOrderFrequencyData = Utilities.GetBitsFromByte(data, 0, 5);
+				((SquareWave)Sound.Instance.Channels[1]).Initialize = initialize;
+				((SquareWave)Sound.Instance.Channels[1]).CounterContinuousSelection = counterContinuousSelection;
+				((SquareWave)Sound.Instance.Channels[1]).HighOrderFrequencyData = highOrderFrequencyData;
 			}
 			else if (address == 0xFF1B)
 			{
@@ -306,11 +333,11 @@
 			}
 			else if (address == 0xFF26)
 			{
-				Sound.Instance.AllSoundOn = (data & 0x80) == 0x80;
-				Sound.Instance.Sound1On = (data & 0x08) == 0x08;
-				Sound.Instance.Sound2On = (data & 0x04) == 0x04;
-				Sound.Instance.Sound3On = (data & 0x02) == 0x02;
-				Sound.Instance.Sound4On = (data & 0x01) == 0x01;
+				Sound.Instance.AllSoundOn = Utilities.GetBitsFromByte(data, 7, 7) != 0;
+				Sound.Instance.Channels[0].SoundOn = Utilities.GetBitsFromByte(data, 0, 0) != 0;
+				Sound.Instance.Channels[1].SoundOn = Utilities.GetBitsFromByte(data, 1, 1) != 0;
+				Sound.Instance.Channels[2].SoundOn = Utilities.GetBitsFromByte(data, 2, 2) != 0;
+				Sound.Instance.Channels[3].SoundOn = Utilities.GetBitsFromByte(data, 3, 3) != 0;
 			}
 			else if (address == 0xFF40)
 			{

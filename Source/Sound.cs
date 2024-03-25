@@ -3,10 +3,7 @@
 	internal class Sound
 	{
 		public bool AllSoundOn;
-		public bool Sound1On;
-		public bool Sound2On;
-		public bool Sound3On;
-		public bool Sound4On;
+		public Channel[] Channels = new Channel[4];
 
 		private static Sound? _instance;
 		public static Sound Instance
@@ -21,10 +18,10 @@
 		public Sound()
 		{
 			AllSoundOn = false;
-			Sound1On = false;
-			Sound2On = false;
-			Sound3On = false;
-			Sound4On = false;
+			Channels[0] = new SquareWave();
+			Channels[1] = new SquareWave();
+			Channels[2] = new WaveTable();
+			Channels[3] = new NoiseGenerator();
 		}
 	}
 }
