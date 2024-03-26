@@ -55,7 +55,7 @@
 			}
 
 			// NOTE: address should be a ushort, but an int is cleaner in C#.
-			if (address < 0 || address > 0xFFFF)
+			if (address < 0x0000 || address > 0xFFFF)
 			{
 				return data;
 			}
@@ -114,17 +114,21 @@
 			{
 				data = Registers[address - 0xFF00];
 
-				if (address == 0xFF0F)
+				if (address == 0xFF00)
+				{
+					data = Controller.Instance.ReadFromRegister();
+				}
+				else if (address == 0xFF0F)
 				{
 					data = CPU.Instance.IF;
 				}
 				else if (address == 0xFF40)
 				{
-					data = CPU.Instance.LCDC;
+					data = Graphics.Instance.GetLCDC();
 				}
 				else if (address == 0xFF44)
 				{
-					data = CPU.Instance.LY;
+					data = Graphics.Instance.LY;
 				}
 				// TODO: The other registers.
 				else
@@ -148,7 +152,7 @@
 		public void Write(int address, byte data)
 		{
 			// NOTE: address should be a ushort, but an int is cleaner in C#.
-			if (address < 0 || address > 0xFFFF)
+			if (address < 0x0000 || address > 0xFFFF)
 			{
 				return;
 			}
@@ -240,7 +244,13 @@
 		// Handle the changes from writing to registers.
 		private void HandleWriteToRegister(int address, byte data)
 		{
-			if (address == 0xFF0F)
+			if (address == 0xFF00)
+			{
+				// NOTE: Unexpectedly, inputs are considered 1 when not selected or pressed.
+				Controller.Instance.SelectButtons = Utilities.GetBitsFromByte(data, 5, 5) != 1;
+				Controller.Instance.SelectDpad = Utilities.GetBitsFromByte(data, 4, 4) != 1;
+			}
+			else if (address == 0xFF0F)
 			{
 				CPU.Instance.IF = data;
 			}
@@ -333,20 +343,32 @@
 			}
 			else if (address == 0xFF26)
 			{
-				Sound.Instance.AllSoundOn = Utilities.GetBitsFromByte(data, 7, 7) != 0;
-				Sound.Instance.Channels[0].SoundOn = Utilities.GetBitsFromByte(data, 0, 0) != 0;
-				Sound.Instance.Channels[1].SoundOn = Utilities.GetBitsFromByte(data, 1, 1) != 0;
-				Sound.Instance.Channels[2].SoundOn = Utilities.GetBitsFromByte(data, 2, 2) != 0;
-				Sound.Instance.Channels[3].SoundOn = Utilities.GetBitsFromByte(data, 3, 3) != 0;
+				Sound.Instance.AllSoundOn = Utilities.GetBitsFromByte(data, 7, 7) != 0x00;
+				Sound.Instance.Channels[0].SoundOn = Utilities.GetBitsFromByte(data, 0, 0) != 0x00;
+				Sound.Instance.Channels[1].SoundOn = Utilities.GetBitsFromByte(data, 1, 1) != 0x00;
+				Sound.Instance.Channels[2].SoundOn = Utilities.GetBitsFromByte(data, 2, 2) != 0x00;
+				Sound.Instance.Channels[3].SoundOn = Utilities.GetBitsFromByte(data, 3, 3) != 0x00;
 			}
 			else if (address == 0xFF40)
 			{
-				CPU.Instance.LCDC = data;
+				Graphics.Instance.SetLCDC(data);
 			}
 			else if (address == 0xFF44)
 			{
 				MainForm.PrintDebugMessage("Register 0xFF44 is read-only!\n");
 				MainForm.Pause();
+			}
+			else if (address == 0xFF47)
+			{
+				Graphics.Instance.BGPaletteData = data;
+			}
+			else if (address == 0xFF48)
+			{
+				Graphics.Instance.OBJPaletteData0 = data;
+			}
+			else if (address == 0xFF49)
+			{
+				Graphics.Instance.OBJPaletteData1 = data;
 			}
 			// TODO: The other registers.
 			else

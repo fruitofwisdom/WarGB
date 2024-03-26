@@ -8,24 +8,21 @@
 
 		private bool ShouldPrintOpcodes = false;
 
-		// NOTE: Original DMG CPU frequency is 1.05 MHz.
-		// TODO: Support CGB double-speed mode also?
-		private const uint Frequency = 4194304;     // cycles per second
-		private uint Cycles;
+		public uint Frequency { get; private set; }
+		public uint Cycles { get; private set; }
 
 		// The accumulator register.
 		private byte A;
 		// The auxiliary registers.
 		// The flag register is actually four flags.
-		// TODO: Just use the other flags?
-		//private byte F;
-		private bool Z;		// set to 1 when the result of an operation is 0, otherwise reset
-		private bool N;		// set to 1 following execution of the subtraction instruction, regardless of the result
-		private bool H;		// set to 1 when an operation results in carrying from or borrowing to bit 3
-		private bool CY;	// set to 1 when an operation results in carrying from or borrowing to bit 7
+		//private byte F;		// TODO: Just use the other flags?
+		private bool Z;			// set to 1 when the result of an operation is 0, otherwise reset
+		private bool N;			// set to 1 following execution of the subtraction instruction, regardless of the result
+		private bool H;			// set to 1 when an operation results in carrying from or borrowing to bit 3
+		private bool CY;		// set to 1 when an operation results in carrying from or borrowing to bit 7
 		// BC, DE, and HL are register pairs.
-		private byte B;		// higher byte
-		private byte C;		// lower byte
+		private byte B;			// higher byte
+		private byte C;			// lower byte
 		private byte D;
 		private byte E;
 		private ushort HL;
@@ -34,21 +31,10 @@
 		// The stack pointer.
 		private ushort SP;
 
-		// TODO: The port/mode registers.
-
-		// TODO: The bank control registers for CGB?
-
 		// The interrupt flags.
-		public byte IF;		// interrupt request flag (also 0xFF0F)
-		public byte IE;		// interrupt enable flag (also 0xFFFF)
-		private bool IME;	// interrupt master enable flag
-
-		// The LCD display registers.
-		public byte LCDC;
-		public byte LY;		// LCDC y-coordinate
-		// TODO: The other LCD display registers.
-
-		// TODO: The sound registers.
+		public byte IF;			// interrupt request flag (also 0xFF0F)
+		public byte IE;			// interrupt enable flag (also 0xFFFF)
+		private bool IME;		// interrupt master enable flag
 
 		private static CPU? _instance;
 		public static CPU Instance
@@ -72,10 +58,13 @@
 			Playing = false;
 			StepRequested = false;
 
+			// NOTE: Original DMG CPU frequency is 1.05 MHz.
+			// TODO: Support CGB double-speed mode also?
+			Frequency = 4194304;
 			Cycles = 0;
 
 			A = 0x00;
-			//F = 0xB0;		// TODO: Just use the other flags?
+			//F = 0xB0;			// TODO: Just use the other flags?
 			Z = true;
 			N = false;
 			H = true;
@@ -91,9 +80,6 @@
 			IF = 0x00;
 			IE = 0x00;
 			IME = false;
-
-			LCDC = 0x91;
-			LY = 0;
 		}
 
 		// The CPU runs in its own thread.
@@ -123,23 +109,8 @@
 				byte instruction = Memory.Instance.Read(PC);
 				HandleOpcode(instruction);
 
-				// TODO: Update LCD controller another way?
-				// 144 lines at 0.10875 lines per millisecond then 10 lines of v-blank.
-				// Every 456 cycles, we increment LY, possibly trigger v-blank, etc.
-				const uint cyclesPerLine = (uint)(Frequency / 1000.0f * 0.10875f);
-				const uint linesPerFrame = 154;
-				byte newLY = (byte)(Cycles / cyclesPerLine % linesPerFrame);
-				if (newLY != LY)
-				{
-					LY = newLY;
-
-					// V-blank begins at line 144
-					if (LY == 144)
-					{
-						// Set the v-blank IF flag.
-						IF |= 0x01;
-					}
-				}
+				// Let the LCD update too.
+				Graphics.Instance.Update();
 
 				if (IME)
 				{
@@ -156,9 +127,9 @@
 				}
 
 				// Prevent cycles overflowing.
-				if (Cycles >= cyclesPerLine * linesPerFrame)
+				if (Cycles >= Graphics.Instance.CyclesPerLine * Graphics.kLinesPerFrame)
 				{
-					Cycles -= cyclesPerLine * linesPerFrame;
+					Cycles -= Graphics.Instance.CyclesPerLine * Graphics.kLinesPerFrame;
 
 					// TODO: When is appropriate to sleep for performance?
 					Thread.Sleep(1);
