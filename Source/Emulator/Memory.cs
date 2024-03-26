@@ -126,9 +126,17 @@
 				{
 					data = Graphics.Instance.GetLCDC();
 				}
+				else if (address == 0xFF41)
+				{
+					data = Graphics.Instance.GetSTAT();
+				}
 				else if (address == 0xFF44)
 				{
 					data = Graphics.Instance.LY;
+				}
+				else if (address == 0xFF45)
+				{
+					data = Graphics.Instance.LYC;
 				}
 				// TODO: The other registers.
 				else
@@ -353,10 +361,18 @@
 			{
 				Graphics.Instance.SetLCDC(data);
 			}
+			else if (address == 0xFF41)
+			{
+				Graphics.Instance.SetSTAT(data);
+			}
 			else if (address == 0xFF44)
 			{
 				MainForm.PrintDebugMessage("Register 0xFF44 is read-only!\n");
 				MainForm.Pause();
+			}
+			else if (address == 0xFF45)
+			{
+				Graphics.Instance.LYC = data;
 			}
 			else if (address == 0xFF47)
 			{

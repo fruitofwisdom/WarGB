@@ -146,12 +146,26 @@
 					}
 					break;
 
+				case 0x19:      // ADD HL, DE
+					{
+						ushort de = (ushort)((D << 8) + E);
+						HL += de;
+						N = false;
+						// TODO: H?
+						CY = HL > 0xFFFF;
+						PrintOpcode(instruction, "ADD HL, DE");
+						PC++;
+						Cycles += 2;
+					}
+					break;
+
 				case 0x1C:      // INC E
 					{
 						E++;
 						Z = E == 0;
 						N = false;
 						// TODO: H?
+						CY = E > 0xFF;
 						PrintOpcode(instruction, "INC E");
 						PC++;
 						Cycles++;
@@ -338,6 +352,15 @@
 					{
 						Memory.Instance.Write(HL, D);
 						PrintOpcode(instruction, "LD (HL), D");
+						PC++;
+						Cycles += 2;
+					}
+					break;
+
+				case 0x73:      // LD (HL), E
+					{
+						Memory.Instance.Write(HL, E);
+						PrintOpcode(instruction, "LD (HL), E");
 						PC++;
 						Cycles += 2;
 					}
@@ -544,7 +567,7 @@
 						CY = false;
 						PrintOpcode(instruction, $"AND 0x{d8:2}");
 						PC += 2;
-						Cycles += 3;
+						Cycles += 2;
 					}
 					break;
 
@@ -577,6 +600,32 @@
 						PrintOpcode(instruction, "DI");
 						PC++;
 						Cycles++;
+					}
+					break;
+
+				case 0xF6:      // OR d8
+					{
+						byte d8 = Memory.Instance.Read(PC + 1);
+						A |= d8;
+						Z = A == 0;
+						N = false;
+						H = false;
+						CY = false;
+						PrintOpcode(instruction, $"OR 0x{d8:2}");
+						PC += 2;
+						Cycles += 2;
+					}
+					break;
+
+				case 0xFA:      // LD A, (a16)
+					{
+						byte lower = Memory.Instance.Read(PC + 1);
+						ushort higher = (ushort)(Memory.Instance.Read(PC + 2) << 8);
+						ushort a16 = (ushort)(higher + lower);
+						A = Memory.Instance.Read(a16);
+						PrintOpcode(instruction, $"LD A, (0x{a16:X4})");
+						PC += 3;
+						Cycles += 4;
 					}
 					break;
 

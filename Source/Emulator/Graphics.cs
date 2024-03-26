@@ -5,7 +5,10 @@
 		public const uint kLinesPerFrame = 154;
 		public uint CyclesPerLine { get; private set; }
 
-		// The LCD control flags and related registers.
+		// The 
+		private uint Dot;
+
+		// The LCDC register control flags (FF40)
 		private bool LCDEnabled;
 		private bool WindowTileMapArea;
 		private bool WindowEnabled;
@@ -15,8 +18,19 @@
 		private bool OBJEnabled;
 		private bool BGWindowEnable;
 
-		public byte LY;		// LCDC y-coordinate
-		// TODO: The other LCD display registers.
+		// The STAT LCD status flags (FF41)
+		private bool LYCIntSelect;
+		private bool Mode2IntSelect;
+		private bool Mode1IntSelect;
+		private bool Mode0IntSelect;
+		private bool LYCEqualsLY;
+		private byte PPUMode;
+
+		// The LCD y-coordinate (F44)
+		public byte LY { get; private set; }
+
+		// The LY compare value (FF45)
+		public byte LYC;
 
 		public byte BGPaletteData;
 		public byte OBJPaletteData0;
@@ -36,6 +50,8 @@
 		{
 			CyclesPerLine = (uint)(CPU.Instance.Frequency / 1000.0f * 0.10875f);
 
+			Dot = 0;
+
 			LCDEnabled = true;
 			WindowTileMapArea = false;
 			WindowEnabled = false;
@@ -45,7 +61,15 @@
 			OBJEnabled = false;
 			BGWindowEnable = true;
 
-			LY = 0;
+			LYCIntSelect = false;
+			Mode2IntSelect = false;
+			Mode1IntSelect = false;
+			Mode0IntSelect = false;
+			LYCEqualsLY = false;
+			PPUMode = 0x00;
+
+			LY = 0x00;
+			LYC = 0x00;
 
 			BGPaletteData = 0;
 			OBJPaletteData0 = 0;
@@ -54,10 +78,38 @@
 
 		public void Update()
 		{
-			// TODO: Update LCD controller another way?
 			// 144 lines at 0.10875 lines per millisecond then 10 lines of v-blank.
 			// Every 456 cycles, we increment LY, possibly trigger v-blank, etc.
 			byte newLY = (byte)(CPU.Instance.Cycles / CyclesPerLine % kLinesPerFrame);
+
+			// A "dot" is how long it takes to render one pixel and there are 4 dots per CPU cycle, usually.
+			// TODO: Support CGB double-speed mode also?
+			Dot = CPU.Instance.Cycles * 4;
+
+			// Set the PPU mode correctly.
+			if (newLY >= 144)
+			{
+				// Vertical blank.
+				PPUMode = 0x01;
+			}
+			else if (Dot % 456 < 80)
+			{
+				// OAM scan.
+				PPUMode = 0x02;
+			}
+			else if (Dot % 456 < 252)
+			{
+				// Drawing pixels.
+				// TODO: Handle variable dot rendering speeds.
+				PPUMode = 0x11;
+			}
+			else
+			{
+				// Horizontal blank.
+				PPUMode = 0x00;
+			}
+
+			// Did we start rendering a new scanline?
 			if (newLY != LY)
 			{
 				LY = newLY;
@@ -67,6 +119,14 @@
 				{
 					// Set the v-blank IF flag.
 					CPU.Instance.IF |= 0x01;
+				}
+
+				// Check for a LYC == LY STAT interrupt.
+				LYCEqualsLY = LYC == LY;
+				if (LYCEqualsLY && LYCIntSelect)
+				{
+					// Set the LCD IF flag.
+					CPU.Instance.IF |= 0x02;
 				}
 			}
 		}
@@ -97,6 +157,30 @@
 			OBJSize = Utilities.GetBitsFromByte(lcdc, 2, 2) != 0x00;
 			OBJEnabled = Utilities.GetBitsFromByte(lcdc, 1, 1) != 0x00;
 			BGWindowEnable = Utilities.GetBitsFromByte(lcdc, 0, 0) != 0x00;
+		}
+
+		public byte GetSTAT()
+		{
+			byte stat = 0x00;
+
+			stat |= (byte)(LYCIntSelect ? 0x40 : 0x00);
+			stat |= (byte)(Mode2IntSelect ? 0x20 : 0x00);
+			stat |= (byte)(Mode1IntSelect ? 0x10 : 0x00);
+			stat |= (byte)(Mode0IntSelect ? 0x08 : 0x00);
+			stat |= (byte)(LYCEqualsLY ? 0x04 : 0x00);
+			stat |= PPUMode;
+
+			return stat;
+		}
+
+		public void SetSTAT(byte stat)
+		{
+			LYCIntSelect = Utilities.GetBitsFromByte(stat, 6, 6) != 0x00;
+			Mode2IntSelect = Utilities.GetBitsFromByte(stat, 5, 5) != 0x00;
+			Mode1IntSelect = Utilities.GetBitsFromByte(stat, 4, 4) != 0x00;
+			Mode0IntSelect = Utilities.GetBitsFromByte(stat, 3, 3) != 0x00;
+			LYCEqualsLY = Utilities.GetBitsFromByte(stat, 2, 2) != 0x00;
+			PPUMode = Utilities.GetBitsFromByte(stat, 0, 1);
 		}
 	}
 }

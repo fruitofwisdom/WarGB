@@ -114,7 +114,7 @@
 
 				if (IME)
 				{
-					if ((byte)(IF & 0x01) == 0x01 && (byte)(IE & 0x01) == 0x01)
+					if ((byte)(IE & 0x01) == 0x01 && (byte)(IF & 0x01) == 0x01)
 					{
 						// TODO: Handle the v-blank interrupt.
 						// NOP();
@@ -122,6 +122,11 @@
 						// CALL(0x0040);
 						// Should total 5 cycles.
 						MainForm.PrintDebugMessage("A v-blank interrupt occurred.\n");
+					}
+					else if ((byte)(IE & 0x02) == 0x02 && (byte)(IF & 0x02) == 0x02)
+					{
+						// TODO: Handle the LCD (STAT) interrupt.
+						MainForm.PrintDebugMessage("A LCD interrupt occurred.\n");
 					}
 					// TODO: Handle other interrupt flags.
 				}
