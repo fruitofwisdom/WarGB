@@ -15,26 +15,25 @@
 		private byte A;
 		// The auxiliary registers.
 		// The flag register is actually four flags.
-		//private byte F;		// TODO: Just use the other flags?
-		private bool Z;			// set to 1 when the result of an operation is 0, otherwise reset
-		private bool N;			// set to 1 following execution of the subtraction instruction, regardless of the result
-		private bool H;			// set to 1 when an operation results in carrying from or borrowing to bit 3
-		private bool CY;		// set to 1 when an operation results in carrying from or borrowing to bit 7
-		// BC, DE, and HL are register pairs.
-		private byte B;			// higher byte
-		private byte C;			// lower byte
+		private bool Z;         // set to 1 when the result of an operation is 0, otherwise reset
+		private bool N;         // set to 1 following execution of the subtraction instruction, regardless of the result
+		private bool H;         // set to 1 when an operation results in carrying from or borrowing to bit 3
+		private bool CY;        // set to 1 when an operation results in carrying from or borrowing to bit 7
+								// BC, DE, and HL are register pairs.
+		private byte B;         // higher byte
+		private byte C;         // lower byte
 		private byte D;
 		private byte E;
 		private ushort HL;
 		// The program counter.
-		private ushort PC;
+		public ushort PC { get; private set; }
 		// The stack pointer.
 		private ushort SP;
 
 		// The interrupt flags.
-		public byte IF;			// interrupt request flag (also 0xFF0F)
-		public byte IE;			// interrupt enable flag (also 0xFFFF)
-		private bool IME;		// interrupt master enable flag
+		public byte IF;         // interrupt request flag (also 0xFF0F)
+		public byte IE;         // interrupt enable flag (also 0xFFFF)
+		private bool IME;       // interrupt master enable flag
 
 		private static CPU? _instance;
 		public static CPU Instance
@@ -167,6 +166,26 @@
 		public void Step()
 		{
 			StepRequested = true;
+		}
+
+		private byte GetF()
+		{
+			byte f = 0x00;
+
+			f |= (byte)(Z ? 0x80 : 0x00);
+			f |= (byte)(N ? 0x40 : 0x00);
+			f |= (byte)(H ? 0x20 : 0x00);
+			f |= (byte)(CY ? 0x10 : 0x00);
+
+			return f;
+		}
+
+		private void SetF(byte f)
+		{
+			Z = Utilities.GetBitsFromByte(f, 7, 7) != 0x00;
+			N = Utilities.GetBitsFromByte(f, 6, 6) != 0x00;
+			H = Utilities.GetBitsFromByte(f, 5, 5) != 0x00;
+			CY = Utilities.GetBitsFromByte(f, 4, 4) != 0x00;
 		}
 
 		private void PrintOpcode(byte instruction, string opcode)
