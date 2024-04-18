@@ -115,6 +115,7 @@
 				{
 					if ((byte)(IE & 0x01) == 0x01 && (byte)(IF & 0x01) == 0x01)
 					{
+						IME = false;
 						// TODO: Handle the v-blank interrupt.
 						// NOP();
 						// NOP();
@@ -124,6 +125,7 @@
 					}
 					else if ((byte)(IE & 0x02) == 0x02 && (byte)(IF & 0x02) == 0x02)
 					{
+						IME = false;
 						// TODO: Handle the LCD (STAT) interrupt.
 						MainForm.PrintDebugMessage("A LCD interrupt occurred.\n");
 					}

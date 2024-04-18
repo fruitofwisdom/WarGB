@@ -24,9 +24,6 @@
 			data &= opposite;
 			// Assign value in their place.
 			data |= or;
-
-			// TODO: More testing, please.
-			MainForm.PrintDebugMessage($"[0x{CPU.Instance.PC:X4}] Verify 0x{value:X2} in 0x{data:X2} from bits {firstBit} to {lastBit}!\n");
 		}
 	}
 }
