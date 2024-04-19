@@ -6,7 +6,7 @@
 		private bool Playing;
 		private bool StepRequested;
 
-		private bool ShouldPrintOpcodes = false;
+		public static bool ShouldPrintOpcodes = false;
 
 		public uint Frequency { get; private set; }
 		public uint Cycles { get; private set; }
@@ -47,11 +47,11 @@
 
 		public CPU()
 		{
-			Initialize();
+			Reset();
 		}
 
 		// Reset the CPU's registers and flags.
-		private void Initialize()
+		public void Reset()
 		{
 			NeedToStop = false;
 			Playing = false;
@@ -86,8 +86,7 @@
 		{
 			// NOTE: We skip any validation or BIOS handling.
 			Thread.CurrentThread.Name = "GB# CPU";
-			Initialize();
-			MainForm.PrintDebugMessage("Initialized.\n");
+			MainForm.PrintDebugMessage("Ready to play " + ROM.Instance.Title + "!\n");
 
 			while (true)
 			{

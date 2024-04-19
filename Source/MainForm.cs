@@ -21,15 +21,13 @@ namespace GBSharp
 			PrintDebugStatisCallbackInternal = PrintDebugStatusInternal;
 		}
 
-		protected override void OnFormClosing(FormClosingEventArgs e)
+		private void MainFormClosing(object sender, FormClosingEventArgs e)
 		{
 			if (GameBoyThread != null)
 			{
 				CPU.Instance.Stop();
 				GameBoyThread.Join();
 			}
-
-			base.OnFormClosing(e);
 		}
 
 		private void LoadROMToolStripMenuItemClick(object sender, EventArgs e)
@@ -44,11 +42,8 @@ namespace GBSharp
 			{
 				if (ROM.Instance.Load(openFileDialog.FileName))
 				{
-					// Close any previously running threads.
-					if (GameBoyThread != null)
-					{
-						CPU.Instance.Stop();
-					}
+					CPU.Instance.Reset();
+					Memory.Instance.Reset();
 
 					// Put the game name and ROM type in our title.
 					Text = "GB# - " + ROM.Instance.Title + " (" + ROM.Instance.CartridgeType.ToString().Replace("_", "+") + ")";
@@ -67,6 +62,12 @@ namespace GBSharp
 			Close();
 		}
 
+		private void PrintOpcodesToolStripMenuClick(object sender, EventArgs e)
+		{
+			printOpcodesToolStripMenuItem.Checked = !printOpcodesToolStripMenuItem.Checked;
+			CPU.ShouldPrintOpcodes = printOpcodesToolStripMenuItem.Checked;
+		}
+
 		private void AboutGBSharpToolStripMenuItemClick(object sender, EventArgs e)
 		{
 			AboutBox aboutBox = new();
@@ -76,25 +77,42 @@ namespace GBSharp
 		private void PlayButtonClick(object sender, EventArgs e)
 		{
 			CPU.Instance.Play();
+
 			playButton.Enabled = false;
 			pauseButton.Enabled = true;
 			stepButton.Enabled = false;
+			resetButton.Enabled = false;
 		}
 
 		private void PauseButtonClick(object sender, EventArgs e)
 		{
 			CPU.Instance.Pause();
+
 			playButton.Enabled = true;
 			pauseButton.Enabled = false;
 			stepButton.Enabled = true;
+			resetButton.Enabled = true;
 		}
 
 		private void StepButtonClick(object sender, EventArgs e)
 		{
 			CPU.Instance.Step();
+
 			playButton.Enabled = true;
 			pauseButton.Enabled = false;
 			stepButton.Enabled = true;
+			resetButton.Enabled = true;
+		}
+
+		private void ResetButtonClick(object sender, EventArgs e)
+		{
+			CPU.Instance.Reset();
+			Memory.Instance.Reset();
+
+			playButton.Enabled = true;
+			pauseButton.Enabled = false;
+			stepButton.Enabled = true;
+			resetButton.Enabled = false;
 		}
 
 		public static void Pause()

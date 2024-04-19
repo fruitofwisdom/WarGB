@@ -40,6 +40,20 @@
 			Registers = new byte[128];
 			HRAM = new byte[127];
 
+			Reset();
+		}
+
+		// Reset the memory and state.
+		public void Reset()
+		{
+			Array.Clear(VRAM, 0, VRAM.Length);
+			Array.Clear(ExternalRAM, 0, ExternalRAM.Length);
+			Array.Clear(WRAMBank0, 0, WRAMBank0.Length);
+			Array.Clear(WRAMBank1, 0, WRAMBank1.Length);
+			Array.Clear(OAM, 0, OAM.Length);
+			Array.Clear(Registers, 0, Registers.Length);
+			Array.Clear(HRAM, 0, HRAM.Length);
+
 			// NOTE: By default, 0x4000 to 0x7FFF is mapped to bank 1.
 			ROMBank = 1;
 		}

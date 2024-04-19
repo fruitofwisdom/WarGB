@@ -33,12 +33,15 @@
 			fileToolStripMenuItem = new ToolStripMenuItem();
 			loadROMToolStripMenuItem = new ToolStripMenuItem();
 			exitToolStripMenuItem = new ToolStripMenuItem();
+			debugToolStripMenuItem = new ToolStripMenuItem();
+			printOpcodesToolStripMenuItem = new ToolStripMenuItem();
 			helpToolStripMenuItem = new ToolStripMenuItem();
 			aboutGBSharpToolStripMenuItem = new ToolStripMenuItem();
 			toolStrip = new ToolStrip();
 			playButton = new ToolStripButton();
 			pauseButton = new ToolStripButton();
 			stepButton = new ToolStripButton();
+			resetButton = new ToolStripButton();
 			debugRichTextBox = new RichTextBox();
 			statusStrip = new StatusStrip();
 			debugToolStripStatusLabel = new ToolStripStatusLabel();
@@ -49,7 +52,7 @@
 			// 
 			// menuStrip
 			// 
-			menuStrip.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, helpToolStripMenuItem });
+			menuStrip.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, debugToolStripMenuItem, helpToolStripMenuItem });
 			menuStrip.Location = new Point(0, 0);
 			menuStrip.Name = "menuStrip";
 			menuStrip.Size = new Size(800, 24);
@@ -78,6 +81,21 @@
 			exitToolStripMenuItem.Text = "Exit";
 			exitToolStripMenuItem.Click += ExitToolStripMenuItemClick;
 			// 
+			// debugToolStripMenuItem
+			// 
+			debugToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { printOpcodesToolStripMenuItem });
+			debugToolStripMenuItem.Name = "debugToolStripMenuItem";
+			debugToolStripMenuItem.Size = new Size(54, 20);
+			debugToolStripMenuItem.Text = "Debug";
+			// 
+			// printOpcodesToolStripMenuItem
+			// 
+			printOpcodesToolStripMenuItem.Name = "printOpcodesToolStripMenuItem";
+			printOpcodesToolStripMenuItem.Size = new Size(149, 22);
+			printOpcodesToolStripMenuItem.Text = "Print Opcodes";
+			printOpcodesToolStripMenuItem.ToolTipText = "Show running opcodes. Will be much slower.";
+			printOpcodesToolStripMenuItem.Click += PrintOpcodesToolStripMenuClick;
+			// 
 			// helpToolStripMenuItem
 			// 
 			helpToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { aboutGBSharpToolStripMenuItem });
@@ -94,7 +112,7 @@
 			// 
 			// toolStrip
 			// 
-			toolStrip.Items.AddRange(new ToolStripItem[] { playButton, pauseButton, stepButton });
+			toolStrip.Items.AddRange(new ToolStripItem[] { playButton, pauseButton, stepButton, resetButton });
 			toolStrip.Location = new Point(0, 24);
 			toolStrip.Name = "toolStrip";
 			toolStrip.Size = new Size(800, 25);
@@ -134,6 +152,17 @@
 			stepButton.ToolTipText = "Step";
 			stepButton.Click += StepButtonClick;
 			// 
+			// resetButton
+			// 
+			resetButton.DisplayStyle = ToolStripItemDisplayStyle.Text;
+			resetButton.Enabled = false;
+			resetButton.Font = new Font("Segoe MDL2 Assets", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+			resetButton.Name = "resetButton";
+			resetButton.Size = new Size(23, 22);
+			resetButton.Text = "";
+			resetButton.ToolTipText = "Reset";
+			resetButton.Click += ResetButtonClick;
+			// 
 			// debugRichTextBox
 			// 
 			debugRichTextBox.Font = new Font("Cascadia Code", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
@@ -171,6 +200,7 @@
 			MainMenuStrip = menuStrip;
 			Name = "MainForm";
 			Text = "GB#";
+			FormClosing += MainFormClosing;
 			menuStrip.ResumeLayout(false);
 			menuStrip.PerformLayout();
 			toolStrip.ResumeLayout(false);
@@ -187,6 +217,8 @@
 		private ToolStripMenuItem fileToolStripMenuItem;
 		private ToolStripMenuItem loadROMToolStripMenuItem;
 		private ToolStripMenuItem exitToolStripMenuItem;
+		private ToolStripMenuItem debugToolStripMenuItem;
+		private ToolStripMenuItem printOpcodesToolStripMenuItem;
 		private ToolStripMenuItem helpToolStripMenuItem;
 		private ToolStripMenuItem aboutGBSharpToolStripMenuItem;
 		private ToolStrip toolStrip;
@@ -196,5 +228,6 @@
 		private RichTextBox debugRichTextBox;
 		private StatusStrip statusStrip;
 		private ToolStripStatusLabel debugToolStripStatusLabel;
+		private ToolStripButton resetButton;
 	}
 }
