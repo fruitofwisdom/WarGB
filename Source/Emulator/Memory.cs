@@ -16,6 +16,7 @@
 		// Working and stack RAM - OxFF80 to 0xFFFE
 		private byte[] HRAM;            // high RAM
 
+		private bool RAMEnabled;
 		public uint ROMBank { get; private set; }
 
 		private static Memory? _instance;
@@ -54,6 +55,7 @@
 			Array.Clear(Registers, 0, Registers.Length);
 			Array.Clear(HRAM, 0, HRAM.Length);
 
+			RAMEnabled = false;
 			// NOTE: By default, 0x4000 to 0x7FFF is mapped to bank 1.
 			ROMBank = 1;
 		}
@@ -179,23 +181,36 @@
 				return;
 			}
 
-			if (address >= 0x0000 && address <= 0x1FFF)
+			if (address >= 0x0000 && address <= 0x3FFF)
 			{
-				// TODO: Enable or disable RAM.
-				MainForm.PrintDebugMessage($"Writing to ROM: 0x{address:X4}!\n");
-				MainForm.Pause();
-			}
-			else if (address >= 0x2000 && address <= 0x3FFF)
-			{
-				// Writing to this address range is a ROM bank select.
-				// NOTE: 0x00 is a special case.
-				if (data == 0x00)
+				// Handle MBC-specific address ranges.
+				if (ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2 ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2_BATTERY)
 				{
-					ROMBank = 1;
+					// This bit specifies selecting a ROM bank.
+					if ((address & 0x0100) == 0x0100)
+					{
+						// NOTE: 0x00 is a special case.
+						if (data == 0x00)
+						{
+							ROMBank = 1;
+						}
+						else
+						{
+							ROMBank = data;
+						}
+					}
+					// Otherwise, enable or disable RAM.
+					else
+					{
+						RAMEnabled = data == 0x0A;
+					}
 				}
 				else
 				{
-					ROMBank = (uint)data;
+					// TODO: Other MBC behaviors?
+					MainForm.PrintDebugMessage($"Writing to ROM: 0x{address:X4}!\n");
+					MainForm.Pause();
 				}
 			}
 			else if (address >= 0x4000 && address <= 0x5FFF)
