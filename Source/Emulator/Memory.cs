@@ -96,7 +96,16 @@
 			}
 			else if (address >= 0xA000 && address <= 0xBFFF)
 			{
-				data = ExternalRAM[address - 0xA000];
+				if (RAMEnabled)
+				{
+					data = ExternalRAM[address - 0xA000];
+				}
+				else
+				{
+					data = 0xFF;
+					MainForm.PrintDebugMessage($"Reading from external RAM while RAM is disabled!\n");
+					MainForm.Pause();
+				}
 			}
 			else if (address >= 0xC000 && address <= 0xCFFF)
 			{
@@ -231,8 +240,16 @@
 			}
 			else if (address >= 0xA000 && address <= 0xBFFF)
 			{
-				// TODO: Save data to backup RAM (a file).
-				ExternalRAM[address - 0xA000] = data;
+				if (RAMEnabled)
+				{
+					// TODO: Save data to backup RAM (a file).
+					ExternalRAM[address - 0xA000] = data;
+				}
+				else
+				{
+					MainForm.PrintDebugMessage($"Writing to external RAM while RAM is disabled!\n");
+					MainForm.Pause();
+				}
 			}
 			else if (address >= 0xC000 && address <= 0xCFFF)
 			{
