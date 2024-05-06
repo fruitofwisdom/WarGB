@@ -2,10 +2,13 @@
 {
 	internal class Graphics
 	{
-		public const uint kLinesPerFrame = 154;
-		public uint CyclesPerLine { get; private set; }
+		// Dots run at full clock speed, i.e., 4 dots per CPU cycle. Every 456 cycles, we increment LY, possibly
+		// trigger v-blank, etc.
+		private const uint kDotsPerLine = 456;
+		private const uint kVBlankLine = 144;
+		private const uint kLinesPerFrame = 154;
+		public const uint kCyclesPerFrame = kDotsPerLine / 4 * kLinesPerFrame;
 
-		// The 
 		private uint Dot;
 
 		// The LCDC register control flags (FF40)
@@ -48,8 +51,6 @@
 
 		public Graphics()
 		{
-			CyclesPerLine = (uint)(CPU.Instance.Frequency / 1000.0f * 0.10875f);
-
 			Dot = 0;
 
 			LCDEnabled = true;
@@ -78,29 +79,28 @@
 
 		public void Update()
 		{
-			// 144 lines at 0.10875 lines per millisecond then 10 lines of v-blank.
-			// Every 456 cycles, we increment LY, possibly trigger v-blank, etc.
-			byte newLY = (byte)(CPU.Instance.Cycles / CyclesPerLine % kLinesPerFrame);
-
 			// A "dot" is how long it takes to render one pixel and there are 4 dots per CPU cycle, usually.
 			// TODO: Support CGB double-speed mode also?
 			Dot = CPU.Instance.Cycles * 4;
 
+			byte newLY = (byte)(Dot / kDotsPerLine % kLinesPerFrame);
+			//uint cyclesToVBlank = kVBlankLine * kDotsPerLine / 4 - CPU.Instance.Cycles;
+
 			// Set the PPU mode correctly.
-			if (newLY >= 144)
+			if (newLY >= kVBlankLine)
 			{
 				// Vertical blank.
 				PPUMode = 0x01;
 			}
-			else if (Dot % 456 < 80)
+			else if (Dot % kDotsPerLine < 80)
 			{
 				// OAM scan.
 				PPUMode = 0x02;
 			}
-			else if (Dot % 456 < 252)
+			else if (Dot % kDotsPerLine < 252)
 			{
 				// Drawing pixels.
-				// TODO: Handle variable dot rendering speeds.
+				// TODO: Handle variable dot rendering speeds?
 				PPUMode = 0x11;
 			}
 			else
@@ -114,8 +114,8 @@
 			{
 				LY = newLY;
 
-				// V-blank begins at line 144
-				if (LY == 144)
+				// Check for a v-blank interrupt.
+				if (LY == kVBlankLine)
 				{
 					// Set the v-blank IF flag.
 					CPU.Instance.IF |= 0x01;

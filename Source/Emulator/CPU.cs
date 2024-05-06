@@ -108,6 +108,7 @@
 				HandleOpcode(instruction);
 
 				// Let the LCD update too.
+				// TODO: Update the PPU independently so that dots are more accurate than relying on CPU cycles?
 				Graphics.Instance.Update();
 
 				if (IME)
@@ -115,26 +116,36 @@
 					if ((byte)(IE & 0x01) == 0x01 && (byte)(IF & 0x01) == 0x01)
 					{
 						IME = false;
-						// TODO: Handle the v-blank interrupt.
-						// NOP();
-						// NOP();
-						// CALL(0x0040);
-						// Should total 5 cycles.
+						Utilities.SetBitsInByte(ref IF, 0, 0, 0);
+						byte pcHigher = (byte)((PC & 0xFF00) >> 8);
+						Memory.Instance.Write(SP - 1, pcHigher);
+						byte pcLower = (byte)(PC & 0x00FF);
+						Memory.Instance.Write(SP - 2, pcLower);
+						SP -= 2;
+						PC = 0x0040;
+						Cycles += 5;
 						MainForm.PrintDebugMessage("A v-blank interrupt occurred.\n");
 					}
 					else if ((byte)(IE & 0x02) == 0x02 && (byte)(IF & 0x02) == 0x02)
 					{
 						IME = false;
-						// TODO: Handle the LCD (STAT) interrupt.
+						Utilities.SetBitsInByte(ref IF, 0, 1, 1);
+						byte pcHigher = (byte)((PC & 0xFF00) >> 8);
+						Memory.Instance.Write(SP - 1, pcHigher);
+						byte pcLower = (byte)(PC & 0x00FF);
+						Memory.Instance.Write(SP - 2, pcLower);
+						SP -= 2;
+						PC = 0x0048;
+						Cycles += 5;
 						MainForm.PrintDebugMessage("A LCD interrupt occurred.\n");
 					}
 					// TODO: Handle other interrupt flags.
 				}
 
 				// Prevent cycles overflowing.
-				if (Cycles >= Graphics.Instance.CyclesPerLine * Graphics.kLinesPerFrame)
+				if (Cycles >= Graphics.kCyclesPerFrame)
 				{
-					Cycles -= Graphics.Instance.CyclesPerLine * Graphics.kLinesPerFrame;
+					Cycles -= Graphics.kCyclesPerFrame;
 
 					// TODO: When is appropriate to sleep for performance?
 					Thread.Sleep(1);
