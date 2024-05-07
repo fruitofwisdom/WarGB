@@ -2,6 +2,7 @@ namespace GBSharp
 {
 	public partial class MainForm : Form
 	{
+		GameBoy _gameBoy = new();
 		Thread? GameBoyThread;
 
 		// Available debug callbacks.
@@ -25,7 +26,7 @@ namespace GBSharp
 		{
 			if (GameBoyThread != null)
 			{
-				CPU.Instance.Stop();
+				_gameBoy.Stop();
 				GameBoyThread.Join();
 			}
 		}
@@ -42,13 +43,19 @@ namespace GBSharp
 			{
 				if (ROM.Instance.Load(openFileDialog.FileName))
 				{
-					CPU.Instance.Reset();
-					Memory.Instance.Reset();
+					// Close any previous threads and reset the Game Boy.
+					if (GameBoyThread != null)
+					{
+						_gameBoy.Stop();
+						GameBoyThread.Join();
+					}
+					_gameBoy.Reset();
 
 					// Put the game name and ROM type in our title.
 					Text = "GB# - " + ROM.Instance.Title + " (" + ROM.Instance.CartridgeType.ToString().Replace("_", "+") + ")";
 
-					GameBoyThread = new Thread(new ThreadStart(CPU.Instance.Run));
+					// Start a new thread to run the Game Boy.
+					GameBoyThread = new Thread(new ThreadStart(_gameBoy.Run));
 					GameBoyThread.Start();
 					playButton.Enabled = true;
 					pauseButton.Enabled = false;
@@ -76,7 +83,7 @@ namespace GBSharp
 
 		private void PlayButtonClick(object sender, EventArgs e)
 		{
-			CPU.Instance.Play();
+			_gameBoy.Play();
 
 			playButton.Enabled = false;
 			pauseButton.Enabled = true;
@@ -86,7 +93,7 @@ namespace GBSharp
 
 		private void PauseButtonClick(object sender, EventArgs e)
 		{
-			CPU.Instance.Pause();
+			_gameBoy.Pause();
 
 			playButton.Enabled = true;
 			pauseButton.Enabled = false;
@@ -96,7 +103,7 @@ namespace GBSharp
 
 		private void StepButtonClick(object sender, EventArgs e)
 		{
-			CPU.Instance.Step();
+			_gameBoy.Step();
 
 			playButton.Enabled = true;
 			pauseButton.Enabled = false;
@@ -106,8 +113,7 @@ namespace GBSharp
 
 		private void ResetButtonClick(object sender, EventArgs e)
 		{
-			CPU.Instance.Reset();
-			Memory.Instance.Reset();
+			_gameBoy.Reset();
 
 			playButton.Enabled = true;
 			pauseButton.Enabled = false;

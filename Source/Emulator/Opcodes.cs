@@ -90,8 +90,11 @@
 			result = newResult;
 		}
 
-		void HandleOpcode(byte instruction)
+		// Run an instruction and return how many cycles elapsed.
+		private uint HandleOpcode(byte instruction)
 		{
+			uint Cycles = 0;
+
 			switch (instruction)
 			{
 				case 0x00:      // NOP
@@ -1313,7 +1316,7 @@
 				case 0xCB:      // NOTE: CB is a prefix for additional opcodes.
 					{
 						byte nextInstruction = Memory.Instance.Read(PC + 1);
-						Handle16BitOpcode(nextInstruction);
+						Cycles = Handle16BitOpcode(nextInstruction);
 					}
 					break;
 
@@ -1568,10 +1571,15 @@
 					}
 					break;
 			}
+
+			return Cycles;
 		}
 
-		void Handle16BitOpcode(byte instruction)
+		// Run a 16-bit instruction and return how many cycles elapsed.
+		private uint Handle16BitOpcode(byte instruction)
 		{
+			uint Cycles = 0;
+
 			switch (instruction)
 			{
 				case 0x37:      // SWAP A
@@ -1767,6 +1775,8 @@
 					}
 					break;
 			}
+
+			return Cycles;
 		}
 	}
 }

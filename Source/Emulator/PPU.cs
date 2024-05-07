@@ -1,15 +1,14 @@
 ﻿namespace GBSharp
 {
-	internal class Graphics
+	internal class PPU
 	{
-		// Dots run at full clock speed, i.e., 4 dots per CPU cycle. Every 456 cycles, we increment LY, possibly
-		// trigger v-blank, etc.
+		// Every 456 dots, we increment LY, possibly trigger v-blank, etc.
 		private const uint kDotsPerLine = 456;
 		private const uint kVBlankLine = 144;
 		private const uint kLinesPerFrame = 154;
 		public const uint kCyclesPerFrame = kDotsPerLine / 4 * kLinesPerFrame;
 
-		private uint Dot;
+		private uint Dots;
 
 		// The LCDC register control flags (FF40)
 		private bool LCDEnabled;
@@ -39,19 +38,24 @@
 		public byte OBJPaletteData0;
 		public byte OBJPaletteData1;
 
-		private static Graphics? _instance;
-		public static Graphics Instance
+		private static PPU? _instance;
+		public static PPU Instance
 		{
 			get
 			{
-				_instance ??= new Graphics();
+				_instance ??= new PPU();
 				return _instance;
 			}
 		}
 
-		public Graphics()
+		public PPU()
 		{
-			Dot = 0;
+			Reset();
+		}
+
+		public void Reset()
+		{
+			Dots = 0;
 
 			LCDEnabled = true;
 			WindowTileMapArea = false;
@@ -79,11 +83,9 @@
 
 		public void Update()
 		{
-			// A "dot" is how long it takes to render one pixel and there are 4 dots per CPU cycle, usually.
-			// TODO: Support CGB double-speed mode also?
-			Dot = CPU.Instance.Cycles * 4;
+			Dots++;
 
-			byte newLY = (byte)(Dot / kDotsPerLine % kLinesPerFrame);
+			byte newLY = (byte)(Dots / kDotsPerLine % kLinesPerFrame);
 			//uint cyclesToVBlank = kVBlankLine * kDotsPerLine / 4 - CPU.Instance.Cycles;
 
 			// Set the PPU mode correctly.
@@ -92,12 +94,12 @@
 				// Vertical blank.
 				PPUMode = 0x01;
 			}
-			else if (Dot % kDotsPerLine < 80)
+			else if (Dots % kDotsPerLine < 80)
 			{
 				// OAM scan.
 				PPUMode = 0x02;
 			}
-			else if (Dot % kDotsPerLine < 252)
+			else if (Dots % kDotsPerLine < 252)
 			{
 				// Drawing pixels.
 				// TODO: Handle variable dot rendering speeds?

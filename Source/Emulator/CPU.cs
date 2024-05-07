@@ -2,14 +2,7 @@
 {
 	internal partial class CPU
 	{
-		private bool NeedToStop;
-		private bool Playing;
-		private bool StepRequested;
-
 		public static bool ShouldPrintOpcodes = false;
-
-		public uint Frequency { get; private set; }
-		public uint Cycles { get; private set; }
 
 		// The accumulator register.
 		private byte A;
@@ -53,15 +46,6 @@
 		// Reset the CPU's registers and flags.
 		public void Reset()
 		{
-			NeedToStop = false;
-			Playing = false;
-			StepRequested = false;
-
-			// NOTE: Original DMG CPU frequency is 1.05 MHz.
-			// TODO: Support CGB double-speed mode also?
-			Frequency = 4194304;
-			Cycles = 0;
-
 			A = 0x00;
 			//F = 0xB0;			// TODO: Just use the other flags?
 			Z = true;
@@ -81,103 +65,66 @@
 			IME = false;
 		}
 
-		// The CPU runs in its own thread.
-		public void Run()
+		// Step through one instruction and return the number of cycles elapsed.
+		public uint Step()
 		{
-			// NOTE: We skip any validation or BIOS handling.
-			Thread.CurrentThread.Name = "GB# CPU";
-			MainForm.PrintDebugMessage("Ready to play " + ROM.Instance.Title + "!\n");
+			uint cycles;
 
-			while (true)
+			// If an interrupt was triggered, handle it as our next instruction.
+			bool interruptHandled = HandleInterrupt(out cycles);
+
+			// Otherwise, run the next opcode as normal.
+			if (!interruptHandled)
 			{
-				// The thread needs to close.
-				if (NeedToStop)
-				{
-					return;
-				}
-
-				// Do nothing if we're paused, unless a step was requested.
-				if (!Playing && !StepRequested)
-				{
-					Thread.Sleep(1);
-					continue;
-				}
-
-				// Read and execute the next CPU instruction.
 				byte instruction = Memory.Instance.Read(PC);
-				HandleOpcode(instruction);
-
-				// Let the LCD update too.
-				// TODO: Update the PPU independently so that dots are more accurate than relying on CPU cycles?
-				Graphics.Instance.Update();
-
-				if (IME)
-				{
-					if ((byte)(IE & 0x01) == 0x01 && (byte)(IF & 0x01) == 0x01)
-					{
-						IME = false;
-						Utilities.SetBitsInByte(ref IF, 0, 0, 0);
-						byte pcHigher = (byte)((PC & 0xFF00) >> 8);
-						Memory.Instance.Write(SP - 1, pcHigher);
-						byte pcLower = (byte)(PC & 0x00FF);
-						Memory.Instance.Write(SP - 2, pcLower);
-						SP -= 2;
-						PC = 0x0040;
-						Cycles += 5;
-						MainForm.PrintDebugMessage("A v-blank interrupt occurred.\n");
-					}
-					else if ((byte)(IE & 0x02) == 0x02 && (byte)(IF & 0x02) == 0x02)
-					{
-						IME = false;
-						Utilities.SetBitsInByte(ref IF, 0, 1, 1);
-						byte pcHigher = (byte)((PC & 0xFF00) >> 8);
-						Memory.Instance.Write(SP - 1, pcHigher);
-						byte pcLower = (byte)(PC & 0x00FF);
-						Memory.Instance.Write(SP - 2, pcLower);
-						SP -= 2;
-						PC = 0x0048;
-						Cycles += 5;
-						MainForm.PrintDebugMessage("A LCD interrupt occurred.\n");
-					}
-					// TODO: Handle other interrupt flags.
-				}
-
-				// Prevent cycles overflowing.
-				if (Cycles >= Graphics.kCyclesPerFrame)
-				{
-					Cycles -= Graphics.kCyclesPerFrame;
-
-					// TODO: When is appropriate to sleep for performance?
-					Thread.Sleep(1);
-				}
-
-				if (StepRequested)
-				{
-					Playing = false;
-					StepRequested = false;
-				}
+				cycles = HandleOpcode(instruction);
 			}
+
+			return cycles;
 		}
 
-		// Stop the thread.
-		public void Stop()
+		// Returns if an interrupt was triggered and handled and how many cycles elapsed.
+		private bool HandleInterrupt(out uint cycles)
 		{
-			NeedToStop = true;
-		}
+			bool interruptHandled = false;
+			cycles = 0;
 
-		public void Play()
-		{
-			Playing = true;
-		}
+			if (IME)
+			{
+				// Handle a v-blank interrupt.
+				if ((byte)(IE & 0x01) == 0x01 && (byte)(IF & 0x01) == 0x01)
+				{
+					IME = false;
+					Utilities.SetBitsInByte(ref IF, 0, 0, 0);
+					byte pcHigher = (byte)((PC & 0xFF00) >> 8);
+					Memory.Instance.Write(SP - 1, pcHigher);
+					byte pcLower = (byte)(PC & 0x00FF);
+					Memory.Instance.Write(SP - 2, pcLower);
+					SP -= 2;
+					PC = 0x0040;
+					cycles = 5;
+					interruptHandled = true;
+					MainForm.PrintDebugMessage("A v-blank interrupt occurred.\n");
+				}
+				// Handle an LCD interrupt.
+				else if ((byte)(IE & 0x02) == 0x02 && (byte)(IF & 0x02) == 0x02)
+				{
+					IME = false;
+					Utilities.SetBitsInByte(ref IF, 0, 1, 1);
+					byte pcHigher = (byte)((PC & 0xFF00) >> 8);
+					Memory.Instance.Write(SP - 1, pcHigher);
+					byte pcLower = (byte)(PC & 0x00FF);
+					Memory.Instance.Write(SP - 2, pcLower);
+					SP -= 2;
+					PC = 0x0048;
+					cycles = 5;
+					interruptHandled = true;
+					MainForm.PrintDebugMessage("A LCD interrupt occurred.\n");
+				}
+				// TODO: Handle other interrupt flags.
+			}
 
-		public void Pause()
-		{
-			Playing = false;
-		}
-
-		public void Step()
-		{
-			StepRequested = true;
+			return interruptHandled;
 		}
 
 		private byte GetF()

@@ -149,19 +149,19 @@
 				}
 				else if (address == 0xFF40)
 				{
-					data = Graphics.Instance.GetLCDC();
+					data = PPU.Instance.GetLCDC();
 				}
 				else if (address == 0xFF41)
 				{
-					data = Graphics.Instance.GetSTAT();
+					data = PPU.Instance.GetSTAT();
 				}
 				else if (address == 0xFF44)
 				{
-					data = Graphics.Instance.LY;
+					data = PPU.Instance.LY;
 				}
 				else if (address == 0xFF45)
 				{
-					data = Graphics.Instance.LYC;
+					data = PPU.Instance.LYC;
 				}
 				// TODO: The other registers.
 				else
@@ -405,11 +405,11 @@
 			}
 			else if (address == 0xFF40)
 			{
-				Graphics.Instance.SetLCDC(data);
+				PPU.Instance.SetLCDC(data);
 			}
 			else if (address == 0xFF41)
 			{
-				Graphics.Instance.SetSTAT(data);
+				PPU.Instance.SetSTAT(data);
 			}
 			else if (address == 0xFF44)
 			{
@@ -418,19 +418,19 @@
 			}
 			else if (address == 0xFF45)
 			{
-				Graphics.Instance.LYC = data;
+				PPU.Instance.LYC = data;
 			}
 			else if (address == 0xFF47)
 			{
-				Graphics.Instance.BGPaletteData = data;
+				PPU.Instance.BGPaletteData = data;
 			}
 			else if (address == 0xFF48)
 			{
-				Graphics.Instance.OBJPaletteData0 = data;
+				PPU.Instance.OBJPaletteData0 = data;
 			}
 			else if (address == 0xFF49)
 			{
-				Graphics.Instance.OBJPaletteData1 = data;
+				PPU.Instance.OBJPaletteData1 = data;
 			}
 			// TODO: The other registers.
 			else
