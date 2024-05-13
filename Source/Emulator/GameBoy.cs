@@ -23,6 +23,7 @@
 			CPU.Instance.Reset();
 			Memory.Instance.Reset();
 			PPU.Instance.Reset();
+			Sound.Instance.Reset();
 
 			_needToStop = false;
 			_playing = false;

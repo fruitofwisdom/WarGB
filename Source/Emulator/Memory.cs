@@ -147,6 +147,10 @@
 				{
 					data = CPU.Instance.IF;
 				}
+				else if (address == 0xFF25)
+				{
+					data = Sound.Instance.SoundOutputTerminals;
+				}
 				else if (address == 0xFF40)
 				{
 					data = PPU.Instance.GetLCDC();
@@ -155,6 +159,14 @@
 				{
 					data = PPU.Instance.GetSTAT();
 				}
+				else if (address == 0xFF42)
+				{
+					data = (byte)(PPU.Instance.SCY);
+				}
+				else if (address == 0xFF43)
+				{
+					data = (byte)(PPU.Instance.SCX);
+				}
 				else if (address == 0xFF44)
 				{
 					data = PPU.Instance.LY;
@@ -162,6 +174,14 @@
 				else if (address == 0xFF45)
 				{
 					data = PPU.Instance.LYC;
+				}
+				else if (address == 0xFF4A)
+				{
+					data = (byte)(PPU.Instance.WY);
+				}
+				else if (address == 0xFF4B)
+				{
+					data = (byte)(PPU.Instance.WX);
 				}
 				// TODO: The other registers.
 				else
@@ -231,8 +251,8 @@
 			else if (address >= 0x6000 && address <= 0x7FFF)
 			{
 				// TODO: ROM/RAM mode select.
-				MainForm.PrintDebugMessage($"Writing to ROM: 0x{address:X4}!\n");
-				MainForm.Pause();
+				//MainForm.PrintDebugMessage($"Writing to ROM: 0x{address:X4}!\n");
+				//MainForm.Pause();
 			}
 			else if (address >= 0x8000 && address <= 0x9FFF)
 			{
@@ -317,6 +337,13 @@
 				((SquareWave)Sound.Instance.Channels[0]).SweepIncDec = sweepIncDec;
 				((SquareWave)Sound.Instance.Channels[0]).SweepShiftNumber = sweepShiftNumber;
 			}
+			else if (address == 0xFF11)
+			{
+				byte waveformDuty = Utilities.GetBitsFromByte(data, 6, 7);
+				byte soundLengthData = Utilities.GetBitsFromByte(data, 0, 5);
+				((SquareWave)Sound.Instance.Channels[0]).WaveformDuty = waveformDuty;
+				((SquareWave)Sound.Instance.Channels[0]).SoundLengthData = soundLengthData;
+			}
 			else if (address == 0xFF12)
 			{
 				byte defaultEnvelopeValue = Utilities.GetBitsFromByte(data, 4, 7);
@@ -340,6 +367,13 @@
 				((SquareWave)Sound.Instance.Channels[0]).CounterContinuousSelection = counterContinuousSelection;
 				((SquareWave)Sound.Instance.Channels[0]).HighOrderFrequencyData = highOrderFrequencyData;
 			}
+			else if (address == 0xFF16)
+			{
+				byte waveformDuty = Utilities.GetBitsFromByte(data, 6, 7);
+				byte soundLengthData = Utilities.GetBitsFromByte(data, 0, 5);
+				((SquareWave)Sound.Instance.Channels[1]).WaveformDuty = waveformDuty;
+				((SquareWave)Sound.Instance.Channels[1]).SoundLengthData = soundLengthData;
+			}
 			else if (address == 0xFF17)
 			{
 				byte defaultEnvelopeValue = Utilities.GetBitsFromByte(data, 4, 7);
@@ -362,6 +396,10 @@
 				((SquareWave)Sound.Instance.Channels[1]).Initialize = initialize;
 				((SquareWave)Sound.Instance.Channels[1]).CounterContinuousSelection = counterContinuousSelection;
 				((SquareWave)Sound.Instance.Channels[1]).HighOrderFrequencyData = highOrderFrequencyData;
+			}
+			else if (address == 0xFF1A)
+			{
+				((WaveTable)Sound.Instance.Channels[2]).SoundEnabled = data == 0x80;
 			}
 			else if (address == 0xFF1B)
 			{
@@ -393,7 +431,7 @@
 			}
 			else if (address == 0xFF25)
 			{
-				// TODO: Implement sound inputs and outputs.
+				Sound.Instance.SoundOutputTerminals = data;
 			}
 			else if (address == 0xFF26)
 			{
@@ -403,6 +441,10 @@
 				Sound.Instance.Channels[2].SoundOn = Utilities.GetBitsFromByte(data, 2, 2) != 0x00;
 				Sound.Instance.Channels[3].SoundOn = Utilities.GetBitsFromByte(data, 3, 3) != 0x00;
 			}
+			else if (address >= 0xFF30 && address <= 0xFF3F)
+			{
+				((WaveTable)Sound.Instance.Channels[2]).WaveformRAM[address - 0xFF30] = data;
+			}
 			else if (address == 0xFF40)
 			{
 				PPU.Instance.SetLCDC(data);
@@ -410,6 +452,14 @@
 			else if (address == 0xFF41)
 			{
 				PPU.Instance.SetSTAT(data);
+			}
+			else if (address == 0xFF42)
+			{
+				PPU.Instance.SCY = data;
+			}
+			else if (address == 0xFF43)
+			{
+				PPU.Instance.SCX = data;
 			}
 			else if (address == 0xFF44)
 			{
@@ -419,6 +469,17 @@
 			else if (address == 0xFF45)
 			{
 				PPU.Instance.LYC = data;
+			}
+			else if (address == 0xFF46)
+			{
+				// Perform a DMA transfer from ROM or RAM to OAM.
+				for (int i = 0; i < 0xA0; ++i)
+				{
+					int transferFrom = (int)(data << 8) + i;
+					byte d8 = Read(transferFrom);
+					int transferTo = (int)(0xFE << 8) + i;
+					Write(transferTo, d8);
+				}
 			}
 			else if (address == 0xFF47)
 			{
@@ -431,6 +492,14 @@
 			else if (address == 0xFF49)
 			{
 				PPU.Instance.OBJPaletteData1 = data;
+			}
+			else if (address == 0xFF4A)
+			{
+				PPU.Instance.WY = data;
+			}
+			else if (address == 0xFF4B)
+			{
+				PPU.Instance.WX = data;
 			}
 			// TODO: The other registers.
 			else

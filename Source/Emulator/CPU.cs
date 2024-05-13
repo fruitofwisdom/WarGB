@@ -12,7 +12,7 @@
 		private bool N;         // set to 1 following execution of the subtraction instruction, regardless of the result
 		private bool H;         // set to 1 when an operation results in carrying from or borrowing to bit 3
 		private bool CY;        // set to 1 when an operation results in carrying from or borrowing to bit 7
-								// BC, DE, and HL are register pairs.
+		// BC, DE, and HL are register pairs.
 		private byte B;         // higher byte
 		private byte C;         // lower byte
 		private byte D;
@@ -27,6 +27,8 @@
 		public byte IF;         // interrupt request flag (also 0xFF0F)
 		public byte IE;         // interrupt enable flag (also 0xFFFF)
 		private bool IME;       // interrupt master enable flag
+
+		private bool _halted;
 
 		private static CPU? _instance;
 		public static CPU Instance
@@ -47,7 +49,6 @@
 		public void Reset()
 		{
 			A = 0x00;
-			//F = 0xB0;			// TODO: Just use the other flags?
 			Z = true;
 			N = false;
 			H = true;
@@ -63,6 +64,8 @@
 			IF = 0x00;
 			IE = 0x00;
 			IME = false;
+
+			_halted = false;
 		}
 
 		// Step through one instruction and return the number of cycles elapsed.
@@ -73,8 +76,8 @@
 			// If an interrupt was triggered, handle it as our next instruction.
 			bool interruptHandled = HandleInterrupt(out cycles);
 
-			// Otherwise, run the next opcode as normal.
-			if (!interruptHandled)
+			// Handle the next opcode, unless we just handled an interrupt or are halted.
+			if (!interruptHandled && !_halted)
 			{
 				byte instruction = Memory.Instance.Read(PC);
 				cycles = HandleOpcode(instruction);
@@ -104,7 +107,8 @@
 					PC = 0x0040;
 					cycles = 5;
 					interruptHandled = true;
-					MainForm.PrintDebugMessage("A v-blank interrupt occurred.\n");
+					_halted = false;
+					//MainForm.PrintDebugMessage("A v-blank interrupt occurred.\n");
 				}
 				// Handle an LCD interrupt.
 				else if ((byte)(IE & 0x02) == 0x02 && (byte)(IF & 0x02) == 0x02)
@@ -119,7 +123,8 @@
 					PC = 0x0048;
 					cycles = 5;
 					interruptHandled = true;
-					MainForm.PrintDebugMessage("A LCD interrupt occurred.\n");
+					_halted = false;
+					//MainForm.PrintDebugMessage("A LCD interrupt occurred.\n");
 				}
 				// TODO: Handle other interrupt flags.
 			}

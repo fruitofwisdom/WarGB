@@ -28,15 +28,24 @@
 		private bool LYCEqualsLY;
 		private byte PPUMode;
 
+		// The scroll Y and X values (FF42 and FF43)
+		public uint SCY;
+		public uint SCX;
+
 		// The LCD y-coordinate (F44)
 		public byte LY { get; private set; }
 
 		// The LY compare value (FF45)
 		public byte LYC;
 
+		// The palette data (FF47, FF48, and FF49)
 		public byte BGPaletteData;
 		public byte OBJPaletteData0;
 		public byte OBJPaletteData1;
+
+		// The window Y and X values (FF4A and FF4B)
+		public uint WY;
+		public uint WX;
 
 		private static PPU? _instance;
 		public static PPU Instance
@@ -73,12 +82,18 @@
 			LYCEqualsLY = false;
 			PPUMode = 0x00;
 
+			SCY = 0;
+			SCX = 0;
+
 			LY = 0x00;
 			LYC = 0x00;
 
 			BGPaletteData = 0;
 			OBJPaletteData0 = 0;
 			OBJPaletteData1 = 0;
+
+			WY = 0;
+			WX = 0;
 		}
 
 		public void Update()
@@ -86,7 +101,6 @@
 			Dots++;
 
 			byte newLY = (byte)(Dots / kDotsPerLine % kLinesPerFrame);
-			//uint cyclesToVBlank = kVBlankLine * kDotsPerLine / 4 - CPU.Instance.Cycles;
 
 			// Set the PPU mode correctly.
 			if (newLY >= kVBlankLine)
