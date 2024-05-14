@@ -42,6 +42,7 @@
 			pauseButton = new ToolStripButton();
 			stepButton = new ToolStripButton();
 			resetButton = new ToolStripButton();
+			lcdControl = new LCDControl();
 			debugRichTextBox = new RichTextBox();
 			statusStrip = new StatusStrip();
 			debugToolStripStatusLabel = new ToolStripStatusLabel();
@@ -55,7 +56,7 @@
 			menuStrip.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, debugToolStripMenuItem, helpToolStripMenuItem });
 			menuStrip.Location = new Point(0, 0);
 			menuStrip.Name = "menuStrip";
-			menuStrip.Size = new Size(800, 24);
+			menuStrip.Size = new Size(759, 24);
 			menuStrip.TabIndex = 0;
 			menuStrip.Text = "menuStrip";
 			// 
@@ -115,7 +116,7 @@
 			toolStrip.Items.AddRange(new ToolStripItem[] { playButton, pauseButton, stepButton, resetButton });
 			toolStrip.Location = new Point(0, 24);
 			toolStrip.Name = "toolStrip";
-			toolStrip.Size = new Size(800, 25);
+			toolStrip.Size = new Size(759, 25);
 			toolStrip.TabIndex = 1;
 			toolStrip.Text = "toolStrip";
 			// 
@@ -163,22 +164,29 @@
 			resetButton.ToolTipText = "Reset";
 			resetButton.Click += ResetButtonClick;
 			// 
+			// lcdControl
+			// 
+			lcdControl.Location = new Point(12, 52);
+			lcdControl.Name = "lcdControl";
+			lcdControl.Size = new Size(480, 432);
+			lcdControl.TabIndex = 4;
+			// 
 			// debugRichTextBox
 			// 
 			debugRichTextBox.Font = new Font("Cascadia Code", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-			debugRichTextBox.Location = new Point(538, 27);
+			debugRichTextBox.Location = new Point(498, 52);
 			debugRichTextBox.Name = "debugRichTextBox";
 			debugRichTextBox.ReadOnly = true;
-			debugRichTextBox.Size = new Size(250, 398);
+			debugRichTextBox.Size = new Size(250, 432);
 			debugRichTextBox.TabIndex = 2;
 			debugRichTextBox.Text = "";
 			// 
 			// statusStrip
 			// 
 			statusStrip.Items.AddRange(new ToolStripItem[] { debugToolStripStatusLabel });
-			statusStrip.Location = new Point(0, 428);
+			statusStrip.Location = new Point(0, 496);
 			statusStrip.Name = "statusStrip";
-			statusStrip.Size = new Size(800, 22);
+			statusStrip.Size = new Size(759, 22);
 			statusStrip.TabIndex = 3;
 			statusStrip.Text = "statusStrip";
 			// 
@@ -191,9 +199,10 @@
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(800, 450);
+			ClientSize = new Size(759, 518);
 			Controls.Add(statusStrip);
 			Controls.Add(debugRichTextBox);
+			Controls.Add(lcdControl);
 			Controls.Add(toolStrip);
 			Controls.Add(menuStrip);
 			Icon = (Icon)resources.GetObject("$this.Icon");
@@ -225,6 +234,7 @@
 		private ToolStripButton playButton;
 		private ToolStripButton pauseButton;
 		private ToolStripButton stepButton;
+		private LCDControl lcdControl;
 		private RichTextBox debugRichTextBox;
 		private StatusStrip statusStrip;
 		private ToolStripStatusLabel debugToolStripStatusLabel;

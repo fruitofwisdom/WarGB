@@ -87,6 +87,9 @@
 				{
 					_clocks = 0;
 					Thread.Sleep(1);
+
+					// TODO: Is this the best place to update the LCD?
+					MainForm.Render();
 				}
 			}
 		}

@@ -11,11 +11,11 @@
 		private uint Dots;
 
 		// The LCDC register control flags (FF40)
-		private bool LCDEnabled;
+		public bool LCDEnabled;
 		private bool WindowTileMapArea;
 		private bool WindowEnabled;
-		private bool BGWindowTileDataArea;
-		private bool BGTileMapArea;
+		public bool BGWindowTileDataArea;
+		public bool BGTileMapArea;
 		private bool OBJSize;
 		private bool OBJEnabled;
 		private bool BGWindowEnable;

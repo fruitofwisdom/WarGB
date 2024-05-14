@@ -7,19 +7,22 @@ namespace GBSharp
 
 		// Available debug callbacks.
 		private delegate void PauseCallback();
-		private static PauseCallback? PauseCallbackInternal;
+		private static PauseCallback? s_pauseCallbackInternal;
 		private delegate void PrintDebugMessageCallback(string debugMessage);
-		private static PrintDebugMessageCallback? PrintDebugMessageCallbackInternal;
+		private static PrintDebugMessageCallback? s_printDebugMessageCallbackInternal;
 		private delegate void PrintDebugStatusCallback(string debugStatus);
-		private static PrintDebugStatusCallback? PrintDebugStatisCallbackInternal;
+		private static PrintDebugStatusCallback? s_printDebugStatisCallbackInternal;
+		private delegate void RenderCallback();
+		private static RenderCallback? s_renderCallbackInternal;
 
 		public MainForm()
 		{
 			InitializeComponent();
 
-			PauseCallbackInternal = PauseInternal;
-			PrintDebugMessageCallbackInternal = PrintDebugMessageInternal;
-			PrintDebugStatisCallbackInternal = PrintDebugStatusInternal;
+			s_pauseCallbackInternal = PauseInternal;
+			s_printDebugMessageCallbackInternal = PrintDebugMessageInternal;
+			s_printDebugStatisCallbackInternal = PrintDebugStatusInternal;
+			s_renderCallbackInternal = RenderInternal;
 		}
 
 		private void MainFormClosing(object sender, FormClosingEventArgs e)
@@ -123,7 +126,7 @@ namespace GBSharp
 
 		public static void Pause()
 		{
-			PauseCallbackInternal?.Invoke();
+			s_pauseCallbackInternal?.Invoke();
 		}
 
 		private void PauseInternal()
@@ -134,7 +137,7 @@ namespace GBSharp
 
 		public static void PrintDebugMessage(string debugMessage)
 		{
-			PrintDebugMessageCallbackInternal?.Invoke(debugMessage);
+			s_printDebugMessageCallbackInternal?.Invoke(debugMessage);
 		}
 
 		private void PrintDebugMessageInternal(string debugMessage)
@@ -145,13 +148,23 @@ namespace GBSharp
 
 		public static void PrintDebugStatus(string debugStatus)
 		{
-			PrintDebugStatisCallbackInternal?.Invoke(debugStatus);
+			s_printDebugStatisCallbackInternal?.Invoke(debugStatus);
 		}
 
 		private void PrintDebugStatusInternal(string debugStatus)
 		{
 			// We must invoke on the UI thread.
 			Invoke(new Action(() => debugToolStripStatusLabel.Text = debugStatus));
+		}
+
+		public static void Render()
+		{
+			s_renderCallbackInternal?.Invoke();
+		}
+
+		private void RenderInternal()
+		{
+			Invoke(new Action(() => Refresh()));
 		}
 	}
 }
