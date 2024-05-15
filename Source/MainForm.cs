@@ -2,36 +2,26 @@ namespace GBSharp
 {
 	public partial class MainForm : Form
 	{
-		GameBoy _gameBoy = new();
-		Thread? GameBoyThread;
+		private readonly GameBoy _gameBoy = new();
+		private Thread? _gameBoyThread;
 
-		// Available debug callbacks.
+		// A timer used to poll and render the state of the Game Boy.
+		private readonly System.Windows.Forms.Timer _gameBoyTimer = new();
+
+		// A callback to pause the emulator.
 		private delegate void PauseCallback();
 		private static PauseCallback? s_pauseCallbackInternal;
-		private delegate void PrintDebugMessageCallback(string debugMessage);
-		private static PrintDebugMessageCallback? s_printDebugMessageCallbackInternal;
-		private delegate void PrintDebugStatusCallback(string debugStatus);
-		private static PrintDebugStatusCallback? s_printDebugStatisCallbackInternal;
-		private delegate void RenderCallback();
-		private static RenderCallback? s_renderCallbackInternal;
 
 		public MainForm()
 		{
 			InitializeComponent();
 
 			s_pauseCallbackInternal = PauseInternal;
-			s_printDebugMessageCallbackInternal = PrintDebugMessageInternal;
-			s_printDebugStatisCallbackInternal = PrintDebugStatusInternal;
-			s_renderCallbackInternal = RenderInternal;
-		}
 
-		private void MainFormClosing(object sender, FormClosingEventArgs e)
-		{
-			if (GameBoyThread != null)
-			{
-				_gameBoy.Stop();
-				GameBoyThread.Join();
-			}
+			// Poll the Game Boy emulator every 10ms.
+			_gameBoyTimer.Tick += new EventHandler(ProcessOutput);
+			_gameBoyTimer.Interval = 10;
+			_gameBoyTimer.Start();
 		}
 
 		private void LoadROMToolStripMenuItemClick(object sender, EventArgs e)
@@ -47,10 +37,10 @@ namespace GBSharp
 				if (ROM.Instance.Load(openFileDialog.FileName))
 				{
 					// Close any previous threads and reset the Game Boy.
-					if (GameBoyThread != null)
+					if (_gameBoyThread != null)
 					{
 						_gameBoy.Stop();
-						GameBoyThread.Join();
+						_gameBoyThread.Join();
 					}
 					_gameBoy.Reset();
 
@@ -58,8 +48,9 @@ namespace GBSharp
 					Text = "GB# - " + ROM.Instance.Title + " (" + ROM.Instance.CartridgeType.ToString().Replace("_", "+") + ")";
 
 					// Start a new thread to run the Game Boy.
-					GameBoyThread = new Thread(new ThreadStart(_gameBoy.Run));
-					GameBoyThread.Start();
+					_gameBoyThread = new Thread(new ThreadStart(_gameBoy.Run));
+					_gameBoyThread.IsBackground = true;
+					_gameBoyThread.Start();
 					playButton.Enabled = true;
 					pauseButton.Enabled = false;
 					stepButton.Enabled = true;
@@ -75,7 +66,7 @@ namespace GBSharp
 		private void PrintOpcodesToolStripMenuClick(object sender, EventArgs e)
 		{
 			printOpcodesToolStripMenuItem.Checked = !printOpcodesToolStripMenuItem.Checked;
-			CPU.ShouldPrintOpcodes = printOpcodesToolStripMenuItem.Checked;
+			GameBoy.ShouldPrintOpcodes = printOpcodesToolStripMenuItem.Checked;
 		}
 
 		private void AboutGBSharpToolStripMenuItemClick(object sender, EventArgs e)
@@ -131,40 +122,19 @@ namespace GBSharp
 
 		private void PauseInternal()
 		{
-			// We must invoke on the UI thread.
 			Invoke(new Action(() => PauseButtonClick(this, EventArgs.Empty)));
 		}
 
-		public static void PrintDebugMessage(string debugMessage)
+		// Poll and render the current state of the Game Boy.
+		private void ProcessOutput(object? sender, EventArgs e)
 		{
-			s_printDebugMessageCallbackInternal?.Invoke(debugMessage);
-		}
-
-		private void PrintDebugMessageInternal(string debugMessage)
-		{
-			// We must invoke on the UI thread.
-			Invoke(new Action(() => debugRichTextBox.AppendText(debugMessage)));
-		}
-
-		public static void PrintDebugStatus(string debugStatus)
-		{
-			s_printDebugStatisCallbackInternal?.Invoke(debugStatus);
-		}
-
-		private void PrintDebugStatusInternal(string debugStatus)
-		{
-			// We must invoke on the UI thread.
-			Invoke(new Action(() => debugToolStripStatusLabel.Text = debugStatus));
-		}
-
-		public static void Render()
-		{
-			s_renderCallbackInternal?.Invoke();
-		}
-
-		private void RenderInternal()
-		{
-			Invoke(new Action(() => Refresh()));
+			if (GameBoy.DebugOutput != "")
+			{
+				debugRichTextBox.AppendText(GameBoy.DebugOutput);
+				GameBoy.DebugOutput = "";
+			}
+			debugToolStripStatusLabel.Text = GameBoy.DebugStatus;
+			lcdControl.Refresh();
 		}
 	}
 }

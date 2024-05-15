@@ -103,7 +103,7 @@
 				else
 				{
 					data = 0xFF;
-					MainForm.PrintDebugMessage($"Reading from external RAM while RAM is disabled!\n");
+					GameBoy.DebugOutput += $"Reading from external RAM while RAM is disabled!\n";
 					MainForm.Pause();
 				}
 			}
@@ -132,7 +132,7 @@
 			}
 			else if (address >= 0xFEA0 && address <= 0xFEFF)
 			{
-				MainForm.PrintDebugMessage($"Reading from unusable memory: 0x{address:X4}!\n");
+				GameBoy.DebugOutput += $"Reading from unusable memory: 0x{address:X4}!\n";
 				MainForm.Pause();
 			}
 			else if (address >= 0xFF00 && address <= 0xFF7F)
@@ -186,7 +186,7 @@
 				// TODO: The other registers.
 				else
 				{
-					MainForm.PrintDebugMessage($"Reading from unimplemented register: 0x{address:X4}!\n");
+					GameBoy.DebugOutput += $"Reading from unimplemented register: 0x{address:X4}!\n"	;
 					MainForm.Pause();
 				}
 			}
@@ -238,14 +238,14 @@
 				else
 				{
 					// TODO: Other MBC behaviors?
-					MainForm.PrintDebugMessage($"Writing to ROM: 0x{address:X4}!\n");
+					GameBoy.DebugOutput += $"Writing to ROM: 0x{address:X4}!\n";
 					MainForm.Pause();
 				}
 			}
 			else if (address >= 0x4000 && address <= 0x5FFF)
 			{
 				// TODO: ROM/RAM bank number.
-				MainForm.PrintDebugMessage($"Writing to ROM: 0x{address:X4}!\n");
+				GameBoy.DebugOutput += $"Writing to ROM: 0x{address:X4}!\n";
 				MainForm.Pause();
 			}
 			else if (address >= 0x6000 && address <= 0x7FFF)
@@ -267,7 +267,7 @@
 				}
 				else
 				{
-					MainForm.PrintDebugMessage($"Writing to external RAM while RAM is disabled!\n");
+					GameBoy.DebugOutput += $"Writing to external RAM while RAM is disabled!\n";
 					MainForm.Pause();
 				}
 			}
@@ -295,7 +295,7 @@
 			}
 			else if (address >= 0xFEA0 && address <= 0xFEFF)
 			{
-				MainForm.PrintDebugMessage($"Writing to unusable memory: 0x{address:X4}!\n");
+				GameBoy.DebugOutput += $"Writing to unusable memory: 0x{address:X4}!\n";
 				MainForm.Pause();
 			}
 			else if (address >= 0xFF00 && address <= 0xFF7F)
@@ -463,7 +463,7 @@
 			}
 			else if (address == 0xFF44)
 			{
-				MainForm.PrintDebugMessage("Register 0xFF44 is read-only!\n");
+				GameBoy.DebugOutput += "Register 0xFF44 is read-only!\n";
 				MainForm.Pause();
 			}
 			else if (address == 0xFF45)
@@ -504,7 +504,7 @@
 			// TODO: The other registers.
 			else
 			{
-				MainForm.PrintDebugMessage($"Writing to unimplemented register: 0x{address:X4}!\n");
+				GameBoy.DebugOutput += $"Writing to unimplemented register: 0x{address:X4}!\n";
 				MainForm.Pause();
 			}
 		}

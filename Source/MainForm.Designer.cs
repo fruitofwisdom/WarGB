@@ -209,7 +209,6 @@
 			MainMenuStrip = menuStrip;
 			Name = "MainForm";
 			Text = "GB#";
-			FormClosing += MainFormClosing;
 			menuStrip.ResumeLayout(false);
 			menuStrip.PerformLayout();
 			toolStrip.ResumeLayout(false);

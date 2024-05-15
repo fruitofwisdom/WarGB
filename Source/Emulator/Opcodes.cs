@@ -87,9 +87,9 @@
 		}
 
 		// Run an instruction and return how many cycles elapsed.
-		private uint HandleOpcode(byte instruction)
+		private void HandleOpcode(byte instruction, out uint cycles)
 		{
-			uint Cycles = 0;
+			cycles = 0;
 
 			switch (instruction)
 			{
@@ -97,7 +97,7 @@
 					{
 						PrintOpcode(instruction, "NOP");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -108,7 +108,7 @@
 						ushort d16 = (ushort)((B << 8) + C);
 						PrintOpcode(instruction, $"LD BC, 0x{d16:X4}");
 						PC += 3;
-						Cycles += 3;
+						cycles += 3;
 					}
 					break;
 
@@ -120,7 +120,7 @@
 						C = (byte)(bc & 0x00FF);
 						PrintOpcode(instruction, "INC BC");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -129,7 +129,7 @@
 						Add(ref B, 1, true, true, false);
 						PrintOpcode(instruction, "INC B");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -138,7 +138,7 @@
 						Sub(ref B, 1, true, true, false);
 						PrintOpcode(instruction, "DEC B");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -148,7 +148,7 @@
 						B = d8;
 						PrintOpcode(instruction, $"LD B, 0x{d8:X2}");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -162,7 +162,7 @@
 						H = false;
 						PrintOpcode(instruction, "RLCA");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -172,7 +172,7 @@
 						Add(ref HL, bc, false);
 						PrintOpcode(instruction, "ADD HL, BC");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -182,7 +182,7 @@
 						A = Memory.Instance.Read(bc);
 						PrintOpcode(instruction, "LD A, (BC)");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -194,7 +194,7 @@
 						C = (byte)(bc & 0x00FF);
 						PrintOpcode(instruction, "DEC BC");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -203,7 +203,7 @@
 						Add(ref C, 1, true, true, false);
 						PrintOpcode(instruction, "INC C");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -212,7 +212,7 @@
 						Sub(ref C, 1, true, true, false);
 						PrintOpcode(instruction, "DEC C");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -222,7 +222,7 @@
 						C = d8;
 						PrintOpcode(instruction, $"LD C, 0x{d8:X2}");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -236,7 +236,7 @@
 						H = false;
 						PrintOpcode(instruction, "RCCA");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -247,7 +247,7 @@
 						ushort d16 = (ushort)((D << 8) + E);
 						PrintOpcode(instruction, $"LD DE, 0x{d16:X4}");
 						PC += 3;
-						Cycles += 3;
+						cycles += 3;
 					}
 					break;
 
@@ -257,7 +257,7 @@
 						Memory.Instance.Write(de, A);
 						PrintOpcode(instruction, "LD (DE), A");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -269,7 +269,7 @@
 						E = (byte)(de & 0x00FF);
 						PrintOpcode(instruction, "INC DE");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -278,7 +278,7 @@
 						Add(ref D, 1, true, true, false);
 						PrintOpcode(instruction, "INC D");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -287,7 +287,7 @@
 						Sub(ref D, 1, true, true, false);
 						PrintOpcode(instruction, "DEC D");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -297,7 +297,7 @@
 						D = d8;
 						PrintOpcode(instruction, $"LD D, 0x{d8:X2}");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -307,7 +307,7 @@
 						ushort newPC = (ushort)(PC + s8);
 						PrintOpcode(instruction, $"JR 0x{newPC:X4}");
 						PC = newPC;
-						Cycles += 3;
+						cycles += 3;
 					}
 					break;
 
@@ -317,7 +317,7 @@
 						Add(ref HL, de, false);
 						PrintOpcode(instruction, "ADD HL, DE");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -327,7 +327,7 @@
 						A = Memory.Instance.Read(de);
 						PrintOpcode(instruction, "LD A, (DE)");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -336,7 +336,7 @@
 						Add(ref E, 1, true, true, false);
 						PrintOpcode(instruction, "INC E");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -345,7 +345,7 @@
 						Sub(ref E, 1, true, true, false);
 						PrintOpcode(instruction, "DEC E");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -355,7 +355,7 @@
 						E = d8;
 						PrintOpcode(instruction, $"LD E, 0x{d8:X2}");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -367,12 +367,12 @@
 						if (!Z)
 						{
 							PC = newPC;
-							Cycles += 3;
+							cycles += 3;
 						}
 						else
 						{
 							PC += 2;
-							Cycles += 2;
+							cycles += 2;
 						}
 					}
 					break;
@@ -385,7 +385,7 @@
 						HL = d16;
 						PrintOpcode(instruction, $"LD HL, 0x{d16:X4}");
 						PC += 3;
-						Cycles += 3;
+						cycles += 3;
 					}
 					break;
 
@@ -395,7 +395,7 @@
 						HL++;
 						PrintOpcode(instruction, "LD (HL+), A");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -404,7 +404,7 @@
 						HL++;
 						PrintOpcode(instruction, "INC HL");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -416,7 +416,7 @@
 						HL = (ushort)((h << 8) + l);
 						PrintOpcode(instruction, $"LD H, 0x{d8:X2}");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -428,12 +428,12 @@
 						if (Z)
 						{
 							PC = newPC;
-							Cycles += 3;
+							cycles += 3;
 						}
 						else
 						{
 							PC += 2;
-							Cycles += 2;
+							cycles += 2;
 						}
 					}
 					break;
@@ -443,7 +443,7 @@
 						Add(ref HL, HL, false, true, true);
 						PrintOpcode(instruction, "ADD HL, HL");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -453,7 +453,7 @@
 						HL++;
 						PrintOpcode(instruction, "LD A, (HL+)");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -462,7 +462,7 @@
 						HL--;
 						PrintOpcode(instruction, "DEC HL");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -473,7 +473,7 @@
 						H = true;
 						PrintOpcode(instruction, "CPL");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -485,12 +485,12 @@
 						if (!CY)
 						{
 							PC = newPC;
-							Cycles += 3;
+							cycles += 3;
 						}
 						else
 						{
 							PC += 2;
-							Cycles += 2;
+							cycles += 2;
 						}
 					}
 					break;
@@ -503,7 +503,7 @@
 						SP = d16;
 						PrintOpcode(instruction, $"LD SP, 0x{d16:X4}");
 						PC += 3;
-						Cycles += 3;
+						cycles += 3;
 					}
 					break;
 
@@ -513,7 +513,7 @@
 						HL--;
 						PrintOpcode(instruction, "LD (HL-), A");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -524,7 +524,7 @@
 						Memory.Instance.Write(HL, d8);
 						PrintOpcode(instruction, "INC (HL)");
 						PC++;
-						Cycles += 3;
+						cycles += 3;
 					}
 					break;
 
@@ -535,7 +535,7 @@
 						Memory.Instance.Write(HL, d8);
 						PrintOpcode(instruction, "DEC (HL)");
 						PC++;
-						Cycles += 3;
+						cycles += 3;
 					}
 					break;
 
@@ -545,7 +545,7 @@
 						Memory.Instance.Write(HL, d8);
 						PrintOpcode(instruction, $"LD (HL), 0x{d8:2}");
 						PC += 2;
-						Cycles += 3;
+						cycles += 3;
 					}
 					break;
 
@@ -556,7 +556,7 @@
 						CY = true;
 						PrintOpcode(instruction, "SCF");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -568,12 +568,12 @@
 						if (CY)
 						{
 							PC = newPC;
-							Cycles += 3;
+							cycles += 3;
 						}
 						else
 						{
 							PC += 2;
-							Cycles += 2;
+							cycles += 2;
 						}
 					}
 					break;
@@ -584,7 +584,7 @@
 						HL--;
 						PrintOpcode(instruction, "LD A, (HL-)");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -593,7 +593,7 @@
 						Add(ref A, 1, true, true, false);
 						PrintOpcode(instruction, "INC A");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -602,7 +602,7 @@
 						Sub(ref A, 1, true, true, false);
 						PrintOpcode(instruction, "DEC A");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -612,7 +612,7 @@
 						A = d8;
 						PrintOpcode(instruction, $"LD A, 0x{d8:X2}");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -623,7 +623,7 @@
 						CY = !CY;
 						PrintOpcode(instruction, "CCF");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -632,7 +632,7 @@
 						B = C;
 						PrintOpcode(instruction, "LD B, C");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -642,7 +642,7 @@
 						B = h;
 						PrintOpcode(instruction, "LD B, H");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -652,7 +652,7 @@
 						B = l;
 						PrintOpcode(instruction, "LD B, L");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -661,7 +661,7 @@
 						B = Memory.Instance.Read(HL);
 						PrintOpcode(instruction, "LD B, (HL)");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -670,7 +670,7 @@
 						B = A;
 						PrintOpcode(instruction, "LD B, A");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -679,7 +679,7 @@
 						C = B;
 						PrintOpcode(instruction, "LD C, B");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -688,7 +688,7 @@
 						C = E;
 						PrintOpcode(instruction, "LD C, E");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -698,7 +698,7 @@
 						C = l;
 						PrintOpcode(instruction, "LD C, L");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -707,7 +707,7 @@
 						C = Memory.Instance.Read(HL);
 						PrintOpcode(instruction, "LD C, (HL)");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -716,7 +716,7 @@
 						C = A;
 						PrintOpcode(instruction, "LD C, A");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -726,7 +726,7 @@
 						D = h;
 						PrintOpcode(instruction, "LD D, H");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -735,7 +735,7 @@
 						D = Memory.Instance.Read(HL);
 						PrintOpcode(instruction, "LD D, (HL)");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -744,7 +744,7 @@
 						D = A;
 						PrintOpcode(instruction, "LD D, A");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -753,7 +753,7 @@
 						E = B;
 						PrintOpcode(instruction, "LD E, B");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -762,7 +762,7 @@
 						E = C;
 						PrintOpcode(instruction, "LD E, C");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -771,7 +771,7 @@
 						E = D;
 						PrintOpcode(instruction, "LD E, D");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -781,7 +781,7 @@
 						E = l;
 						PrintOpcode(instruction, "LD E, L");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -790,7 +790,7 @@
 						E = Memory.Instance.Read(HL);
 						PrintOpcode(instruction, "LD E, (HL)");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -799,7 +799,7 @@
 						E = A;
 						PrintOpcode(instruction, "LD E, A");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -810,7 +810,7 @@
 						HL = (ushort)((h << 8) + l);
 						PrintOpcode(instruction, "LD H, C");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -821,7 +821,7 @@
 						HL = (ushort)((h << 8) + l);
 						PrintOpcode(instruction, "LD H, (HL)");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -832,7 +832,7 @@
 						HL = (ushort)((h << 8) + l);
 						PrintOpcode(instruction, "LD H, A");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -843,7 +843,7 @@
 						HL = (ushort)((h << 8) + l);
 						PrintOpcode(instruction, "LD L, B");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -854,7 +854,7 @@
 						HL = (ushort)((h << 8) + l);
 						PrintOpcode(instruction, "LD L, C");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -865,7 +865,7 @@
 						HL = (ushort)((h << 8) + l);
 						PrintOpcode(instruction, "LD L, D");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -876,7 +876,7 @@
 						HL = (ushort)((h << 8) + l);
 						PrintOpcode(instruction, "LD L, E");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -887,7 +887,7 @@
 						HL = (ushort)((h << 8) + l);
 						PrintOpcode(instruction, "LD L, (HL)");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -898,7 +898,7 @@
 						HL = (ushort)((h << 8) + l);
 						PrintOpcode(instruction, "LD L, A");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -907,7 +907,7 @@
 						Memory.Instance.Write(HL, B);
 						PrintOpcode(instruction, "LD (HL), B");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -916,7 +916,7 @@
 						Memory.Instance.Write(HL, C);
 						PrintOpcode(instruction, "LD (HL), C");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -925,7 +925,7 @@
 						Memory.Instance.Write(HL, D);
 						PrintOpcode(instruction, "LD (HL), D");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -934,7 +934,7 @@
 						Memory.Instance.Write(HL, E);
 						PrintOpcode(instruction, "LD (HL), E");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -943,7 +943,7 @@
 						_halted = true;
 						PrintOpcode(instruction, "HALT");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -952,7 +952,7 @@
 						Memory.Instance.Write(HL, A);
 						PrintOpcode(instruction, "LD (HL), A");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -961,7 +961,7 @@
 						A = B;
 						PrintOpcode(instruction, "LD A, B");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -970,7 +970,7 @@
 						A = C;
 						PrintOpcode(instruction, "LD A, C");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -979,7 +979,7 @@
 						A = D;
 						PrintOpcode(instruction, "LD A, D");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -988,7 +988,7 @@
 						A = E;
 						PrintOpcode(instruction, "LD A, E");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -998,7 +998,7 @@
 						A = h;
 						PrintOpcode(instruction, "LD A, H");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1008,7 +1008,7 @@
 						A = l;
 						PrintOpcode(instruction, "LD A, L");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1017,7 +1017,7 @@
 						A = Memory.Instance.Read(HL);
 						PrintOpcode(instruction, "LD A, (HL)");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -1026,7 +1026,7 @@
 						Add(ref A, B);
 						PrintOpcode(instruction, "ADD A, B");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1035,7 +1035,7 @@
 						Add(ref A, C);
 						PrintOpcode(instruction, "ADD A, C");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1044,7 +1044,7 @@
 						Add(ref A, D);
 						PrintOpcode(instruction, "ADD A, D");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1053,7 +1053,7 @@
 						Add(ref A, E);
 						PrintOpcode(instruction, "ADD A, E");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1063,7 +1063,7 @@
 						Add(ref A, h);
 						PrintOpcode(instruction, "ADD A, H");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1073,7 +1073,7 @@
 						Add(ref A, l);
 						PrintOpcode(instruction, "ADD A, L");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1083,7 +1083,7 @@
 						Add(ref A, d8);
 						PrintOpcode(instruction, "ADD A, (HL)");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -1092,7 +1092,7 @@
 						Add(ref A, A);
 						PrintOpcode(instruction, "ADD A, A");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1101,7 +1101,7 @@
 						Sub(ref A, B);
 						PrintOpcode(instruction, "SUB B");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1110,7 +1110,7 @@
 						Sub(ref A, C);
 						PrintOpcode(instruction, "SUB C");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1119,7 +1119,7 @@
 						Sub(ref A, D);
 						PrintOpcode(instruction, "SUB D");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1132,7 +1132,7 @@
 						CY = false;
 						PrintOpcode(instruction, "AND B");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1145,7 +1145,7 @@
 						CY = false;
 						PrintOpcode(instruction, "AND C");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1159,7 +1159,7 @@
 						CY = false;
 						PrintOpcode(instruction, "AND (HL)");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -1172,7 +1172,7 @@
 						CY = false;
 						PrintOpcode(instruction, "AND A");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1185,7 +1185,7 @@
 						CY = false;
 						PrintOpcode(instruction, "XOR C");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1198,7 +1198,7 @@
 						CY = false;
 						PrintOpcode(instruction, "XOR D");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1212,7 +1212,7 @@
 						CY = false;
 						PrintOpcode(instruction, "XOR (HL)");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -1225,7 +1225,7 @@
 						CY = false;
 						PrintOpcode(instruction, "XOR A");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1238,7 +1238,7 @@
 						CY = false;
 						PrintOpcode(instruction, "OR B");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1251,7 +1251,7 @@
 						CY = false;
 						PrintOpcode(instruction, "OR C");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1264,7 +1264,7 @@
 						CY = false;
 						PrintOpcode(instruction, "OR D");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1277,7 +1277,7 @@
 						CY = false;
 						PrintOpcode(instruction, "OR E");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1291,7 +1291,7 @@
 						CY = false;
 						PrintOpcode(instruction, "OR H");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1305,7 +1305,7 @@
 						CY = false;
 						PrintOpcode(instruction, "OR L");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1319,7 +1319,7 @@
 						CY = false;
 						PrintOpcode(instruction, "OR (HL)");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1332,7 +1332,7 @@
 						CY = false;
 						PrintOpcode(instruction, "OR A");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1345,7 +1345,7 @@
 						CY = cp < 0;
 						PrintOpcode(instruction, "CP B");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1358,7 +1358,7 @@
 						CY = cp < 0;
 						PrintOpcode(instruction, "CP C");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1371,7 +1371,7 @@
 						CY = cp < 0;
 						PrintOpcode(instruction, "CP D");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1384,7 +1384,7 @@
 						CY = cp < 0;
 						PrintOpcode(instruction, "CP E");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1398,7 +1398,7 @@
 						CY = cp < 0;
 						PrintOpcode(instruction, "CP H");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1412,7 +1412,7 @@
 						CY = cp < 0;
 						PrintOpcode(instruction, "CP L");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1426,7 +1426,7 @@
 						CY = cp < 0;
 						PrintOpcode(instruction, "CP (HL)");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -1440,12 +1440,12 @@
 							ushort higher = (ushort)(Memory.Instance.Read(SP) << 8);
 							SP++;
 							PC = (ushort)(higher + lower);
-							Cycles += 5;
+							cycles += 5;
 						}
 						else
 						{
 							PC++;
-							Cycles += 2;
+							cycles += 2;
 						}
 					}
 					break;
@@ -1458,7 +1458,7 @@
 						SP++;
 						PrintOpcode(instruction, "POP BC");
 						PC++;
-						Cycles += 3;
+						cycles += 3;
 					}
 					break;
 
@@ -1471,12 +1471,12 @@
 						if (!Z)
 						{
 							PC = a16;
-							Cycles += 4;
+							cycles += 4;
 						}
 						else
 						{
 							PC += 3;
-							Cycles += 3;
+							cycles += 3;
 						}
 					}
 					break;
@@ -1488,7 +1488,7 @@
 						ushort a16 = (ushort)(higher + lower);
 						PrintOpcode(instruction, $"JP 0x{a16:X4}");
 						PC = a16;
-						Cycles += 4;
+						cycles += 4;
 					}
 					break;
 
@@ -1507,12 +1507,12 @@
 							Memory.Instance.Write(SP - 2, pcLower);
 							SP -= 2;
 							PC = a16;
-							Cycles += 6;
+							cycles += 6;
 						}
 						else
 						{
 							PC += 3;
-							Cycles += 3;
+							cycles += 3;
 						}
 					}
 					break;
@@ -1525,7 +1525,7 @@
 						Memory.Instance.Write(SP, C);
 						PrintOpcode(instruction, "PUSH BC");
 						PC++;
-						Cycles += 4;
+						cycles += 4;
 					}
 					break;
 
@@ -1535,7 +1535,7 @@
 						Add(ref A, d8);
 						PrintOpcode(instruction, $"ADD A, 0x{d8:X2}");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -1549,12 +1549,12 @@
 							ushort higher = (ushort)(Memory.Instance.Read(SP) << 8);
 							SP++;
 							PC = (ushort)(higher + lower);
-							Cycles += 5;
+							cycles += 5;
 						}
 						else
 						{
 							PC++;
-							Cycles += 2;
+							cycles += 2;
 						}
 					}
 					break;
@@ -1567,7 +1567,7 @@
 						SP++;
 						PrintOpcode(instruction, "RET");
 						PC = (ushort)(higher + lower);
-						Cycles += 4;
+						cycles += 4;
 					}
 					break;
 
@@ -1580,12 +1580,12 @@
 						if (Z)
 						{
 							PC = a16;
-							Cycles += 4;
+							cycles += 4;
 						}
 						else
 						{
 							PC += 3;
-							Cycles += 3;
+							cycles += 3;
 						}
 					}
 					break;
@@ -1593,7 +1593,7 @@
 				case 0xCB:      // NOTE: CB is a prefix for additional opcodes.
 					{
 						byte nextInstruction = Memory.Instance.Read(PC + 1);
-						Cycles = Handle16BitOpcode(nextInstruction);
+						Handle16BitOpcode(nextInstruction, out cycles);
 					}
 					break;
 
@@ -1612,12 +1612,12 @@
 							Memory.Instance.Write(SP - 2, pcLower);
 							SP -= 2;
 							PC = a16;
-							Cycles += 6;
+							cycles += 6;
 						}
 						else
 						{
 							PC += 3;
-							Cycles += 3;
+							cycles += 3;
 						}
 					}
 					break;
@@ -1635,7 +1635,7 @@
 						ushort a16 = (ushort)(higher + lower);
 						PrintOpcode(instruction, $"CALL 0x{a16:X4}");
 						PC = a16;
-						Cycles += 6;
+						cycles += 6;
 					}
 					break;
 
@@ -1646,7 +1646,7 @@
 						Add(ref A, d8);
 						PrintOpcode(instruction, "ADC A, 0x{d8:X2}");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -1660,12 +1660,12 @@
 							ushort higher = (ushort)(Memory.Instance.Read(SP) << 8);
 							SP++;
 							PC = (ushort)(higher + lower);
-							Cycles += 5;
+							cycles += 5;
 						}
 						else
 						{
 							PC++;
-							Cycles += 2;
+							cycles += 2;
 						}
 					}
 					break;
@@ -1678,7 +1678,7 @@
 						SP++;
 						PrintOpcode(instruction, "POP DE");
 						PC++;
-						Cycles += 3;
+						cycles += 3;
 					}
 					break;
 
@@ -1697,12 +1697,12 @@
 							Memory.Instance.Write(SP - 2, pcLower);
 							SP -= 2;
 							PC = a16;
-							Cycles += 6;
+							cycles += 6;
 						}
 						else
 						{
 							PC += 3;
-							Cycles += 3;
+							cycles += 3;
 						}
 					}
 					break;
@@ -1715,7 +1715,7 @@
 						Memory.Instance.Write(SP, E);
 						PrintOpcode(instruction, "PUSH DE");
 						PC++;
-						Cycles += 4;
+						cycles += 4;
 					}
 					break;
 
@@ -1725,7 +1725,7 @@
 						Sub(ref A, d8);
 						PrintOpcode(instruction, "SUB 0x{d8:2}");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -1739,12 +1739,12 @@
 							ushort higher = (ushort)(Memory.Instance.Read(SP) << 8);
 							SP++;
 							PC = (ushort)(higher + lower);
-							Cycles += 5;
+							cycles += 5;
 						}
 						else
 						{
 							PC++;
-							Cycles += 2;
+							cycles += 2;
 						}
 					}
 					break;
@@ -1758,7 +1758,7 @@
 						IME = true;
 						PrintOpcode(instruction, "RETI");
 						PC = (ushort)(higher + lower);
-						Cycles += 4;
+						cycles += 4;
 					}
 					break;
 
@@ -1771,12 +1771,12 @@
 						if (CY)
 						{
 							PC = a16;
-							Cycles += 4;
+							cycles += 4;
 						}
 						else
 						{
 							PC += 3;
-							Cycles += 3;
+							cycles += 3;
 						}
 					}
 					break;
@@ -1788,7 +1788,7 @@
 						Memory.Instance.Write(higher + lower, A);
 						PrintOpcode(instruction, $"LD (0x{lower:X2}), A");
 						PC += 2;
-						Cycles += 3;
+						cycles += 3;
 					}
 					break;
 
@@ -1801,7 +1801,7 @@
 						HL = (ushort)((h << 8) + l);
 						PrintOpcode(instruction, "POP HL");
 						PC++;
-						Cycles += 3;
+						cycles += 3;
 					}
 					break;
 
@@ -1813,7 +1813,7 @@
 						Memory.Instance.Write(a16, A);
 						PrintOpcode(instruction, $"LD (0x{a16:X4}), A");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -1827,7 +1827,7 @@
 						Memory.Instance.Write(SP, l);
 						PrintOpcode(instruction, "PUSH HL");
 						PC++;
-						Cycles += 4;
+						cycles += 4;
 					}
 					break;
 
@@ -1841,7 +1841,7 @@
 						CY = false;
 						PrintOpcode(instruction, $"AND 0x{d8:2}");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -1849,7 +1849,7 @@
 					{
 						PrintOpcode(instruction, $"JP HL");
 						PC = HL;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1861,7 +1861,7 @@
 						Memory.Instance.Write(a16, A);
 						PrintOpcode(instruction, $"LD (0x{a16:X4}), A");
 						PC += 3;
-						Cycles += 4;
+						cycles += 4;
 					}
 					break;
 
@@ -1875,7 +1875,7 @@
 						CY = false;
 						PrintOpcode(instruction, "XOR 0x{d8:X2}");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -1886,7 +1886,7 @@
 						A = Memory.Instance.Read(higher + lower);
 						PrintOpcode(instruction, $"LD A, (0x{lower:X2})");
 						PC += 2;
-						Cycles += 3;
+						cycles += 3;
 					}
 					break;
 
@@ -1899,7 +1899,7 @@
 						SP++;
 						PrintOpcode(instruction, "POP AF");
 						PC++;
-						Cycles += 3;
+						cycles += 3;
 					}
 					break;
 
@@ -1911,7 +1911,7 @@
 						A = Memory.Instance.Read(a16);
 						PrintOpcode(instruction, $"LD A, (0x{a16:X4})");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -1920,7 +1920,7 @@
 						IME = false;
 						PrintOpcode(instruction, "DI");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -1933,7 +1933,7 @@
 						Memory.Instance.Write(SP, f);
 						PrintOpcode(instruction, "PUSH AF");
 						PC++;
-						Cycles += 4;
+						cycles += 4;
 					}
 					break;
 
@@ -1947,7 +1947,7 @@
 						CY = false;
 						PrintOpcode(instruction, $"OR 0x{d8:2}");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -1961,7 +1961,7 @@
 						CY = s8 < 0;
 						PrintOpcode(instruction, $"LD HL, SP+0x{s8:2}");
 						PC += 2;
-						Cycles += 3;
+						cycles += 3;
 					}
 					break;
 
@@ -1970,7 +1970,7 @@
 						SP = HL;
 						PrintOpcode(instruction, "LD SP, HL");
 						PC++;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -1982,7 +1982,7 @@
 						A = Memory.Instance.Read(a16);
 						PrintOpcode(instruction, $"LD A, (0x{a16:X4})");
 						PC += 3;
-						Cycles += 4;
+						cycles += 4;
 					}
 					break;
 
@@ -1991,7 +1991,7 @@
 						IME = true;
 						PrintOpcode(instruction, "EI");
 						PC++;
-						Cycles++;
+						cycles++;
 					}
 					break;
 
@@ -2005,25 +2005,23 @@
 						CY = cp < 0;
 						PrintOpcode(instruction, $"CP 0x{d8:X2}");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
 				default:
 					{
-						MainForm.PrintDebugMessage($"[0x{PC:X4}] Unimplemented opcode: 0x{instruction:X2}!\n");
+						GameBoy.DebugOutput += $"[0x{PC:X4}] Unimplemented opcode: 0x{instruction:X2}!\n";
 						MainForm.Pause();
 					}
 					break;
 			}
-
-			return Cycles;
 		}
 
 		// Run a 16-bit instruction and return how many cycles elapsed.
-		private uint Handle16BitOpcode(byte instruction)
+		private void Handle16BitOpcode(byte instruction, out uint cycles)
 		{
-			uint Cycles = 0;
+			cycles = 0;
 
 			switch (instruction)
 			{
@@ -2036,7 +2034,7 @@
 						H = false;
 						PrintOpcode(instruction, "RL C");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2049,7 +2047,7 @@
 						H = false;
 						PrintOpcode(instruction, "SLA D");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2062,7 +2060,7 @@
 						H = false;
 						PrintOpcode(instruction, "SLA E");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2078,7 +2076,7 @@
 						H = false;
 						PrintOpcode(instruction, "SLA H");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2094,7 +2092,7 @@
 						H = false;
 						PrintOpcode(instruction, "SLA L");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2109,7 +2107,7 @@
 						CY = false;
 						PrintOpcode(instruction, "SWAP A");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2122,7 +2120,7 @@
 						H = false;
 						PrintOpcode(instruction, "SRL B");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2135,7 +2133,7 @@
 						H = false;
 						PrintOpcode(instruction, "SRL D");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2148,7 +2146,7 @@
 						H = false;
 						PrintOpcode(instruction, "SRL E");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2161,7 +2159,7 @@
 						H = false;
 						PrintOpcode(instruction, "SRL A");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2173,7 +2171,7 @@
 						H = true;
 						PrintOpcode(instruction, "BIT 0, A");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2186,7 +2184,7 @@
 						H = true;
 						PrintOpcode(instruction, "BIT 1, (HL)");
 						PC += 2;
-						Cycles += 3;
+						cycles += 3;
 					}
 					break;
 
@@ -2198,7 +2196,7 @@
 						H = true;
 						PrintOpcode(instruction, "BIT 1, A");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2210,7 +2208,7 @@
 						H = true;
 						PrintOpcode(instruction, "BIT 2, A");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2222,7 +2220,7 @@
 						H = true;
 						PrintOpcode(instruction, "BIT 3, A");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2235,7 +2233,7 @@
 						H = true;
 						PrintOpcode(instruction, "BIT 6, H");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2248,7 +2246,7 @@
 						H = true;
 						PrintOpcode(instruction, "BIT 6, (HL)");
 						PC += 2;
-						Cycles += 3;
+						cycles += 3;
 					}
 					break;
 
@@ -2260,7 +2258,7 @@
 						H = true;
 						PrintOpcode(instruction, "BIT 6, A");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2272,7 +2270,7 @@
 						H = true;
 						PrintOpcode(instruction, "BIT 7, D");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2284,7 +2282,7 @@
 						H = true;
 						PrintOpcode(instruction, "BIT 7, E");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2297,7 +2295,7 @@
 						H = true;
 						PrintOpcode(instruction, "BIT 7, H");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2310,7 +2308,7 @@
 						H = true;
 						PrintOpcode(instruction, "BIT 7, L");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2323,7 +2321,7 @@
 						H = true;
 						PrintOpcode(instruction, "BIT 7, (HL)");
 						PC += 2;
-						Cycles += 3;
+						cycles += 3;
 					}
 					break;
 
@@ -2335,7 +2333,7 @@
 						H = true;
 						PrintOpcode(instruction, "BIT 7, A");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2346,7 +2344,7 @@
 						Memory.Instance.Write(HL, d8);
 						PrintOpcode(instruction, "RES 0, (HL)");
 						PC += 2;
-						Cycles += 4;
+						cycles += 4;
 					}
 					break;
 
@@ -2357,7 +2355,7 @@
 						Memory.Instance.Write(HL, d8);
 						PrintOpcode(instruction, "RES 1, (HL)");
 						PC += 2;
-						Cycles += 4;
+						cycles += 4;
 					}
 					break;
 
@@ -2368,7 +2366,7 @@
 						Memory.Instance.Write(HL, d8);
 						PrintOpcode(instruction, "RES 2, (HL)");
 						PC += 2;
-						Cycles += 4;
+						cycles += 4;
 					}
 					break;
 
@@ -2379,7 +2377,7 @@
 						Memory.Instance.Write(HL, d8);
 						PrintOpcode(instruction, "RES 3, (HL)");
 						PC += 2;
-						Cycles += 4;
+						cycles += 4;
 					}
 					break;
 
@@ -2391,7 +2389,7 @@
 						HL = (ushort)((h << 8) + l);
 						PrintOpcode(instruction, "RES 7, H");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2402,7 +2400,7 @@
 						Memory.Instance.Write(HL, d8);
 						PrintOpcode(instruction, "RES 7, (HL)");
 						PC += 2;
-						Cycles += 4;
+						cycles += 4;
 					}
 					break;
 
@@ -2413,7 +2411,7 @@
 						Memory.Instance.Write(HL, d8);
 						PrintOpcode(instruction, "SET 1, (HL)");
 						PC += 2;
-						Cycles += 4;
+						cycles += 4;
 					}
 					break;
 
@@ -2422,7 +2420,7 @@
 						Utilities.SetBitsInByte(ref A, 0x01, 1, 1);
 						PrintOpcode(instruction, "SET 1, A");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2433,7 +2431,7 @@
 						Memory.Instance.Write(HL, d8);
 						PrintOpcode(instruction, "SET 2, (HL)");
 						PC += 2;
-						Cycles += 4;
+						cycles += 4;
 					}
 					break;
 
@@ -2444,7 +2442,7 @@
 						Memory.Instance.Write(HL, d8);
 						PrintOpcode(instruction, "SET 3, (HL)");
 						PC += 2;
-						Cycles += 4;
+						cycles += 4;
 					}
 					break;
 
@@ -2456,19 +2454,17 @@
 						HL = (ushort)((h << 8) + l);
 						PrintOpcode(instruction, "SET 6, H");
 						PC += 2;
-						Cycles += 2;
+						cycles += 2;
 					}
 					break;
 
 				default:
 					{
-						MainForm.PrintDebugMessage($"[0x{PC:X4}] Unimplemented opcode: 0xCB{instruction:X2}!\n");
+						GameBoy.DebugOutput += $"[0x{PC:X4}] Unimplemented opcode: 0xCB{instruction:X2}!\n";
 						MainForm.Pause();
 					}
 					break;
 			}
-
-			return Cycles;
 		}
 	}
 }

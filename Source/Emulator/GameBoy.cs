@@ -11,7 +11,12 @@
 		private uint _clocks;
 
 		// How often to sleep the thread.
-		private const uint kClocksToSleep = 70224;
+		private const uint kClocksToSleep = PPU.kDotsPerLine * PPU.kLinesPerFrame;
+
+		// Debug output communication for the MainForm.
+		public static string DebugOutput = "";
+		public static string DebugStatus = "";
+		public static bool ShouldPrintOpcodes = false;
 
 		public GameBoy()
 		{
@@ -36,20 +41,14 @@
 		public void Run()
 		{
 			// NOTE: We skip any validation or BIOS handling.
-			Thread.CurrentThread.Name = "GB# CPU";
-			MainForm.PrintDebugMessage("Ready to play " + ROM.Instance.Title + "!\n");
+			Thread.CurrentThread.Name = "GB# Game Boy";
+			DebugOutput += "Ready to play " + ROM.Instance.Title + "!\n";
 
 			uint clocksToNextCPUCycle = 0;
 
 			// One loop is one cycle of the master clock.
-			while (true)
+			while (!_needToStop)
 			{
-				if (_needToStop)
-				{
-					// The thread needs to close.
-					return;
-				}
-
 				// Do nothing if we're paused, unless a step was requested.
 				if (!_playing && !_stepRequested)
 				{
@@ -82,14 +81,11 @@
 
 				_clocks++;
 
-				// Prevent clocks from overflowing and remember to sleep.
+				// Prevent clocks from overflowing and remember to sleep each frame.
 				if (_clocks == kClocksToSleep)
 				{
 					_clocks = 0;
 					Thread.Sleep(1);
-
-					// TODO: Is this the best place to update the LCD?
-					MainForm.Render();
 				}
 			}
 		}

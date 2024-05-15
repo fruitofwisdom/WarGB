@@ -2,8 +2,6 @@
 {
 	internal partial class CPU
 	{
-		public static bool ShouldPrintOpcodes = false;
-
 		// The accumulator register.
 		private byte A;
 		// The auxiliary registers.
@@ -80,7 +78,7 @@
 			if (!interruptHandled && !_halted)
 			{
 				byte instruction = Memory.Instance.Read(PC);
-				cycles = HandleOpcode(instruction);
+				HandleOpcode(instruction, out cycles);
 			}
 
 			return cycles;
@@ -154,10 +152,11 @@
 
 		private void PrintOpcode(byte instruction, string opcode)
 		{
-			if (ShouldPrintOpcodes)
+			if (GameBoy.ShouldPrintOpcodes)
 			{
-				MainForm.PrintDebugMessage($"[0x{PC:X4}] 0x{instruction:X2}: " + opcode + "\n");
+				GameBoy.DebugOutput += $"[0x{PC:X4}] 0x{instruction:X2}: " + opcode + "\n";
 			}
+			GameBoy.DebugStatus = $"PC: 0x{PC:X4}";
 		}
 	}
 }

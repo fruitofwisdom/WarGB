@@ -29,6 +29,7 @@
 			}
 
 			_scale = Size.Width / 160;
+			e.Graphics.Clear(Color.GreenYellow);
 
 			// Draw the background by iterating over each of its tiles.
 			for (int tileY = 0; tileY < 32; ++tileY)

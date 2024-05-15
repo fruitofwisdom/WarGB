@@ -3,9 +3,9 @@
 	internal class PPU
 	{
 		// Every 456 dots, we increment LY, possibly trigger v-blank, etc.
-		private const uint kDotsPerLine = 456;
+		public const uint kDotsPerLine = 456;
 		private const uint kVBlankLine = 144;
-		private const uint kLinesPerFrame = 154;
+		public const uint kLinesPerFrame = 154;
 		public const uint kCyclesPerFrame = kDotsPerLine / 4 * kLinesPerFrame;
 
 		private uint Dots;
