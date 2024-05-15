@@ -46,6 +46,7 @@ namespace GBSharp
 
 					// Put the game name and ROM type in our title.
 					Text = "GB# - " + ROM.Instance.Title + " (" + ROM.Instance.CartridgeType.ToString().Replace("_", "+") + ")";
+					GameBoy.DebugStatus = "Loaded";
 
 					// Start a new thread to run the Game Boy.
 					_gameBoyThread = new Thread(new ThreadStart(_gameBoy.Run));
@@ -78,6 +79,7 @@ namespace GBSharp
 		private void PlayButtonClick(object sender, EventArgs e)
 		{
 			_gameBoy.Play();
+			GameBoy.DebugStatus = "Playing";
 
 			playButton.Enabled = false;
 			pauseButton.Enabled = true;
@@ -88,6 +90,7 @@ namespace GBSharp
 		private void PauseButtonClick(object sender, EventArgs e)
 		{
 			_gameBoy.Pause();
+			GameBoy.DebugStatus = "Paused";
 
 			playButton.Enabled = true;
 			pauseButton.Enabled = false;
@@ -108,6 +111,7 @@ namespace GBSharp
 		private void ResetButtonClick(object sender, EventArgs e)
 		{
 			_gameBoy.Reset();
+			GameBoy.DebugStatus = "Loaded";
 
 			playButton.Enabled = true;
 			pauseButton.Enabled = false;
@@ -135,6 +139,78 @@ namespace GBSharp
 			}
 			debugToolStripStatusLabel.Text = GameBoy.DebugStatus;
 			lcdControl.Refresh();
+		}
+
+		private void MainForm_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.KeyCode == Keys.K || e.KeyCode == Keys.NumPad2)
+			{
+				Controller.Instance.A = true;
+			}
+			if (e.KeyCode == Keys.J || e.KeyCode == Keys.NumPad1)
+			{
+				Controller.Instance.B = true;
+			}
+			if (e.KeyCode == Keys.ShiftKey || e.KeyCode == Keys.Oemplus)
+			{
+				Controller.Instance.Select = true;
+			}
+			if (e.KeyCode == Keys.Enter)
+			{
+				Controller.Instance.Start = true;
+			}
+			if (e.KeyCode == Keys.D || e.KeyCode == Keys.Right)
+			{
+				Controller.Instance.Right = true;
+			}
+			if (e.KeyCode == Keys.A || e.KeyCode == Keys.Left)
+			{
+				Controller.Instance.Left = true;
+			}
+			if (e.KeyCode == Keys.W || e.KeyCode == Keys.Up)
+			{
+				Controller.Instance.Up = true;
+			}
+			if (e.KeyCode == Keys.S ||  e.KeyCode == Keys.Down)
+			{
+				Controller.Instance.Down = true;
+			}
+		}
+
+		private void MainForm_KeyUp(object sender, KeyEventArgs e)
+		{
+			if (e.KeyCode == Keys.K || e.KeyCode == Keys.NumPad2)
+			{
+				Controller.Instance.A = false;
+			}
+			if (e.KeyCode == Keys.J || e.KeyCode == Keys.NumPad1)
+			{
+				Controller.Instance.B = false;
+			}
+			if (e.KeyCode == Keys.ShiftKey || e.KeyCode == Keys.Oemplus)
+			{
+				Controller.Instance.Select = false;
+			}
+			if (e.KeyCode == Keys.Enter)
+			{
+				Controller.Instance.Start = false;
+			}
+			if (e.KeyCode == Keys.D || e.KeyCode == Keys.Right)
+			{
+				Controller.Instance.Right = false;
+			}
+			if (e.KeyCode == Keys.A || e.KeyCode == Keys.Left)
+			{
+				Controller.Instance.Left = false;
+			}
+			if (e.KeyCode == Keys.W || e.KeyCode == Keys.Up)
+			{
+				Controller.Instance.Up = false;
+			}
+			if (e.KeyCode == Keys.S || e.KeyCode == Keys.Down)
+			{
+				Controller.Instance.Down = false;
+			}
 		}
 	}
 }

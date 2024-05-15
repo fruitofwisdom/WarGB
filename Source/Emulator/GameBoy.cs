@@ -15,7 +15,7 @@
 
 		// Debug output communication for the MainForm.
 		public static string DebugOutput = "";
-		public static string DebugStatus = "";
+		public static string DebugStatus = "Nothing Loaded";
 		public static bool ShouldPrintOpcodes = false;
 
 		public GameBoy()

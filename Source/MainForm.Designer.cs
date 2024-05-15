@@ -206,9 +206,12 @@
 			Controls.Add(toolStrip);
 			Controls.Add(menuStrip);
 			Icon = (Icon)resources.GetObject("$this.Icon");
+			KeyPreview = true;
 			MainMenuStrip = menuStrip;
 			Name = "MainForm";
 			Text = "GB#";
+			KeyDown += MainForm_KeyDown;
+			KeyUp += MainForm_KeyUp;
 			menuStrip.ResumeLayout(false);
 			menuStrip.PerformLayout();
 			toolStrip.ResumeLayout(false);
