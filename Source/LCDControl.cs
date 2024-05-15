@@ -52,29 +52,62 @@
 						tileAddress = 0x9000 + tileNumber * 16;
 					}
 
-					// Draw each tile, pixel by pixel.
-					for (int pixelY = 0; pixelY < 8; ++pixelY)
-					{
-						for (int pixelX = 0; pixelX < 8; ++pixelX)
-						{
-							// Each line in the tile is two bytes (each pixel is 2-bits of color).
-							int pixelAddress = tileAddress + pixelY * 2;
-							byte byte1 = Memory.Instance.Read(pixelAddress);
-							byte byte2 = Memory.Instance.Read(pixelAddress + 1);
-							byte colorId = Utilities.GetBitsFromByte(byte1, 7 - pixelX, 7 - pixelX);
-							colorId += (byte)(Utilities.GetBitsFromByte(byte2, 7 - pixelX, 7 - pixelX) << 1);
-
-							// Look up the correct palette color and draw that pixel.
-							int brush = Utilities.GetBitsFromByte(PPU.Instance.BGPaletteData, colorId * 2, colorId * 2 + 1);
-							int lcdX = tileX * 8 + pixelX;
-							int lcdY = tileY * 8 + pixelY;
-							e.Graphics.FillRectangle(_brushes[brush], lcdX * _scale, lcdY * _scale, _scale, _scale);
-						}
-					}
+					RenderTile(e.Graphics, tileAddress, tileX * 8, tileY * 8, PPU.Instance.BGPaletteData);
 				}
 			}
 
-			// TODO: Draw the window and OBJs.
+			// Draw the objects by iterating over each of their tiles.
+			// TODO: Enforce 10 objects-per-scanline limitation?
+			for (int objAddress = 0xFE00; objAddress  <= 0xFE9C; objAddress += 0x04)
+			{
+				int y = Memory.Instance.Read(objAddress) - 16;
+				int x = Memory.Instance.Read(objAddress + 1) - 8;
+				byte tileNumber = Memory.Instance.Read(objAddress + 2);
+				int tileAddress = 0x8000 + tileNumber * 16;
+				byte attributes = Memory.Instance.Read(objAddress + 3);
+				// TODO: Priority, x-flip, and y-flip.
+				byte objPaletteData = Utilities.GetBitsFromByte(attributes, 4, 4) == 0x20 ? PPU.Instance.OBJPaletteData1 : PPU.Instance.OBJPaletteData0;
+
+				RenderTile(e.Graphics, tileAddress, x, y, objPaletteData);
+
+				// In 8x16 mode, also render the next tile immediately below.
+				if (PPU.Instance.OBJSize)
+				{
+					tileAddress += 16;
+					RenderTile(e.Graphics, tileAddress, x, y + 8, objPaletteData);
+				}
+			}
+
+			// TODO: Draw the window.
+		}
+
+		// Draw an individual tile with data from an address at a location with a palette.
+		void RenderTile(Graphics graphics, int tileAddress, int x, int y, byte palette)
+		{
+			if (tileAddress == 0)
+			{
+				return;
+			}
+
+			// Draw each tile, pixel by pixel.
+			for (int pixelY = 0; pixelY < 8; ++pixelY)
+			{
+				for (int pixelX = 0; pixelX < 8; ++pixelX)
+				{
+					// Each line in the tile is two bytes (each pixel is 2-bits of color).
+					int pixelAddress = tileAddress + pixelY * 2;
+					byte byte1 = Memory.Instance.Read(pixelAddress);
+					byte byte2 = Memory.Instance.Read(pixelAddress + 1);
+					byte colorId = Utilities.GetBitsFromByte(byte1, 7 - pixelX, 7 - pixelX);
+					colorId += (byte)(Utilities.GetBitsFromByte(byte2, 7 - pixelX, 7 - pixelX) << 1);
+
+					// Look up the correct palette color and draw that pixel.
+					int brush = Utilities.GetBitsFromByte(palette, colorId * 2, colorId * 2 + 1);
+					int lcdX = x + pixelX;
+					int lcdY = y + pixelY;
+					graphics.FillRectangle(_brushes[brush], lcdX * _scale, lcdY * _scale, _scale, _scale);
+				}
+			}
 		}
 	}
 }

@@ -16,7 +16,7 @@
 		private bool WindowEnabled;
 		public bool BGWindowTileDataArea;
 		public bool BGTileMapArea;
-		private bool OBJSize;
+		public bool OBJSize;
 		private bool OBJEnabled;
 		private bool BGWindowEnable;
 
