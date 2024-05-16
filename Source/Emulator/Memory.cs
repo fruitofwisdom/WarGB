@@ -340,9 +340,9 @@
 			else if (address == 0xFF11)
 			{
 				byte waveformDuty = Utilities.GetBitsFromByte(data, 6, 7);
-				byte soundLengthData = Utilities.GetBitsFromByte(data, 0, 5);
+				byte soundLength = Utilities.GetBitsFromByte(data, 0, 5);
 				((SquareWave)Sound.Instance.Channels[0]).WaveformDuty = waveformDuty;
-				((SquareWave)Sound.Instance.Channels[0]).SoundLengthData = soundLengthData;
+				((SquareWave)Sound.Instance.Channels[0]).SoundLength = soundLength;
 			}
 			else if (address == 0xFF12)
 			{
@@ -360,8 +360,8 @@
 			}
 			else if (address == 0xFF14)
 			{
-				byte initialize = Utilities.GetBitsFromByte(data, 7, 7);
-				byte counterContinuousSelection = Utilities.GetBitsFromByte(data, 6, 6);
+				bool initialize = Utilities.GetBitsFromByte(data, 7, 7) != 0x00;
+				bool counterContinuousSelection = Utilities.GetBitsFromByte(data, 6, 6) != 0x00;
 				byte highOrderFrequencyData = Utilities.GetBitsFromByte(data, 0, 2);
 				((SquareWave)Sound.Instance.Channels[0]).Initialize = initialize;
 				((SquareWave)Sound.Instance.Channels[0]).CounterContinuousSelection = counterContinuousSelection;
@@ -370,9 +370,9 @@
 			else if (address == 0xFF16)
 			{
 				byte waveformDuty = Utilities.GetBitsFromByte(data, 6, 7);
-				byte soundLengthData = Utilities.GetBitsFromByte(data, 0, 5);
+				byte soundLength = Utilities.GetBitsFromByte(data, 0, 5);
 				((SquareWave)Sound.Instance.Channels[1]).WaveformDuty = waveformDuty;
-				((SquareWave)Sound.Instance.Channels[1]).SoundLengthData = soundLengthData;
+				((SquareWave)Sound.Instance.Channels[1]).SoundLength = soundLength;
 			}
 			else if (address == 0xFF17)
 			{
@@ -390,8 +390,8 @@
 			}
 			else if (address == 0xFF19)
 			{
-				byte initialize = Utilities.GetBitsFromByte(data, 7, 7);
-				byte counterContinuousSelection = Utilities.GetBitsFromByte(data, 6, 6);
+				bool initialize = Utilities.GetBitsFromByte(data, 7, 7) != 0x00;
+				bool counterContinuousSelection = Utilities.GetBitsFromByte(data, 6, 6) != 0x00;
 				byte highOrderFrequencyData = Utilities.GetBitsFromByte(data, 0, 5);
 				((SquareWave)Sound.Instance.Channels[1]).Initialize = initialize;
 				((SquareWave)Sound.Instance.Channels[1]).CounterContinuousSelection = counterContinuousSelection;
@@ -403,31 +403,67 @@
 			}
 			else if (address == 0xFF1B)
 			{
-				// TODO: Implement sound 3 sound length.
+				((WaveTable)Sound.Instance.Channels[2]).SoundLength = data;
 			}
 			else if (address == 0xFF1C)
 			{
-				// TODO: Implement sound 3 output levels.
+				byte outputLevel = Utilities.GetBitsFromByte(data, 5, 6);
+				((WaveTable)Sound.Instance.Channels[2]).OutputLevel = outputLevel;
 			}
 			else if (address == 0xFF1D)
 			{
-				// TODO: Implement sound 3 frequency data.
+				byte lowOrderFrequencyData = data;
+				((WaveTable)Sound.Instance.Channels[2]).LowOrderFrequencyData = lowOrderFrequencyData;
 			}
 			else if (address == 0xFF1E)
 			{
-				// TODO: Implement other sound 3 settings.
+				bool initialize = Utilities.GetBitsFromByte(data, 7, 7) != 0x00;
+				bool counterContinuousSelection = Utilities.GetBitsFromByte(data, 6, 6) != 0x00;
+				byte highOrderFrequencyData = Utilities.GetBitsFromByte(data, 0, 2);
+				((WaveTable)Sound.Instance.Channels[2]).Initialize = initialize;
+				((WaveTable)Sound.Instance.Channels[2]).CounterContinuousSelection = counterContinuousSelection;
+				((WaveTable)Sound.Instance.Channels[2]).HighOrderFrequencyData = highOrderFrequencyData;
+			}
+			else if (address == 0xFF20)
+			{
+				byte soundLength = Utilities.GetBitsFromByte(data, 0, 5);
+				((NoiseGenerator)Sound.Instance.Channels[3]).SoundLength = soundLength;
 			}
 			else if (address == 0xFF21)
 			{
-				// TODO: Implement sound 4 envelope settings.
+				byte defaultEnvelopeValue = Utilities.GetBitsFromByte(data, 4, 7);
+				byte envelopeUpDown = Utilities.GetBitsFromByte(data, 3, 3);
+				byte lengthOfEnvelopeSteps = Utilities.GetBitsFromByte(data, 0, 2);
+				((NoiseGenerator)Sound.Instance.Channels[3]).DefaultEnvelopeValue = defaultEnvelopeValue;
+				((NoiseGenerator)Sound.Instance.Channels[3]).EnvelopeUpDown = envelopeUpDown;
+				((NoiseGenerator)Sound.Instance.Channels[3]).LengthOfEnvelopeSteps = lengthOfEnvelopeSteps;
+			}
+			else if (address == 0xFF22)
+			{
+				byte shiftClockFrequency = Utilities.GetBitsFromByte(data, 4, 7);
+				bool counterSteps = Utilities.GetBitsFromByte(data, 3, 3) != 0x00;
+				byte divisionRatioFrequency = Utilities.GetBitsFromByte(data, 0, 2);
+				((NoiseGenerator)Sound.Instance.Channels[3]).ShiftClockFrequency = shiftClockFrequency;
+				((NoiseGenerator)Sound.Instance.Channels[3]).CounterSteps = counterSteps;
+				((NoiseGenerator)Sound.Instance.Channels[3]).DivisionRatioFrequency = divisionRatioFrequency;
 			}
 			else if (address == 0xFF23)
 			{
-				// TODO: Implement other sound 4 settings.
+				bool initialize = Utilities.GetBitsFromByte(data, 7, 7) != 0x00;
+				bool counterContinuousSelection = Utilities.GetBitsFromByte(data, 6, 6) != 0x00;
+				((NoiseGenerator)Sound.Instance.Channels[3]).Initialize = initialize;
+				((NoiseGenerator)Sound.Instance.Channels[3]).CounterContinuousSelection = counterContinuousSelection;
 			}
 			else if (address == 0xFF24)
 			{
-				// TODO: Implement all sound output levels.
+				bool leftOutputOn = Utilities.GetBitsFromByte(data, 7, 7) != 0x00;
+				uint leftOutputVolume = Utilities.GetBitsFromByte(data, 4, 6);
+				bool rightOutputOn = Utilities.GetBitsFromByte(data, 3, 3) != 0x00;
+				uint rightOutputVolume = Utilities.GetBitsFromByte(data, 0, 2);
+				Sound.Instance.LeftOutputOn = leftOutputOn;
+				Sound.Instance.LeftOutputVolume = leftOutputVolume;
+				Sound.Instance.RightOutputOn = rightOutputOn;
+				Sound.Instance.RightOutputVolume = rightOutputVolume;
 			}
 			else if (address == 0xFF25)
 			{

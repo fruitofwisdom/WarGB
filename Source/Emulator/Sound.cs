@@ -2,7 +2,11 @@
 {
 	internal class Sound
 	{
-		public bool AllSoundOn;
+		public bool AllSoundOn = false;
+		public bool LeftOutputOn = false;
+		public uint LeftOutputVolume = 0;
+		public bool RightOutputOn = false;
+		public uint RightOutputVolume = 0;
 
 		public Channel[] Channels = new Channel[4];
 
@@ -27,6 +31,10 @@
 		public void Reset()
 		{
 			AllSoundOn = false;
+			LeftOutputOn = false;
+			LeftOutputVolume = 0;
+			RightOutputOn = false;
+			RightOutputVolume = 0;
 
 			Channels[0] = new SquareWave();
 			Channels[1] = new SquareWave();
