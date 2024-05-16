@@ -112,6 +112,16 @@
 					}
 					break;
 
+				case 0x02:      // LD (BC), A
+					{
+						ushort bc = (ushort)((B << 8) + C);
+						Memory.Instance.Write(bc, A);
+						PrintOpcode(instruction, "LD (BC, A)");
+						PC++;
+						cycles += 2;
+					}
+					break;
+
 				case 0x03:      // INC BC
 					{
 						ushort bc = (ushort)((B << 8) + C);
@@ -163,6 +173,21 @@
 						PrintOpcode(instruction, "RLCA");
 						PC++;
 						cycles++;
+					}
+					break;
+
+				case 0x08:      // LD (a16), SP
+					{
+						byte lower = Memory.Instance.Read(PC + 1);
+						ushort higher = (ushort)(Memory.Instance.Read(PC + 2) << 8);
+						ushort a16 = (ushort)(higher + lower);
+						byte spLower = (byte)(SP & 0x00FF);
+						Memory.Instance.Write(a16, spLower);
+						byte spHigher = (byte)((SP & 0xFF00) >> 8);
+						Memory.Instance.Write(a16 + 1, spHigher);
+						PrintOpcode(instruction, $"LD (0x{a16:X4}), SP");
+						PC += 3;
+						cycles += 5;
 					}
 					break;
 
@@ -331,6 +356,18 @@
 					}
 					break;
 
+				case 0x1B:      // DEC DE
+					{
+						ushort de = (ushort)((D << 8) + E);
+						de--;
+						D = (byte)((de & 0xFF00) >> 8);
+						E = (byte)(de & 0x00FF);
+						PrintOpcode(instruction, "DEC DE");
+						PC++;
+						cycles += 2;
+					}
+					break;
+
 				case 0x1C:      // INC E
 					{
 						Add(ref E, 1, true, true, false);
@@ -408,6 +445,30 @@
 					}
 					break;
 
+				case 0x24:      // INC H
+					{
+						byte h = (byte)((HL & 0xFF00) >> 8);
+						byte l = (byte)(HL & 0x00FF);
+						Add(ref h, 1, true, true, false);
+						HL = (ushort)((h << 8) + l);
+						PrintOpcode(instruction, "INC H");
+						PC++;
+						cycles++;
+					}
+					break;
+
+				case 0x25:      // DEC H
+					{
+						byte h = (byte)((HL & 0xFF00) >> 8);
+						byte l = (byte)(HL & 0x00FF);
+						Sub(ref h, 1, true, true, false);
+						HL = (ushort)((h << 8) + l);
+						PrintOpcode(instruction, "DEC H");
+						PC++;
+						cycles++;
+					}
+					break;
+
 				case 0x26:      // LD H, d8
 					{
 						byte d8 = Memory.Instance.Read(PC + 1);
@@ -462,6 +523,18 @@
 						HL--;
 						PrintOpcode(instruction, "DEC HL");
 						PC++;
+						cycles += 2;
+					}
+					break;
+
+				case 0x2E:      // LD L, d8
+					{
+						byte d8 = Memory.Instance.Read(PC + 1);
+						byte h = (byte)((HL & 0xFF00) >> 8);
+						byte l = d8;
+						HL = (ushort)((h << 8) + l);
+						PrintOpcode(instruction, $"LD L, 0x{d8:X2}");
+						PC += 2;
 						cycles += 2;
 					}
 					break;
@@ -692,6 +765,16 @@
 					}
 					break;
 
+				case 0x4C:      // LD C, H
+					{
+						byte h = (byte)((HL & 0xFF00) >> 8);
+						C = h;
+						PrintOpcode(instruction, "LD C, H");
+						PC++;
+						cycles++;
+					}
+					break;
+
 				case 0x4D:      // LD C, L
 					{
 						byte l = (byte)(HL & 0x00FF);
@@ -813,12 +896,34 @@
 					}
 					break;
 
+				case 0x60:      // LD H, B
+					{
+						byte h = B;
+						byte l = (byte)(HL & 0x00FF);
+						HL = (ushort)((h << 8) + l);
+						PrintOpcode(instruction, "LD H, B");
+						PC++;
+						cycles++;
+					}
+					break;
+
 				case 0x61:      // LD H, C
 					{
 						byte h = C;
 						byte l = (byte)(HL & 0x00FF);
 						HL = (ushort)((h << 8) + l);
 						PrintOpcode(instruction, "LD H, C");
+						PC++;
+						cycles++;
+					}
+					break;
+
+				case 0x62:      // LD H, D
+					{
+						byte h = D;
+						byte l = (byte)(HL & 0x00FF);
+						HL = (ushort)((h << 8) + l);
+						PrintOpcode(instruction, "LD H, D");
 						PC++;
 						cycles++;
 					}
@@ -1117,6 +1222,16 @@
 					}
 					break;
 
+				case 0x8A:      // ADC A, D
+					{
+						byte aAndCY = (byte)(A + (CY ? 1 : 0));
+						Add(ref A, aAndCY);
+						PrintOpcode(instruction, "ADC A, D");
+						PC++;
+						cycles++;
+					}
+					break;
+
 				case 0x90:      // SUB B
 					{
 						Sub(ref A, B);
@@ -1144,11 +1259,50 @@
 					}
 					break;
 
+				case 0x93:      // SUB E
+					{
+						Sub(ref A, E);
+						PrintOpcode(instruction, "SUB E");
+						PC++;
+						cycles++;
+					}
+					break;
+
+				case 0x94:      // SUB H
+					{
+						byte h = (byte)((HL & 0xFF00) >> 8);
+						Sub(ref A, h);
+						PrintOpcode(instruction, "SUB H");
+						PC++;
+						cycles++;
+					}
+					break;
+
 				case 0x95:      // SUB L
 					{
 						byte l = (byte)(HL & 0x00FF);
 						Sub(ref A, l);
 						PrintOpcode(instruction, "SUB L");
+						PC++;
+						cycles++;
+					}
+					break;
+
+				case 0x99:      // SBC A, D
+					{
+						byte cAndCY = (byte)(C + (CY ? 0x01 : 0x00));
+						Sub(ref A, cAndCY);
+						PrintOpcode(instruction, "SBC A, C");
+						PC++;
+						cycles++;
+					}
+					break;
+
+				case 0x9A:      // SBC A, D
+					{
+						byte dAndCY = (byte)(D + (CY ? 0x01 : 0x00));
+						Sub(ref A, dAndCY);
+						PrintOpcode(instruction, "SBC A, D");
 						PC++;
 						cycles++;
 					}
@@ -1175,6 +1329,32 @@
 						H = true;
 						CY = false;
 						PrintOpcode(instruction, "AND C");
+						PC++;
+						cycles++;
+					}
+					break;
+
+				case 0xA2:      // AND D
+					{
+						A &= D;
+						Z = A == 0x00;
+						N = false;
+						H = true;
+						CY = false;
+						PrintOpcode(instruction, "AND D");
+						PC++;
+						cycles++;
+					}
+					break;
+
+				case 0xA3:      // AND E
+					{
+						A &= E;
+						Z = A == 0x00;
+						N = false;
+						H = true;
+						CY = false;
+						PrintOpcode(instruction, "AND E");
 						PC++;
 						cycles++;
 					}
@@ -1713,6 +1893,25 @@
 					}
 					break;
 
+				case 0xD2:      // JP NC, a16
+					{
+						byte lower = Memory.Instance.Read(PC + 1);
+						ushort higher = (ushort)(Memory.Instance.Read(PC + 2) << 8);
+						ushort a16 = (ushort)(higher + lower);
+						PrintOpcode(instruction, $"JP NC, 0x{a16:X4}");
+						if (!CY)
+						{
+							PC = a16;
+							cycles += 4;
+						}
+						else
+						{
+							PC += 3;
+							cycles += 3;
+						}
+					}
+					break;
+
 				case 0xD4:      // CALL NC, a16
 					{
 						byte lower = Memory.Instance.Read(PC + 1);
@@ -2056,14 +2255,74 @@
 
 			switch (instruction)
 			{
+				case 0x10:      // RL B
+					{
+						bool newCY = (byte)(B & 0x80) == 0x80;
+						B = (byte)(B << 1);
+						B |= (byte)(CY ? 0x01 : 0x00);
+						CY = newCY;
+						Z = B == 0x00;
+						N = false;
+						H = false;
+						PrintOpcode(instruction, "RL B");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
 				case 0x11:      // RL C
 					{
+						bool newCY = (byte)(C & 0x80) == 0x80;
 						C = (byte)(C << 1);
 						C |= (byte)(CY ? 0x01 : 0x00);
+						CY = newCY;
 						Z = C == 0x00;
 						N = false;
 						H = false;
 						PrintOpcode(instruction, "RL C");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0x12:      // RL D
+					{
+						bool newCY = (byte)(D & 0x80) == 0x80;
+						D = (byte)(D << 1);
+						D |= (byte)(CY ? 0x01 : 0x00);
+						CY = newCY;
+						Z = D == 0x00;
+						N = false;
+						H = false;
+						PrintOpcode(instruction, "RL D");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0x17:      // RL A
+					{
+						bool newCY = (byte)(A & 0x80) == 0x80;
+						A = (byte)(A << 1);
+						A |= (byte)(CY ? 0x01 : 0x00);
+						CY = newCY;
+						Z = A == 0x00;
+						N = false;
+						H = false;
+						PrintOpcode(instruction, "RL A");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0x20:      // SLA B
+					{
+						CY = (byte)(B & 0x80) == 0x80;
+						B = (byte)(B << 1);
+						Z = D == 0x00;
+						N = false;
+						H = false;
+						PrintOpcode(instruction, "SLA B");
 						PC += 2;
 						cycles += 2;
 					}
@@ -2127,6 +2386,21 @@
 					}
 					break;
 
+				case 0x2F:      // SRA A
+					{
+						CY = (byte)(A & 0x01) == 0x01;
+						byte a7 = (byte)(A & 0x80);
+						A = (byte)(A >> 1);
+						A |= a7;
+						Z = A == 0x00;
+						N = false;
+						H = false;
+						PrintOpcode(instruction, "SRA A");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
 				case 0x37:      // SWAP A
 					{
 						byte lower = (byte)(A & 0x0F);
@@ -2181,6 +2455,22 @@
 					}
 					break;
 
+				case 0x3D:      // SRL L
+					{
+						byte h = (byte)((HL & 0xFF00) >> 8);
+						byte l = (byte)(HL & 0x00FF);
+						CY = (byte)(l & 0x01) == 0x01;
+						l = (byte)(l >> 1);
+						HL = (ushort)((h << 8) + l);
+						Z = l == 0x00;
+						N = false;
+						H = false;
+						PrintOpcode(instruction, "SRL L");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
 				case 0x3F:      // SRL A
 					{
 						CY = (byte)(A & 0x01) == 0x01;
@@ -2206,6 +2496,18 @@
 					}
 					break;
 
+				case 0x42:      // BIT 0, D
+					{
+						byte bit = Utilities.GetBitsFromByte(D, 0, 0);
+						Z = bit == 0x00;
+						N = false;
+						H = true;
+						PrintOpcode(instruction, "BIT 0, D");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
 				case 0x47:      // BIT 0, A
 					{
 						byte bit = Utilities.GetBitsFromByte(A, 0, 0);
@@ -2225,6 +2527,18 @@
 						N = false;
 						H = true;
 						PrintOpcode(instruction, "BIT 1, C");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0x4A:      // BIT 1, D
+					{
+						byte bit = Utilities.GetBitsFromByte(D, 1, 1);
+						Z = bit == 0x00;
+						N = false;
+						H = true;
+						PrintOpcode(instruction, "BIT 1, D");
 						PC += 2;
 						cycles += 2;
 					}
@@ -2267,6 +2581,18 @@
 					}
 					break;
 
+				case 0x52:      // BIT 2, D
+					{
+						byte bit = Utilities.GetBitsFromByte(D, 2, 2);
+						Z = bit == 0x00;
+						N = false;
+						H = true;
+						PrintOpcode(instruction, "BIT 2, D");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
 				case 0x57:      // BIT 2, A
 					{
 						byte bit = Utilities.GetBitsFromByte(A, 2, 2);
@@ -2291,6 +2617,18 @@
 					}
 					break;
 
+				case 0x5A:      // BIT 3, D
+					{
+						byte bit = Utilities.GetBitsFromByte(D, 3, 3);
+						Z = bit == 0x00;
+						N = false;
+						H = true;
+						PrintOpcode(instruction, "BIT 3, D");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
 				case 0x5F:      // BIT 3, A
 					{
 						byte bit = Utilities.GetBitsFromByte(A, 3, 3);
@@ -2310,6 +2648,66 @@
 						N = false;
 						H = true;
 						PrintOpcode(instruction, "BIT 4, C");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0x63:      // BIT 4, E
+					{
+						byte bit = Utilities.GetBitsFromByte(E, 4, 4);
+						Z = bit == 0x00;
+						N = false;
+						H = true;
+						PrintOpcode(instruction, "BIT 4, E");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0x69:      // BIT 5, C
+					{
+						byte bit = Utilities.GetBitsFromByte(C, 5, 5);
+						Z = bit == 0x00;
+						N = false;
+						H = true;
+						PrintOpcode(instruction, "BIT 5, C");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0x6B:      // BIT 5, E
+					{
+						byte bit = Utilities.GetBitsFromByte(E, 5, 5);
+						Z = bit == 0x00;
+						N = false;
+						H = true;
+						PrintOpcode(instruction, "BIT 5, E");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0x6F:      // BIT 5, A
+					{
+						byte bit = Utilities.GetBitsFromByte(A, 5, 5);
+						Z = bit == 0x00;
+						N = false;
+						H = true;
+						PrintOpcode(instruction, "BIT 5, A");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0x73:      // BIT 6, E
+					{
+						byte bit = Utilities.GetBitsFromByte(E, 6, 6);
+						Z = bit == 0x00;
+						N = false;
+						H = true;
+						PrintOpcode(instruction, "BIT 6, E");
 						PC += 2;
 						cycles += 2;
 					}
@@ -2473,6 +2871,15 @@
 					}
 					break;
 
+				case 0x97:      // RES 2, A
+					{
+						Utilities.SetBitsInByte(ref A, 0x00, 2, 2);
+						PrintOpcode(instruction, "RES 2, A");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
 				case 0x9E:      // RES 3, (HL)
 					{
 						byte d8 = Memory.Instance.Read(HL);
@@ -2481,6 +2888,46 @@
 						PrintOpcode(instruction, "RES 3, (HL)");
 						PC += 2;
 						cycles += 4;
+					}
+					break;
+
+				case 0xAE:      // RES 5, (HL)
+					{
+						byte d8 = Memory.Instance.Read(HL);
+						Utilities.SetBitsInByte(ref d8, 0x00, 5, 5);
+						Memory.Instance.Write(HL, d8);
+						PrintOpcode(instruction, "RES 5, (HL)");
+						PC += 2;
+						cycles += 4;
+					}
+					break;
+
+				case 0xB6:      // RES 6, (HL)
+					{
+						byte d8 = Memory.Instance.Read(HL);
+						Utilities.SetBitsInByte(ref d8, 0x00, 6, 6);
+						Memory.Instance.Write(HL, d8);
+						PrintOpcode(instruction, "RES 6, (HL)");
+						PC += 2;
+						cycles += 4;
+					}
+					break;
+
+				case 0xB7:      // RES 6, A
+					{
+						Utilities.SetBitsInByte(ref A, 0x00, 6, 6);
+						PrintOpcode(instruction, "RES 6, A");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0xBB:      // RES 7, E
+					{
+						Utilities.SetBitsInByte(ref E, 0x00, 7, 7);
+						PrintOpcode(instruction, "RES 7, E");
+						PC += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -2502,6 +2949,38 @@
 						Utilities.SetBitsInByte(ref d8, 0x00, 7, 7);
 						Memory.Instance.Write(HL, d8);
 						PrintOpcode(instruction, "RES 7, (HL)");
+						PC += 2;
+						cycles += 4;
+					}
+					break;
+
+				case 0xBF:      // RES 7, A
+					{
+						Utilities.SetBitsInByte(ref A, 0x00, 7, 7);
+						PrintOpcode(instruction, "RES 7, A");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0xC5:      // SET 0, L
+					{
+						byte h = (byte)((HL & 0xFF00) >> 8);
+						byte l = (byte)(HL & 0x00FF);
+						Utilities.SetBitsInByte(ref l, 0x01, 0, 0);
+						HL = (ushort)((h << 8) + l);
+						PrintOpcode(instruction, "SET 0, L");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0xC6:      // SET 0, (HL)
+					{
+						byte d8 = Memory.Instance.Read(HL);
+						Utilities.SetBitsInByte(ref d8, 0x01, 0, 0);
+						Memory.Instance.Write(HL, d8);
+						PrintOpcode(instruction, "SET 0, (HL)");
 						PC += 2;
 						cycles += 4;
 					}
@@ -2549,6 +3028,24 @@
 					}
 					break;
 
+				case 0xDF:      // SET 3, A
+					{
+						Utilities.SetBitsInByte(ref A, 0x01, 3, 3);
+						PrintOpcode(instruction, "SET 3, A");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0xEF:      // SET 5, A
+					{
+						Utilities.SetBitsInByte(ref A, 0x01, 5, 5);
+						PrintOpcode(instruction, "SET 5, A");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
 				case 0xF4:      // SET 6, H
 					{
 						byte h = (byte)((HL & 0xFF00) >> 8);
@@ -2556,6 +3053,15 @@
 						Utilities.SetBitsInByte(ref h, 0x01, 6, 6);
 						HL = (ushort)((h << 8) + l);
 						PrintOpcode(instruction, "SET 6, H");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0xF7:      // SET 6, A
+					{
+						Utilities.SetBitsInByte(ref A, 0x01, 6, 6);
+						PrintOpcode(instruction, "SET 6, A");
 						PC += 2;
 						cycles += 2;
 					}

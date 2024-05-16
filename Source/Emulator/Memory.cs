@@ -103,8 +103,9 @@
 				else
 				{
 					data = 0xFF;
-					GameBoy.DebugOutput += $"Reading from external RAM while RAM is disabled!\n";
-					MainForm.Pause();
+					// TODO: Is this a real problem?
+					//GameBoy.DebugOutput += $"Reading from external RAM while RAM is disabled!\n";
+					//MainForm.Pause();
 				}
 			}
 			else if (address >= 0xC000 && address <= 0xCFFF)
@@ -267,8 +268,9 @@
 				}
 				else
 				{
-					GameBoy.DebugOutput += $"Writing to external RAM while RAM is disabled!\n";
-					MainForm.Pause();
+					// TODO: Is this a real problem?
+					//GameBoy.DebugOutput += $"Writing to external RAM while RAM is disabled!\n";
+					//MainForm.Pause();
 				}
 			}
 			else if (address >= 0xC000 && address <= 0xCFFF)
