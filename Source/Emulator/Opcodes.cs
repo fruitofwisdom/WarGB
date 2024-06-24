@@ -14,7 +14,7 @@
 			// Check for overflow.
 			if (setH)
 			{
-				H = newResult < result;
+				H = (result & 0x0FFF) + (value & 0x0FFF) >= 0x1000;
 			}
 			if (setCY)
 			{
@@ -35,7 +35,7 @@
 			// Check for overflow.
 			if (setH)
 			{
-				H = newResult < result;
+				H = (result & 0x000F) + (value & 0x000F) >= 0x0010;
 			}
 			if (setCY)
 			{
@@ -56,7 +56,7 @@
 			// Check for underflow.
 			if (setH)
 			{
-				H = newResult > result;
+				H = (result & 0x0FFF) - (value & 0x0FFF) >= 0x1000;
 			}
 			if (setCY)
 			{
@@ -77,7 +77,7 @@
 			// Check for underflow.
 			if (setH)
 			{
-				H = newResult > result;
+				H = (result & 0x000F) - (value & 0x000F) >= 0x0010;
 			}
 			if (setCY)
 			{
@@ -616,7 +616,7 @@
 					{
 						byte d8 = Memory.Instance.Read(PC + 1);
 						Memory.Instance.Write(HL, d8);
-						PrintOpcode(instruction, $"LD (HL), 0x{d8:2}");
+						PrintOpcode(instruction, $"LD (HL), 0x{d8:X2}");
 						PC += 2;
 						cycles += 3;
 					}
@@ -1224,8 +1224,8 @@
 
 				case 0x8A:      // ADC A, D
 					{
-						byte aAndCY = (byte)(A + (CY ? 1 : 0));
-						Add(ref A, aAndCY);
+						byte dAndCY = (byte)(D + (CY ? 0x01 : 0x00));
+						Add(ref A, dAndCY);
 						PrintOpcode(instruction, "ADC A, D");
 						PC++;
 						cycles++;
@@ -1288,7 +1288,7 @@
 					}
 					break;
 
-				case 0x99:      // SBC A, D
+				case 0x99:      // SBC A, C
 					{
 						byte cAndCY = (byte)(C + (CY ? 0x01 : 0x00));
 						Sub(ref A, cAndCY);
@@ -1853,7 +1853,7 @@
 				case 0xCE:      // ADC A, d8
 					{
 						byte d8 = Memory.Instance.Read(PC + 1);
-						d8 += (byte)(CY ? 1 : 0);
+						d8 += (byte)(CY ? 0x01 : 0x00);
 						Add(ref A, d8);
 						PrintOpcode(instruction, "ADC A, 0x{d8:X2}");
 						PC += 2;
@@ -2069,7 +2069,7 @@
 						N = false;
 						H = true;
 						CY = false;
-						PrintOpcode(instruction, $"AND 0x{d8:2}");
+						PrintOpcode(instruction, $"AND 0x{d8:X2}");
 						PC += 2;
 						cycles += 2;
 					}

@@ -106,7 +106,6 @@
 					cycles = 5;
 					interruptHandled = true;
 					_halted = false;
-					//MainForm.PrintDebugMessage("A v-blank interrupt occurred.\n");
 				}
 				// Handle an LCD interrupt.
 				else if ((byte)(IE & 0x02) == 0x02 && (byte)(IF & 0x02) == 0x02)
@@ -122,7 +121,6 @@
 					cycles = 5;
 					interruptHandled = true;
 					_halted = false;
-					//MainForm.PrintDebugMessage("A LCD interrupt occurred.\n");
 				}
 				// TODO: Handle other interrupt flags.
 			}
@@ -152,11 +150,16 @@
 
 		private void PrintOpcode(byte instruction, string opcode)
 		{
-			if (GameBoy.ShouldPrintOpcodes)
+			if (GameBoy.ShouldLogOpcodes)
 			{
-				GameBoy.DebugOutput += $"[0x{PC:X4}] 0x{instruction:X2}: " + opcode + "\n";
+				string output = $"[0x{PC:X4}] 0x{instruction:X2}: " + opcode;
+				for (int i = output.Length; i < 40; ++i)
+				{
+					output += " ";
+				}
+				output += $"A=0x{A:X2}, F=0x{GetF():X2}, BC=0x{B:X2}{C:X2}, DE=0x{D:X2}{E:X2}, HL=0x{HL:X4}, SP=0x{SP:X4}\n";
+				GameBoy.LogOutput += output;
 			}
-			GameBoy.DebugStatus = $"PC: 0x{PC:X4}";
 		}
 	}
 }

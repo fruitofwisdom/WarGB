@@ -187,7 +187,7 @@
 				// TODO: The other registers.
 				else
 				{
-					GameBoy.DebugOutput += $"Reading from unimplemented register: 0x{address:X4}!\n"	;
+					GameBoy.DebugOutput += $"Reading from unimplemented register: 0x{address:X4}!\n";
 					MainForm.Pause();
 				}
 			}

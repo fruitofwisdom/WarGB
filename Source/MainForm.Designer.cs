@@ -34,7 +34,7 @@
 			loadROMToolStripMenuItem = new ToolStripMenuItem();
 			exitToolStripMenuItem = new ToolStripMenuItem();
 			debugToolStripMenuItem = new ToolStripMenuItem();
-			printOpcodesToolStripMenuItem = new ToolStripMenuItem();
+			logOpcodesToolStripMenuItem = new ToolStripMenuItem();
 			helpToolStripMenuItem = new ToolStripMenuItem();
 			aboutGBSharpToolStripMenuItem = new ToolStripMenuItem();
 			toolStrip = new ToolStrip();
@@ -84,18 +84,18 @@
 			// 
 			// debugToolStripMenuItem
 			// 
-			debugToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { printOpcodesToolStripMenuItem });
+			debugToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { logOpcodesToolStripMenuItem });
 			debugToolStripMenuItem.Name = "debugToolStripMenuItem";
 			debugToolStripMenuItem.Size = new Size(54, 20);
 			debugToolStripMenuItem.Text = "Debug";
 			// 
-			// printOpcodesToolStripMenuItem
+			// logOpcodesToolStripMenuItem
 			// 
-			printOpcodesToolStripMenuItem.Name = "printOpcodesToolStripMenuItem";
-			printOpcodesToolStripMenuItem.Size = new Size(149, 22);
-			printOpcodesToolStripMenuItem.Text = "Print Opcodes";
-			printOpcodesToolStripMenuItem.ToolTipText = "Show running opcodes. Will be much slower.";
-			printOpcodesToolStripMenuItem.Click += PrintOpcodesToolStripMenuClick;
+			logOpcodesToolStripMenuItem.Name = "logOpcodesToolStripMenuItem";
+			logOpcodesToolStripMenuItem.Size = new Size(149, 22);
+			logOpcodesToolStripMenuItem.Text = "Log Opcodes";
+			logOpcodesToolStripMenuItem.ToolTipText = "Write opcodes, CPU state, etc to a log file. (This file will get very large.)";
+			logOpcodesToolStripMenuItem.Click += LogOpcodesToolStripMenuClick;
 			// 
 			// helpToolStripMenuItem
 			// 
@@ -169,7 +169,7 @@
 			lcdControl.Location = new Point(12, 52);
 			lcdControl.Name = "lcdControl";
 			lcdControl.Size = new Size(480, 432);
-			lcdControl.TabIndex = 4;
+			lcdControl.TabIndex = 2;
 			// 
 			// debugRichTextBox
 			// 
@@ -178,7 +178,7 @@
 			debugRichTextBox.Name = "debugRichTextBox";
 			debugRichTextBox.ReadOnly = true;
 			debugRichTextBox.Size = new Size(250, 432);
-			debugRichTextBox.TabIndex = 2;
+			debugRichTextBox.TabIndex = 3;
 			debugRichTextBox.Text = "";
 			// 
 			// statusStrip
@@ -187,7 +187,7 @@
 			statusStrip.Location = new Point(0, 496);
 			statusStrip.Name = "statusStrip";
 			statusStrip.Size = new Size(759, 22);
-			statusStrip.TabIndex = 3;
+			statusStrip.TabIndex = 4;
 			statusStrip.Text = "statusStrip";
 			// 
 			// debugToolStripStatusLabel
@@ -229,7 +229,7 @@
 		private ToolStripMenuItem loadROMToolStripMenuItem;
 		private ToolStripMenuItem exitToolStripMenuItem;
 		private ToolStripMenuItem debugToolStripMenuItem;
-		private ToolStripMenuItem printOpcodesToolStripMenuItem;
+		private ToolStripMenuItem logOpcodesToolStripMenuItem;
 		private ToolStripMenuItem helpToolStripMenuItem;
 		private ToolStripMenuItem aboutGBSharpToolStripMenuItem;
 		private ToolStrip toolStrip;

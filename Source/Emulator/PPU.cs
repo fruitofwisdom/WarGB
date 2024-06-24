@@ -2,6 +2,12 @@
 {
 	internal class PPU
 	{
+		public const int kWidth = 160;
+		public const int kHeight = 144;
+		// Represents each pixel of the LCD, where the data is the palette color.
+		public int[,] LCDBackBuffer = new int[kWidth, kHeight];
+		public int[,] LCDFrontBuffer = new int[kWidth, kHeight];
+
 		// Every 456 dots, we increment LY, possibly trigger v-blank, etc.
 		public const uint kDotsPerLine = 456;
 		private const uint kVBlankLine = 144;
@@ -64,6 +70,8 @@
 
 		public void Reset()
 		{
+			Clear();
+
 			Dots = 0;
 
 			LCDEnabled = true;
@@ -100,7 +108,11 @@
 		{
 			Dots++;
 
-			byte newLY = (byte)(Dots / kDotsPerLine % kLinesPerFrame);
+			if (Dots >= kDotsPerLine * kLinesPerFrame)
+			{
+				Dots -= kDotsPerLine * kLinesPerFrame;
+			}
+			byte newLY = (byte)(Dots / kDotsPerLine);
 
 			// Set the PPU mode correctly.
 			if (newLY >= kVBlankLine)
@@ -128,11 +140,23 @@
 			// Did we start rendering a new scanline?
 			if (newLY != LY)
 			{
+				if (GameBoy.ShouldLogOpcodes)
+				{
+					GameBoy.LogOutput += $"[{Dots}, {LY}] LY changing to new LY {newLY}.\n";
+				}
 				LY = newLY;
 
 				// Check for a v-blank interrupt.
 				if (LY == kVBlankLine)
 				{
+					if (GameBoy.ShouldLogOpcodes)
+					{
+						GameBoy.LogOutput += $"[{Dots}, {LY}] A v-blank occurred with PC=0x{CPU.Instance.PC:X4}.\n";
+					}
+
+					// Actually render to our LCD data.
+					Render();
+
 					// Set the v-blank IF flag.
 					CPU.Instance.IF |= 0x01;
 				}
@@ -141,6 +165,11 @@
 				LYCEqualsLY = LYC == LY;
 				if (LYCEqualsLY && LYCIntSelect)
 				{
+					if (GameBoy.ShouldLogOpcodes)
+					{
+						GameBoy.LogOutput += $"[{Dots}, {LY}] A STAT interrupt occurred with LYC={LYC}.\n";
+					}
+
 					// Set the LCD IF flag.
 					CPU.Instance.IF |= 0x02;
 				}
@@ -199,15 +228,19 @@
 			PPUMode = Utilities.GetBitsFromByte(stat, 0, 1);
 		}
 
-		public void Render(Graphics graphics, SolidBrush[] brushes, int scale)
+		private void Clear()
+		{
+			Array.Clear(LCDBackBuffer);
+			Array.Clear(LCDFrontBuffer);
+		}
+
+		public void Render()
 		{
 			// TODO: Move this after clearing?
 			if (!LCDEnabled)
 			{
 				return;
 			}
-
-			graphics.Clear(brushes[0].Color);
 
 			// Draw the background by iterating over each of its tiles.
 			for (int tileY = 0; tileY < 32; ++tileY)
@@ -230,7 +263,18 @@
 						tileAddress = 0x9000 + tileNumber * 16;
 					}
 
-					RenderTile(graphics, brushes, scale, tileAddress, tileX * 8 + SCX, tileY * 8 + SCY, BGPaletteData);
+					int x = tileX * 8 - SCX;
+					int y = tileY * 8 - SCY;
+					// Background tiles can wrap around.
+					if (x < 0)
+					{
+						x += 256;
+					}
+					if (y < 0)
+					{
+						y += 256;
+					}
+					RenderTile(tileAddress, x, y, BGPaletteData);
 				}
 			}
 
@@ -258,7 +302,7 @@
 						}
 
 						// NOTE: The window has a 7 pixel x-offset.
-						RenderTile(graphics, brushes, scale, tileAddress, tileX * 8 + WX - 7, tileY * 8 + WY, BGPaletteData);
+						RenderTile(tileAddress, tileX * 8 + WX - 7, tileY * 8 + WY, BGPaletteData);
 					}
 				}
 			}
@@ -267,34 +311,51 @@
 			// TODO: Enforce 10 objects-per-scanline limitation?
 			for (int objAddress = 0xFE00; objAddress <= 0xFE9C; objAddress += 0x04)
 			{
-				int y = Memory.Instance.Read(objAddress) - 16;
-				int x = Memory.Instance.Read(objAddress + 1) - 8;
+				byte byte1 = Memory.Instance.Read(objAddress);
+				int y = byte1;
+				// Objects with a Y of 0 or 160 are hidden.
+				if (y == 0 || y == 160)
+				{
+					continue;
+				}
+				// The X and Y values are actually offset.
+				y -= 16;
+				byte byte2 = Memory.Instance.Read(objAddress + 1);
+				int x = byte2 - 8;
 				byte tileNumber = Memory.Instance.Read(objAddress + 2);
-				int tileAddress = 0x8000 + tileNumber * 16;
+				int tileAddress = 0x8000;
+				if (OBJSize)
+				{
+					tileAddress += (tileNumber & 0xFE) * 16;
+				}
+				else
+				{
+					tileAddress += tileNumber * 16;
+				}
 				byte attributes = Memory.Instance.Read(objAddress + 3);
-				// TODO: Priority, x-flip, and y-flip.
+				// TODO: Priority.
+				bool yFlip = Utilities.GetBitsFromByte(attributes, 6, 6) != 0x00;
+				bool xFlip = Utilities.GetBitsFromByte(attributes, 5, 5) != 0x00;
 				byte objPaletteData = Utilities.GetBitsFromByte(attributes, 4, 4) == 0x20 ? OBJPaletteData1 : OBJPaletteData0;
 
-				RenderTile(graphics, brushes, scale, tileAddress, x, y, objPaletteData, true);
+				RenderTile(tileAddress, x, y, objPaletteData, true, xFlip, yFlip);
 
 				// In 8x16 mode, also render the next tile immediately below.
 				if (OBJSize)
 				{
-					tileAddress += 16;
-					RenderTile(graphics, brushes, scale, tileAddress, x, y + 8, objPaletteData, true);
+					tileAddress = 0x8000 + (tileNumber | 0x01) * 16;
+					RenderTile(tileAddress, x, y + 8, objPaletteData, true, xFlip, yFlip);
 				}
 			}
+
+			// When done, copy the back buffer to the front buffer.
+			Array.Copy(LCDBackBuffer, LCDFrontBuffer, LCDBackBuffer.Length);
 		}
 
 		// Draw an individual tile with data from an address at a location with a palette.
-		private void RenderTile(Graphics graphics, SolidBrush[] brushes, int scale,
-			int tileAddress, int x, int y, byte palette, bool transparency = false)
+		private void RenderTile(int tileAddress, int x, int y, byte palette,
+			bool transparency = false, bool xFlip = false, bool yFlip = false)
 		{
-			if (tileAddress == 0)
-			{
-				return;
-			}
-
 			// Draw each tile, pixel by pixel.
 			for (int pixelY = 0; pixelY < 8; ++pixelY)
 			{
@@ -311,11 +372,13 @@
 					// color 0 is not drawn.
 					if (!(transparency && colorId == 0))
 					{
-						int brush = Utilities.GetBitsFromByte(palette, colorId * 2, colorId * 2 + 1);
-						int lcdX = x + pixelX;
-						int lcdY = y + pixelY;
-						// TODO: Handle -x and -y wrapping around?
-						graphics.FillRectangle(brushes[brush], lcdX * scale, lcdY * scale, scale, scale);
+						int lcdColor = Utilities.GetBitsFromByte(palette, colorId * 2, colorId * 2 + 1);
+						int lcdX = xFlip ? x + 7 - pixelX : x + pixelX;
+						int lcdY = yFlip ? y + 7 - pixelY : y + pixelY;
+						if (lcdX >= 0 && lcdX < kWidth && lcdY >= 0 && lcdY < kHeight)
+						{
+							LCDBackBuffer[lcdX, lcdY] = lcdColor;
+						}
 					}
 				}
 			}

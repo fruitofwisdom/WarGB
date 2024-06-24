@@ -13,10 +13,14 @@
 		// How often to sleep the thread.
 		private const uint kClocksToSleep = PPU.kDotsPerLine * PPU.kLinesPerFrame;
 
-		// Debug output communication for the MainForm.
+		// Debug output for the MainForm.
 		public static string DebugOutput = "";
 		public static string DebugStatus = "Nothing Loaded";
-		public static bool ShouldPrintOpcodes = false;
+
+		// Debug output for the log file.
+		public static bool ShouldLogOpcodes = false;
+		public static string LogOutput = "";
+		private static StreamWriter? _logFile = null;
 
 		public GameBoy()
 		{
@@ -43,6 +47,10 @@
 			// NOTE: We skip any validation or BIOS handling.
 			Thread.CurrentThread.Name = "GB# Game Boy";
 			DebugOutput += "Ready to play " + ROM.Instance.Title + "!\n";
+
+			// TODO: Don't make a log file when !ShouldLogOpcodes?
+			string logPath = Environment.CurrentDirectory + "\\" + ROM.Instance.Filename + ".log";
+			_logFile = new StreamWriter(logPath);
 
 			uint clocksToNextCPUCycle = 0;
 
@@ -81,6 +89,10 @@
 
 				_clocks++;
 
+				// Write log output.
+				_logFile.Write(LogOutput);
+				LogOutput = "";
+
 				// Prevent clocks from overflowing and remember to sleep each frame.
 				if (_clocks == kClocksToSleep)
 				{
@@ -88,6 +100,8 @@
 					Thread.Sleep(1);
 				}
 			}
+
+			_logFile.Close();
 		}
 
 		// Stop the emulator and the thread.

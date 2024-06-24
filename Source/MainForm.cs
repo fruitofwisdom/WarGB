@@ -20,7 +20,7 @@ namespace GBSharp
 
 			// Poll the Game Boy emulator every 10ms.
 			_gameBoyTimer.Tick += new EventHandler(ProcessOutput);
-			_gameBoyTimer.Interval = 10;
+			_gameBoyTimer.Interval = 1000 / 60;
 			_gameBoyTimer.Start();
 		}
 
@@ -64,10 +64,10 @@ namespace GBSharp
 			Close();
 		}
 
-		private void PrintOpcodesToolStripMenuClick(object sender, EventArgs e)
+		private void LogOpcodesToolStripMenuClick(object sender, EventArgs e)
 		{
-			printOpcodesToolStripMenuItem.Checked = !printOpcodesToolStripMenuItem.Checked;
-			GameBoy.ShouldPrintOpcodes = printOpcodesToolStripMenuItem.Checked;
+			logOpcodesToolStripMenuItem.Checked = !logOpcodesToolStripMenuItem.Checked;
+			GameBoy.ShouldLogOpcodes = logOpcodesToolStripMenuItem.Checked;
 		}
 
 		private void AboutGBSharpToolStripMenuItemClick(object sender, EventArgs e)
