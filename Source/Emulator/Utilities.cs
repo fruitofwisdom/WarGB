@@ -6,8 +6,8 @@
 		// bits 5 to 7 would return 0x07 (0b00000111).
 		public static byte GetBitsFromByte(byte data, int firstBit, int lastBit)
 		{
-			byte offset = (byte)(Math.Pow(2, lastBit + 1) - 1);
-			byte xor = (byte)(Math.Pow(2, firstBit) - 1);
+			byte offset = (byte)((1 << (lastBit + 1)) - 1);
+			byte xor = (byte)((1 << firstBit) - 1);
 			offset ^= xor;
 			byte bits = (byte)((data & offset) >> firstBit);
 			return bits;
@@ -19,7 +19,7 @@
 		{
 			byte or = (byte)(value << firstBit);
 			// Get all the bits we will touch and clear them.
-			byte offset = (byte)((byte)(Math.Pow(2, lastBit - firstBit + 1) - 1) << firstBit);
+			byte offset = (byte)(((1 << (lastBit - firstBit + 1)) - 1) << firstBit);
 			byte opposite = (byte)(~offset);
 			data &= opposite;
 			// Assign value in their place.
