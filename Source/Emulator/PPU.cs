@@ -338,13 +338,13 @@
 				bool xFlip = Utilities.GetBitsFromByte(attributes, 5, 5) != 0x00;
 				byte objPaletteData = Utilities.GetBitsFromByte(attributes, 4, 4) == 0x20 ? OBJPaletteData1 : OBJPaletteData0;
 
-				RenderTile(tileAddress, x, y, objPaletteData, true, xFlip, yFlip);
+				RenderTile(tileAddress, x, yFlip ? y + 8 : y, objPaletteData, true, xFlip, yFlip);
 
 				// In 8x16 mode, also render the next tile immediately below.
 				if (OBJSize)
 				{
 					tileAddress = 0x8000 + (tileNumber | 0x01) * 16;
-					RenderTile(tileAddress, x, y + 8, objPaletteData, true, xFlip, yFlip);
+					RenderTile(tileAddress, x, yFlip ? y : y + 8, objPaletteData, true, xFlip, yFlip);
 				}
 			}
 
