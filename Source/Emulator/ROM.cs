@@ -54,6 +54,8 @@
 		public uint ROMSize { get; private set; }
 		public uint RAMSize { get; private set; }
 
+		public bool HasBattery { get; private set; }
+
 		private static ROM? _instance;
 		public static ROM Instance
 		{
@@ -146,6 +148,18 @@
 						break;
 				}
 				// TODO: Read any more?
+
+				HasBattery =
+					CartridgeType == CartridgeTypes.MBC1_RAM_BATTERY ||
+					CartridgeType == CartridgeTypes.MBC2_BATTERY ||
+					CartridgeType == CartridgeTypes.ROM_RAM_BATTERY ||
+					CartridgeType == CartridgeTypes.MMM01_RAM_BATTERY ||
+					CartridgeType == CartridgeTypes.MBC3_TIMER_BATTERY ||
+					CartridgeType == CartridgeTypes.MBC3_TIMER_RAM_BATTERY ||
+					CartridgeType == CartridgeTypes.MBC3_RAM_BATTERY ||
+					CartridgeType == CartridgeTypes.MBC5_RAM_BATTERY ||
+					CartridgeType == CartridgeTypes.MBC5_RUMBLE_RAM_BATTERY ||
+					CartridgeType == CartridgeTypes.MBC7_SENSOR_RUMBLE_RAM_BATTERY;
 
 				loaded = true;
 			}

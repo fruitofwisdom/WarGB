@@ -326,6 +326,20 @@
 					}
 					break;
 
+				case 0x17:      // RLA
+					{
+						CY = (byte)(A & 0x80) == 0x80;
+						A = (byte)(A << 1);
+						A |= (byte)(CY ? 0x01 : 0x00);
+						Z = A == 0x00;
+						N = false;
+						H = false;
+						PrintOpcode(instruction, "RLA");
+						PC++;
+						cycles++;
+					}
+					break;
+
 				case 0x18:      // JR s8
 					{
 						sbyte s8 = (sbyte)(Memory.Instance.Read(PC + 1) + 2);
@@ -2413,6 +2427,20 @@
 
 			switch (instruction)
 			{
+				case 0x00:      // RLC B
+					{
+						CY = (byte)(B & 0x80) == 0x80;
+						B = (byte)(B << 1);
+						B |= (byte)(CY ? 0x01 : 0x00);
+						Z = B == 0x00;
+						N = false;
+						H = false;
+						PrintOpcode(instruction, "RLC B");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
 				case 0x09:      // RRC C
 					{
 						CY = (byte)(C & 0x01) == 0x01;
@@ -3436,6 +3464,15 @@
 						PrintOpcode(instruction, "RES 5, (HL)");
 						PC += 2;
 						cycles += 4;
+					}
+					break;
+
+				case 0xAF:      // RES 5, A
+					{
+						Utilities.SetBitsInByte(ref A, 0x00, 5, 5);
+						PrintOpcode(instruction, "RES 5, A");
+						PC += 2;
+						cycles += 2;
 					}
 					break;
 

@@ -93,9 +93,13 @@
 				_logFile.Write(LogOutput);
 				LogOutput = "";
 
-				// Prevent clocks from overflowing and remember to sleep each frame.
+				// Do end-of-frame activities, like saving and sleeping.
 				if (_clocks == kClocksToSleep)
 				{
+					if (Memory.Instance.SaveNeeded)
+					{
+						Memory.Instance.Save();
+					}
 					_clocks = 0;
 					Thread.Sleep(1);
 				}

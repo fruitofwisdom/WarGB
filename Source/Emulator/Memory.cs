@@ -19,6 +19,8 @@
 		private bool RAMEnabled;
 		public uint ROMBank { get; private set; }
 
+		public bool SaveNeeded { get; private set; }
+
 		private static Memory? _instance;
 		public static Memory Instance
 		{
@@ -58,6 +60,34 @@
 			RAMEnabled = false;
 			// NOTE: By default, 0x4000 to 0x7FFF is mapped to bank 1.
 			ROMBank = 1;
+
+			SaveNeeded = false;
+			if (ROM.Instance.HasBattery)
+			{
+				// Read the save file into external RAM.
+				string savePath = Environment.CurrentDirectory + "\\" + ROM.Instance.Filename + ".sav";
+				if (File.Exists(savePath))
+				{
+					using (Stream reader = File.OpenRead(savePath))
+					{
+						reader.Read(ExternalRAM, 0, ExternalRAM.Length);
+					}
+				}
+			}
+		}
+
+		public void Save()
+		{
+			if (ROM.Instance.HasBattery)
+			{
+				// Write external RAM into the save file.
+				string savePath = Environment.CurrentDirectory + "\\" + ROM.Instance.Filename + ".sav";
+				using (Stream writer = File.OpenWrite(savePath))
+				{
+					writer.Write(ExternalRAM, 0, ExternalRAM.Length);
+				}
+			}
+			SaveNeeded = false;
 		}
 
 		public byte Read(int address)
@@ -263,8 +293,8 @@
 			{
 				if (RAMEnabled)
 				{
-					// TODO: Save data to backup RAM (a file).
 					ExternalRAM[address - 0xA000] = data;
+					SaveNeeded = true;
 				}
 				else
 				{
