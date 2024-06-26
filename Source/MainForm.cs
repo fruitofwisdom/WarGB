@@ -55,6 +55,9 @@ namespace GBSharp
 					playButton.Enabled = true;
 					pauseButton.Enabled = false;
 					stepButton.Enabled = true;
+
+					// Play automatically.
+					PlayButtonClick(this, new EventArgs());
 				}
 			}
 		}
