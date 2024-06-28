@@ -1677,7 +1677,7 @@
 						CY = false;
 						PrintOpcode(instruction, "OR (HL)");
 						PC++;
-						cycles++;
+						cycles += 2;
 					}
 					break;
 
@@ -2100,7 +2100,7 @@
 					{
 						byte d8 = Memory.Instance.Read(PC + 1);
 						Sub(ref A, d8);
-						PrintOpcode(instruction, "SUB 0x{d8:2}");
+						PrintOpcode(instruction, $"SUB 0x{d8:X2}");
 						PC += 2;
 						cycles += 2;
 					}
@@ -2361,7 +2361,7 @@
 						N = false;
 						H = s8 < 0;
 						CY = s8 < 0;
-						PrintOpcode(instruction, $"LD HL, SP+0x{s8:2}");
+						PrintOpcode(instruction, $"LD HL, SP+0x{s8:X2}");
 						PC += 2;
 						cycles += 3;
 					}
@@ -3429,8 +3429,8 @@
 
 				case 0x98:      // RES 3, B
 					{
-						Utilities.SetBitsInByte(ref B, 0x00, 2, 2);
-						PrintOpcode(instruction, "RES 2, B");
+						Utilities.SetBitsInByte(ref B, 0x00, 3, 3);
+						PrintOpcode(instruction, "RES 3, B");
 						PC += 2;
 						cycles += 2;
 					}
