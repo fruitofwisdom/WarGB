@@ -26,6 +26,15 @@
 		public byte IE;         // interrupt enable flag (also 0xFFFF)
 		private bool IME;       // interrupt master enable flag
 
+		// The divider and timer registers.
+		public ushort Divider;
+		public byte DIV;
+		// TODO: Implement the timer and interrupt.
+		public byte TIMA;
+		public byte TMA;
+		// TODO: Implement timer control.
+		//public byte TAC;
+
 		private bool _halted;
 
 		private static CPU? _instance;
@@ -62,6 +71,14 @@
 			IF = 0x00;
 			IE = 0x00;
 			IME = false;
+
+			// TODO: Correct initial values?
+			Divider = 0;
+			DIV = 0x00;
+			TIMA = 0x00;
+			TMA = 0x00;
+			// TODO: Implement timer control.
+			//TAC = 0x00;
 
 			_halted = false;
 		}
@@ -126,6 +143,20 @@
 			}
 
 			return interruptHandled;
+		}
+
+		public void UpdateDividerAndTimer()
+		{
+			Divider++;
+			// DIV is the top 8 bits of the internal divider.
+			byte previousDIV = DIV;
+			DIV = (byte)(Divider >> 8);
+			if (previousDIV != DIV)
+			{
+				GameBoy.LogOutput += $"[{Divider}, 0x{previousDIV:X2}] DIV changing to new DIV 0x{DIV:X2}.\n";
+			}
+
+			// TODO: Implement the timer and interrupt.
 		}
 
 		private byte GetF()

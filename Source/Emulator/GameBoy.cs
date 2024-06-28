@@ -89,6 +89,12 @@
 
 				_clocks++;
 
+				// Update the divider and timer every CPU cycle (M cycle).
+				if (_clocks % 4 == 0)
+				{
+					CPU.Instance.UpdateDividerAndTimer();
+				}
+
 				// Write log output.
 				_logFile.Write(LogOutput);
 				LogOutput = "";

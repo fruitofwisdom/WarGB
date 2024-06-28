@@ -3,18 +3,16 @@
 	internal class Memory
 	{
 		// Character data, BG display data, etc. - 0x8000 to 0x9FFF
-		private byte[] VRAM;
+		private readonly byte[] VRAM;
 		// External expansion working RAM - 0xA000 to 0xBFFF
-		private byte[] ExternalRAM;
+		private readonly byte[] ExternalRAM;
 		// Unit working RAM - 0xC000 to 0xDFFF
-		private byte[] WRAMBank0;
+		private readonly byte[] WRAMBank0;
 		// TODO: Support bank switching for CGB.
-		private byte[] WRAMBank1;
-		private byte[] OAM;             // sprite attribute table
-		// Port/mode registers, control register, and sound register - 0xFF00 to 0xFF7F
-		private byte[] Registers;
+		private readonly byte[] WRAMBank1;
+		private readonly byte[] OAM;             // sprite attribute table
 		// Working and stack RAM - OxFF80 to 0xFFFE
-		private byte[] HRAM;            // high RAM
+		private readonly byte[] HRAM;            // high RAM
 
 		private bool RAMEnabled;
 		public uint ROMBank { get; private set; }
@@ -40,7 +38,6 @@
 			// TODO: Support bank switching for CGB.
 			WRAMBank1 = new byte[4 * 1024];
 			OAM = new byte[160];
-			Registers = new byte[128];
 			HRAM = new byte[127];
 
 			Reset();
@@ -54,7 +51,6 @@
 			Array.Clear(WRAMBank0, 0, WRAMBank0.Length);
 			Array.Clear(WRAMBank1, 0, WRAMBank1.Length);
 			Array.Clear(OAM, 0, OAM.Length);
-			Array.Clear(Registers, 0, Registers.Length);
 			Array.Clear(HRAM, 0, HRAM.Length);
 
 			RAMEnabled = false;
@@ -168,58 +164,8 @@
 			}
 			else if (address >= 0xFF00 && address <= 0xFF7F)
 			{
-				data = Registers[address - 0xFF00];
-
-				if (address == 0xFF00)
-				{
-					data = Controller.Instance.ReadFromRegister();
-				}
-				else if (address == 0xFF0F)
-				{
-					data = CPU.Instance.IF;
-				}
-				else if (address == 0xFF25)
-				{
-					data = Sound.Instance.SoundOutputTerminals;
-				}
-				else if (address == 0xFF40)
-				{
-					data = PPU.Instance.GetLCDC();
-				}
-				else if (address == 0xFF41)
-				{
-					data = PPU.Instance.GetSTAT();
-				}
-				else if (address == 0xFF42)
-				{
-					data = (byte)(PPU.Instance.SCY);
-				}
-				else if (address == 0xFF43)
-				{
-					data = (byte)(PPU.Instance.SCX);
-				}
-				else if (address == 0xFF44)
-				{
-					data = PPU.Instance.LY;
-				}
-				else if (address == 0xFF45)
-				{
-					data = PPU.Instance.LYC;
-				}
-				else if (address == 0xFF4A)
-				{
-					data = (byte)(PPU.Instance.WY);
-				}
-				else if (address == 0xFF4B)
-				{
-					data = (byte)(PPU.Instance.WX);
-				}
-				// TODO: The other registers.
-				else
-				{
-					GameBoy.DebugOutput += $"Reading from unimplemented register: 0x{address:X4}!\n";
-					MainForm.Pause();
-				}
+				// Actually read from the registers.
+				data = ReadFromRegister(address);
 			}
 			else if (address >= 0xFF80 && address <= 0xFFFE)
 			{
@@ -228,6 +174,84 @@
 			else if (address == 0xFFFF)
 			{
 				data = CPU.Instance.IE;
+			}
+
+			return data;
+		}
+
+		// Actually read from the specific registers or various other settings.
+		byte ReadFromRegister(int address)
+		{
+			byte data = 0x00;
+
+			if (address == 0xFF00)
+			{
+				data = Controller.Instance.ReadFromRegister();
+			}
+			else if (address == 0xFF04)
+			{
+				data = CPU.Instance.DIV;
+			}
+			// TODO: Implement the timer and interrupt.
+			/*
+			else if (address == 0xFF05)
+			{
+				data = CPU.Instance.TIMA;
+			}
+			else if (address == 0xFF06)
+			{
+				data = CPU.Instance.TMA;
+			}
+			else if (address == 0xFF07)
+			{
+				// TODO: Implement timer control.
+			}
+			*/
+			else if (address == 0xFF0F)
+			{
+				data = CPU.Instance.IF;
+			}
+			else if (address == 0xFF25)
+			{
+				data = Sound.Instance.SoundOutputTerminals;
+			}
+			else if (address == 0xFF40)
+			{
+				data = PPU.Instance.GetLCDC();
+			}
+			else if (address == 0xFF41)
+			{
+				data = PPU.Instance.GetSTAT();
+			}
+			else if (address == 0xFF42)
+			{
+				data = (byte)(PPU.Instance.SCY);
+			}
+			else if (address == 0xFF43)
+			{
+				data = (byte)(PPU.Instance.SCX);
+			}
+			else if (address == 0xFF44)
+			{
+				data = PPU.Instance.LY;
+			}
+			else if (address == 0xFF45)
+			{
+				data = PPU.Instance.LYC;
+			}
+			else if (address == 0xFF4A)
+			{
+				data = (byte)(PPU.Instance.WY);
+			}
+			else if (address == 0xFF4B)
+			{
+				data = (byte)(PPU.Instance.WX);
+			}
+			// TODO: The other registers.
+			else
+			{
+				GameBoy.DebugOutput += $"Reading from unimplemented register: 0x{address:X4}!\n";
+				MainForm.Pause();
 			}
 
 			return data;
@@ -288,6 +312,10 @@
 			else if (address >= 0x8000 && address <= 0x9FFF)
 			{
 				VRAM[address - 0x8000] = data;
+				if (address == 0x8870)
+				{
+					GameBoy.LogOutput += $"Writing 0x{data:X2} to VRAM: 0x{address:X4}!\n";
+				}
 			}
 			else if (address >= 0xA000 && address <= 0xBFFF)
 			{
@@ -332,10 +360,8 @@
 			}
 			else if (address >= 0xFF00 && address <= 0xFF7F)
 			{
-				Registers[address - 0xFF00] = data;
-
-				// Actually handle the register changes.
-				HandleWriteToRegister(address, data);
+				// Actually write to the registers.
+				WriteToRegister(address, data);
 			}
 			else if (address >= 0xFF80 && address <= 0xFFFE)
 			{
@@ -347,8 +373,8 @@
 			}
 		}
 
-		// Handle the changes from writing to registers.
-		private void HandleWriteToRegister(int address, byte data)
+		// Actually write to the specific registers or various other settings.
+		private void WriteToRegister(int address, byte data)
 		{
 			if (address == 0xFF00)
 			{
@@ -356,6 +382,26 @@
 				Controller.Instance.SelectButtons = Utilities.GetBitsFromByte(data, 5, 5) != 1;
 				Controller.Instance.SelectDpad = Utilities.GetBitsFromByte(data, 4, 4) != 1;
 			}
+			else if (address == 0xFF04)
+			{
+				// NOTE: Writing any value to DIV actually resets the internal divider.
+				CPU.Instance.Divider = 0;
+			}
+			// TODO: Implement the timer and interrupt.
+			/*
+			else if (address == 0xFF05)
+			{
+				CPU.Instance.TIMA = data;
+			}
+			else if (address == 0xFF06)
+			{
+				CPU.Instance.TMA = data;
+			}
+			else if (address == 0xFF07)
+			{
+				// TODO: Implement timer control.
+			}
+			*/
 			else if (address == 0xFF0F)
 			{
 				CPU.Instance.IF = data;
