@@ -178,7 +178,7 @@
 		{
 			if (GameBoy.ShouldLogOpcodes)
 			{
-				string output = $"[0x{PC:X4}] 0x{instruction:X2}: " + opcode;
+				string output = $"[0x{PC:X4} {Memory.Instance.ROMBank}] 0x{instruction:X2}: " + opcode;
 				for (int i = output.Length; i < 40; ++i)
 				{
 					output += " ";
