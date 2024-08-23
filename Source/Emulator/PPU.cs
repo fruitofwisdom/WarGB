@@ -140,10 +140,6 @@
 			// Did we start rendering a new scanline?
 			if (newLY != LY)
 			{
-				if (GameBoy.ShouldLogOpcodes)
-				{
-					GameBoy.LogOutput += $"[{Dots}, {LY}] LY changing to new LY {newLY}.\n";
-				}
 				LY = newLY;
 
 				// Check for a v-blank interrupt.

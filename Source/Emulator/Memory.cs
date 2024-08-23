@@ -312,10 +312,6 @@
 			else if (address >= 0x8000 && address <= 0x9FFF)
 			{
 				VRAM[address - 0x8000] = data;
-				if (address == 0x8870)
-				{
-					GameBoy.LogOutput += $"Writing 0x{data:X2} to VRAM: 0x{address:X4}!\n";
-				}
 			}
 			else if (address >= 0xA000 && address <= 0xBFFF)
 			{

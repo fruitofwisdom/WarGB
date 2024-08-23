@@ -149,12 +149,7 @@
 		{
 			Divider++;
 			// DIV is the top 8 bits of the internal divider.
-			byte previousDIV = DIV;
 			DIV = (byte)(Divider >> 8);
-			if (previousDIV != DIV)
-			{
-				GameBoy.LogOutput += $"[{Divider}, 0x{previousDIV:X2}] DIV changing to new DIV 0x{DIV:X2}.\n";
-			}
 
 			// TODO: Implement the timer and interrupt.
 		}

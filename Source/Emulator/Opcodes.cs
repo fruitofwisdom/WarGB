@@ -1825,7 +1825,7 @@
 						byte lower = Memory.Instance.Read(PC + 1);
 						ushort higher = (ushort)(Memory.Instance.Read(PC + 2) << 8);
 						ushort a16 = (ushort)(higher + lower);
-						PrintOpcode(instruction, $"JP NZ, 0x{a16:4}");
+						PrintOpcode(instruction, $"JP NZ, 0x{a16:X4}");
 						if (!Z)
 						{
 							PC = a16;
@@ -2742,7 +2742,7 @@
 				case 0x39:      // SRL C
 					{
 						CY = (byte)(C & 0x01) == 0x01;
-						D = (byte)(C >> 1);
+						C = (byte)(C >> 1);
 						Z = C == 0x00;
 						N = false;
 						H = false;
