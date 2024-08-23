@@ -2605,6 +2605,24 @@
 					}
 					break;
 
+				case 0x1D:      // RR L
+					{
+						byte h = (byte)((HL & 0xFF00) >> 8);
+						byte l = (byte)(HL & 0x00FF);
+						bool newCY = (byte)(l & 0x01) == 0x01;
+						l = (byte)(l >> 1);
+						l |= (byte)(CY ? 0x80 : 0x00);
+						HL = (ushort)((h << 8) + l);
+						CY = newCY;
+						Z = l == 0x00;
+						N = false;
+						H = false;
+						PrintOpcode(instruction, "RR L");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
 				case 0x20:      // SLA B
 					{
 						CY = (byte)(B & 0x80) == 0x80;
@@ -3163,6 +3181,18 @@
 						N = false;
 						H = true;
 						PrintOpcode(instruction, "BIT 4, C");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0x62:      // BIT 4, D
+					{
+						byte bit = Utilities.GetBitsFromByte(D, 4, 4);
+						Z = bit == 0x00;
+						N = false;
+						H = true;
+						PrintOpcode(instruction, "BIT 4, D");
 						PC += 2;
 						cycles += 2;
 					}
@@ -3825,6 +3855,15 @@
 					{
 						Utilities.SetBitsInByte(ref C, 0x01, 7, 7);
 						PrintOpcode(instruction, "SET 7, C");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0xFB:      // SET 7, E
+					{
+						Utilities.SetBitsInByte(ref E, 0x01, 7, 7);
+						PrintOpcode(instruction, "SET 7, E");
 						PC += 2;
 						cycles += 2;
 					}
