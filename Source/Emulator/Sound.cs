@@ -36,12 +36,38 @@
 			RightOutputOn = false;
 			RightOutputVolume = 0;
 
-			Channels[0] = new SquareWave();
-			Channels[1] = new SquareWave();
+			Channels[0] = new PulseWave();
+			Channels[1] = new PulseWave();
 			Channels[2] = new WaveTable();
 			Channels[3] = new NoiseGenerator();
 
 			SoundOutputTerminals = 0x00;
+
+			Stop();
+		}
+
+		public void Play()
+		{
+			foreach (Channel channel in Channels)
+			{
+				channel.Play();
+			}
+		}
+
+		public void Stop()
+		{
+			foreach (Channel channel in Channels)
+			{
+				channel.Stop();
+			}
+		}
+
+		public void Update()
+		{
+			foreach (Channel channel in Channels)
+			{
+				channel.Update();
+			}
 		}
 	}
 }

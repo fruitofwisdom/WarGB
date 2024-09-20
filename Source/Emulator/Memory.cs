@@ -407,69 +407,69 @@
 				byte sweepTime = Utilities.GetBitsFromByte(data, 4, 6);
 				byte sweepIncDec = Utilities.GetBitsFromByte(data, 3, 3);
 				byte sweepShiftNumber = Utilities.GetBitsFromByte(data, 0, 2);
-				((SquareWave)Sound.Instance.Channels[0]).SweepTime = sweepTime;
-				((SquareWave)Sound.Instance.Channels[0]).SweepIncDec = sweepIncDec;
-				((SquareWave)Sound.Instance.Channels[0]).SweepShiftNumber = sweepShiftNumber;
+				((PulseWave)Sound.Instance.Channels[0]).SweepTime = sweepTime;
+				((PulseWave)Sound.Instance.Channels[0]).SweepIncDec = sweepIncDec;
+				((PulseWave)Sound.Instance.Channels[0]).SweepShiftNumber = sweepShiftNumber;
 			}
 			else if (address == 0xFF11)
 			{
-				byte waveformDuty = Utilities.GetBitsFromByte(data, 6, 7);
+				uint waveformDuty = Utilities.GetBitsFromByte(data, 6, 7);
 				byte soundLength = Utilities.GetBitsFromByte(data, 0, 5);
-				((SquareWave)Sound.Instance.Channels[0]).WaveformDuty = waveformDuty;
-				((SquareWave)Sound.Instance.Channels[0]).SoundLength = soundLength;
+				((PulseWave)Sound.Instance.Channels[0]).WaveformDuty = waveformDuty;
+				((PulseWave)Sound.Instance.Channels[0]).SoundLength = soundLength;
 			}
 			else if (address == 0xFF12)
 			{
-				byte defaultEnvelopeValue = Utilities.GetBitsFromByte(data, 4, 7);
+				uint defaultEnvelopeValue = Utilities.GetBitsFromByte(data, 4, 7);
 				byte envelopeUpDown = Utilities.GetBitsFromByte(data, 3, 3);
 				byte lengthOfEnvelopeSteps = Utilities.GetBitsFromByte(data, 0, 2);
-				((SquareWave)Sound.Instance.Channels[0]).DefaultEnvelopeValue = defaultEnvelopeValue;
-				((SquareWave)Sound.Instance.Channels[0]).EnvelopeUpDown = envelopeUpDown;
-				((SquareWave)Sound.Instance.Channels[0]).LengthOfEnvelopeSteps = lengthOfEnvelopeSteps;
+				((PulseWave)Sound.Instance.Channels[0]).DefaultEnvelopeValue = defaultEnvelopeValue;
+				((PulseWave)Sound.Instance.Channels[0]).EnvelopeUpDown = envelopeUpDown;
+				((PulseWave)Sound.Instance.Channels[0]).LengthOfEnvelopeSteps = lengthOfEnvelopeSteps;
 			}
 			else if (address == 0xFF13)
 			{
-				byte lowOrderFrequencyData = data;
-				((SquareWave)Sound.Instance.Channels[0]).LowOrderFrequencyData = lowOrderFrequencyData;
+				uint lowOrderFrequencyData = data;
+				((PulseWave)Sound.Instance.Channels[0]).LowOrderFrequencyData = lowOrderFrequencyData;
 			}
 			else if (address == 0xFF14)
 			{
 				bool initialize = Utilities.GetBitsFromByte(data, 7, 7) != 0x00;
 				bool counterContinuousSelection = Utilities.GetBitsFromByte(data, 6, 6) != 0x00;
-				byte highOrderFrequencyData = Utilities.GetBitsFromByte(data, 0, 2);
-				((SquareWave)Sound.Instance.Channels[0]).Initialize = initialize;
-				((SquareWave)Sound.Instance.Channels[0]).CounterContinuousSelection = counterContinuousSelection;
-				((SquareWave)Sound.Instance.Channels[0]).HighOrderFrequencyData = highOrderFrequencyData;
+				uint highOrderFrequencyData = Utilities.GetBitsFromByte(data, 0, 2);
+				((PulseWave)Sound.Instance.Channels[0]).Initialize = initialize;
+				((PulseWave)Sound.Instance.Channels[0]).CounterContinuousSelection = counterContinuousSelection;
+				((PulseWave)Sound.Instance.Channels[0]).HighOrderFrequencyData = highOrderFrequencyData;
 			}
 			else if (address == 0xFF16)
 			{
-				byte waveformDuty = Utilities.GetBitsFromByte(data, 6, 7);
+				uint waveformDuty = Utilities.GetBitsFromByte(data, 6, 7);
 				byte soundLength = Utilities.GetBitsFromByte(data, 0, 5);
-				((SquareWave)Sound.Instance.Channels[1]).WaveformDuty = waveformDuty;
-				((SquareWave)Sound.Instance.Channels[1]).SoundLength = soundLength;
+				((PulseWave)Sound.Instance.Channels[1]).WaveformDuty = waveformDuty;
+				((PulseWave)Sound.Instance.Channels[1]).SoundLength = soundLength;
 			}
 			else if (address == 0xFF17)
 			{
-				byte defaultEnvelopeValue = Utilities.GetBitsFromByte(data, 4, 7);
+				uint defaultEnvelopeValue = Utilities.GetBitsFromByte(data, 4, 7);
 				byte envelopeUpDown = Utilities.GetBitsFromByte(data, 3, 3);
 				byte lengthOfEnvelopeSteps = Utilities.GetBitsFromByte(data, 0, 2);
-				((SquareWave)Sound.Instance.Channels[1]).DefaultEnvelopeValue = defaultEnvelopeValue;
-				((SquareWave)Sound.Instance.Channels[1]).EnvelopeUpDown = envelopeUpDown;
-				((SquareWave)Sound.Instance.Channels[1]).LengthOfEnvelopeSteps = lengthOfEnvelopeSteps;
+				((PulseWave)Sound.Instance.Channels[1]).DefaultEnvelopeValue = defaultEnvelopeValue;
+				((PulseWave)Sound.Instance.Channels[1]).EnvelopeUpDown = envelopeUpDown;
+				((PulseWave)Sound.Instance.Channels[1]).LengthOfEnvelopeSteps = lengthOfEnvelopeSteps;
 			}
 			else if (address == 0xFF18)
 			{
-				byte lowOrderFrequencyData = data;
-				((SquareWave)Sound.Instance.Channels[1]).LowOrderFrequencyData = lowOrderFrequencyData;
+				uint lowOrderFrequencyData = data;
+				((PulseWave)Sound.Instance.Channels[1]).LowOrderFrequencyData = lowOrderFrequencyData;
 			}
 			else if (address == 0xFF19)
 			{
 				bool initialize = Utilities.GetBitsFromByte(data, 7, 7) != 0x00;
 				bool counterContinuousSelection = Utilities.GetBitsFromByte(data, 6, 6) != 0x00;
-				byte highOrderFrequencyData = Utilities.GetBitsFromByte(data, 0, 5);
-				((SquareWave)Sound.Instance.Channels[1]).Initialize = initialize;
-				((SquareWave)Sound.Instance.Channels[1]).CounterContinuousSelection = counterContinuousSelection;
-				((SquareWave)Sound.Instance.Channels[1]).HighOrderFrequencyData = highOrderFrequencyData;
+				uint highOrderFrequencyData = Utilities.GetBitsFromByte(data, 0, 5);
+				((PulseWave)Sound.Instance.Channels[1]).Initialize = initialize;
+				((PulseWave)Sound.Instance.Channels[1]).CounterContinuousSelection = counterContinuousSelection;
+				((PulseWave)Sound.Instance.Channels[1]).HighOrderFrequencyData = highOrderFrequencyData;
 			}
 			else if (address == 0xFF1A)
 			{

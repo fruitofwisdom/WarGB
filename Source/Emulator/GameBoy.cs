@@ -81,6 +81,7 @@
 					{
 						_playing = false;
 						_stepRequested = false;
+						Sound.Instance.Stop();
 					}
 				}
 
@@ -99,13 +100,16 @@
 				_logFile.Write(LogOutput);
 				LogOutput = "";
 
-				// Do end-of-frame activities, like saving and sleeping.
+				// Do end-of-frame activities, like updating the sound chip, saving, and sleeping.
 				if (_clocks == kClocksToSleep)
 				{
+					Sound.Instance.Update();
+
 					if (Memory.Instance.SaveNeeded)
 					{
 						Memory.Instance.Save();
 					}
+
 					_clocks = 0;
 					Thread.Sleep(1);
 				}
@@ -124,12 +128,14 @@
 		public void Play()
 		{
 			_playing = true;
+			Sound.Instance.Play();
 		}
 
 		// Pause the emulator.
 		public void Pause()
 		{
 			_playing = false;
+			Sound.Instance.Stop();
 		}
 
 		// Step the emulator through one opcode.
