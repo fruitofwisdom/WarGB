@@ -7,6 +7,10 @@
 		private bool _playing;
 		private bool _stepRequested;
 
+		// Accurately time frames.
+		private DateTime _lastFrameTime;
+		private bool _frameDone;
+
 		// Current count of clock cycles.
 		private uint _clocks;
 
@@ -38,6 +42,9 @@
 			_playing = false;
 			_stepRequested = false;
 
+			_lastFrameTime = DateTime.Now;
+			_frameDone = false;
+
 			_clocks = 0;
 		}
 
@@ -60,8 +67,26 @@
 				// Do nothing if we're paused, unless a step was requested.
 				if (!_playing && !_stepRequested)
 				{
-					Thread.Sleep(1);
+					Thread.Sleep(0);
 					continue;
+				}
+
+				// When ready for a new frame, wait so our timing is accurate.
+				if (_frameDone)
+				{
+					double elapsedMs = (DateTime.Now - _lastFrameTime).TotalMilliseconds;
+					// The Game Boy runs at 59.7fps.
+					double msToSleep = 1000 / 59.7d - elapsedMs;
+					if (msToSleep > 0.0d)
+					{
+						Thread.Sleep(0);
+						continue;
+					}
+					else
+					{
+						_lastFrameTime = DateTime.Now;
+						_frameDone = false;
+					}
 				}
 
 				// Run the next CPU instruction when enough clock cycles have elapsed.
@@ -110,8 +135,8 @@
 						Memory.Instance.Save();
 					}
 
+					_frameDone = true;
 					_clocks = 0;
-					Thread.Sleep(1);
 				}
 			}
 
@@ -122,6 +147,7 @@
 		public void Stop()
 		{
 			_needToStop = true;
+			Sound.Instance.Stop();
 		}
 
 		// Start the emulator.
