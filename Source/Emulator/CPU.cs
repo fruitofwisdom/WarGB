@@ -161,7 +161,7 @@
             if ((previousDiv & 0x08) == 0x08 && (DIV & 0x08) == 0x00)
             {
 				_divApu++;
-				Sound.Instance.UpdateDiv(_divApu);
+				APU.Instance.UpdateDiv(_divApu);
 			}
 		}
 

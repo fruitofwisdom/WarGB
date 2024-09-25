@@ -35,7 +35,7 @@
 			CPU.Instance.Reset();
 			Memory.Instance.Reset();
 			PPU.Instance.Reset();
-			Sound.Instance.Reset();
+			APU.Instance.Reset();
 
 			_needToStop = false;
 			_playing = false;
@@ -105,12 +105,12 @@
 					{
 						_playing = false;
 						_stepRequested = false;
-						Sound.Instance.Stop();
+						APU.Instance.Stop();
 					}
 				}
 
 				// Update the APU.
-				Sound.Instance.Update();
+				APU.Instance.Update();
 
 				// Update the PPU.
 				PPU.Instance.Update();
@@ -147,21 +147,21 @@
 		public void Stop()
 		{
 			_needToStop = true;
-			Sound.Instance.Stop();
+			APU.Instance.Stop();
 		}
 
 		// Start the emulator.
 		public void Play()
 		{
 			_playing = true;
-			Sound.Instance.Play();
+			APU.Instance.Play();
 		}
 
 		// Pause the emulator.
 		public void Pause()
 		{
 			_playing = false;
-			Sound.Instance.Stop();
+			APU.Instance.Stop();
 		}
 
 		// Step the emulator through one opcode.

@@ -1,6 +1,6 @@
 ﻿namespace GBSharp
 {
-	internal class Sound
+	internal class APU
 	{
 		// Master volume and stereo output. (NR50, 0xFF24)
 		// TODO: Support stereo sound.
@@ -25,17 +25,17 @@
 
 		public Channel[] Channels = new Channel[4];
 
-		private static Sound? _instance;
-		public static Sound Instance
+		private static APU? _instance;
+		public static APU Instance
 		{
 			get
 			{
-				_instance ??= new Sound();
+				_instance ??= new APU();
 				return _instance;
 			}
 		}
 
-		public Sound()
+		public APU()
 		{
 			Reset();
 		}
@@ -59,10 +59,10 @@
 
 			_allSoundOn = false;
 
-			Channels[0] = new PulseWave(true);
-			Channels[1] = new PulseWave();
-			Channels[2] = new WaveTable();
-			Channels[3] = new NoiseGenerator();
+			Channels[0] = new PulseWaveChannel(true);
+			Channels[1] = new PulseWaveChannel();
+			Channels[2] = new WaveTableChannel();
+			Channels[3] = new NoiseGeneratorChannel();
 
 			Stop();
 		}
