@@ -77,9 +77,11 @@ namespace GBSharp
 
 		// The sweep settings. (NR10, 0xFF10)
 		private readonly bool _sweepEnabled = false;
-		public byte SweepTime = 0x00;
-		public byte SweepIncDec = 0x00;
-		public byte SweepShiftNumber = 0x00;
+		private uint _currentSweepStep = 0;
+		public uint SweepTime = 0;
+		public bool SweepIncDec = false;
+		public int SweepShiftNumber = 0;
+		private float _sweepFrequencyShift = 0.0f;
 
 		// The waveform duty. (NR11 and NR21, 0xFF11 and 0xFF21)
 		private uint _lastWaveformDuty = 0;
@@ -132,9 +134,36 @@ namespace GBSharp
 			}
 
 			// DIV-APU runs at 512Hz, frequency sweep at 128Hz.
-			if (divApu % 4 == 0)
+			if (_sweepEnabled && divApu % 4 == 0)
 			{
-				// TODO: Implement sweep support.
+				// Apply the frequency sweep, if it's enabled.
+				if (SweepTime != 0 && SweepShiftNumber != 0)
+				{
+					_currentSweepStep++;
+					if (_currentSweepStep >= SweepTime)
+					{
+						// Calculate the shift to apply in Update.
+						if (SweepIncDec)
+						{
+							_sweepFrequencyShift += (_pulseWaveProvider._frequency + _sweepFrequencyShift) / (2 << SweepShiftNumber);
+						}
+						else
+						{
+							_sweepFrequencyShift -= (_pulseWaveProvider._frequency - _sweepFrequencyShift) / (2 << SweepShiftNumber);
+						}
+						// Keep the frequency in bounds.
+						if (_pulseWaveProvider._frequency + _sweepFrequencyShift > 131072f)
+						{
+							_sweepFrequencyShift = 0.0f;
+							SoundOn = false;
+						}
+						else if (_pulseWaveProvider._frequency - _sweepFrequencyShift < 0f)
+						{
+							_sweepFrequencyShift = 0.0f;
+						}
+						_currentSweepStep = 0;
+					}
+				}
 			}
 		}
 
@@ -170,7 +199,7 @@ namespace GBSharp
 				uint frequencyData = LowOrderFrequencyData + (HighOrderFrequencyData << 8);
 				float periodValue = 2048 - frequencyData;
 				float newFrequency = 131072 / periodValue;
-				_pulseWaveProvider._frequency = newFrequency;
+				_pulseWaveProvider._frequency = newFrequency + _sweepFrequencyShift;
 			}
 		}
 

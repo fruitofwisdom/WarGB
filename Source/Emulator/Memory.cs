@@ -404,11 +404,11 @@
 			}
 			else if (address == 0xFF10)
 			{
-				byte sweepTime = Utilities.GetBitsFromByte(data, 4, 6);
-				byte sweepIncDec = Utilities.GetBitsFromByte(data, 3, 3);
-				byte sweepShiftNumber = Utilities.GetBitsFromByte(data, 0, 2);
+				uint sweepTime = Utilities.GetBitsFromByte(data, 4, 6);
 				((PulseWaveChannel)APU.Instance.Channels[0]).SweepTime = sweepTime;
+				bool sweepIncDec = Utilities.GetBitsFromByte(data, 3, 3) != 0x00;
 				((PulseWaveChannel)APU.Instance.Channels[0]).SweepIncDec = sweepIncDec;
+				int sweepShiftNumber = Utilities.GetBitsFromByte(data, 0, 2);
 				((PulseWaveChannel)APU.Instance.Channels[0]).SweepShiftNumber = sweepShiftNumber;
 			}
 			else if (address == 0xFF11)
