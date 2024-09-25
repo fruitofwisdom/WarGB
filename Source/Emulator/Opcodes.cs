@@ -410,6 +410,20 @@
 					}
 					break;
 
+				case 0x1F:      // RRCA
+					{
+						CY = (byte)(A & 0x01) == 0x01;
+						A = (byte)(A >> 1);
+						A |= (byte)(CY ? 0x80 : 0x00);
+						Z = A == 0x00;
+						N = false;
+						H = false;
+						PrintOpcode(instruction, "RRCA");
+						PC++;
+						cycles++;
+					}
+					break;
+
 				case 0x20:      // JR NZ, s8
 					{
 						sbyte s8 = (sbyte)Memory.Instance.Read(PC + 1);
@@ -1349,6 +1363,17 @@
 						byte dAndCY = (byte)(D + (CY ? 0x01 : 0x00));
 						Add(ref A, dAndCY);
 						PrintOpcode(instruction, "ADC A, D");
+						PC++;
+						cycles++;
+					}
+					break;
+
+				case 0x8C:      // ADC A, H
+					{
+						byte h = (byte)((HL & 0xFF00) >> 8);
+						byte hAndCY = (byte)(h + (CY ? 0x01 : 0x00));
+						Add(ref A, hAndCY);
+						PrintOpcode(instruction, "ADC A, H");
 						PC++;
 						cycles++;
 					}
@@ -2450,6 +2475,22 @@
 					}
 					break;
 
+				case 0x06:      // RLC (HL)
+					{
+						byte d8 = Memory.Instance.Read(HL);
+						CY = (byte)(d8 & 0x80) == 0x80;
+						d8 = (byte)(d8 << 1);
+						d8 |= (byte)(CY ? 0x01 : 0x00);
+						Memory.Instance.Write(HL, d8);
+						Z = d8 == 0x00;
+						N = false;
+						H = false;
+						PrintOpcode(instruction, "RLC (HL)");
+						PC += 2;
+						cycles += 4;
+					}
+					break;
+
 				case 0x09:      // RRC C
 					{
 						CY = (byte)(C & 0x01) == 0x01;
@@ -2623,6 +2664,23 @@
 					}
 					break;
 
+				case 0x1E:      // RR (HL)
+					{
+						byte d8 = Memory.Instance.Read(HL);
+						bool newCY = (byte)(d8 & 0x01) == 0x01;
+						d8 = (byte)(d8 >> 1);
+						d8 |= (byte)(CY ? 0x80 : 0x00);
+						Memory.Instance.Write(HL, d8);
+						CY = newCY;
+						Z = d8 == 0x00;
+						N = false;
+						H = false;
+						PrintOpcode(instruction, "RR (HL)");
+						PC += 2;
+						cycles += 4;
+					}
+					break;
+
 				case 0x20:      // SLA B
 					{
 						CY = (byte)(B & 0x80) == 0x80;
@@ -2631,6 +2689,19 @@
 						N = false;
 						H = false;
 						PrintOpcode(instruction, "SLA B");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0x21:      // SLA C
+					{
+						CY = (byte)(C & 0x80) == 0x80;
+						C = (byte)(C << 1);
+						Z = C == 0x00;
+						N = false;
+						H = false;
+						PrintOpcode(instruction, "SLA C");
 						PC += 2;
 						cycles += 2;
 					}
@@ -2850,6 +2921,21 @@
 						PrintOpcode(instruction, "SRL L");
 						PC += 2;
 						cycles += 2;
+					}
+					break;
+
+				case 0x3E:      // SRL (HL)
+					{
+						byte d8 = Memory.Instance.Read(HL);
+						CY = (byte)(d8 & 0x01) == 0x01;
+						d8 = (byte)(d8 >> 1);
+						Memory.Instance.Write(HL, d8);
+						Z = d8 == 0x00;
+						N = false;
+						H = false;
+						PrintOpcode(instruction, "SRL (HL)");
+						PC += 2;
+						cycles += 4;
 					}
 					break;
 
@@ -3807,6 +3893,17 @@
 						PrintOpcode(instruction, "SET 4, C");
 						PC += 2;
 						cycles += 2;
+					}
+					break;
+
+				case 0xEE:      // SET 5, (HL)
+					{
+						byte d8 = Memory.Instance.Read(HL);
+						Utilities.SetBitsInByte(ref d8, 0x01, 5, 5);
+						Memory.Instance.Write(HL, d8);
+						PrintOpcode(instruction, "SET 5, (HL)");
+						PC += 2;
+						cycles += 4;
 					}
 					break;
 
