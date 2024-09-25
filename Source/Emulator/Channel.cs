@@ -7,15 +7,32 @@ namespace GBSharp
 	{
 		public bool SoundOn = false;
 
+		// Current sound length, initialized from the channels' sound length registers. (NR11, 0xFF11; NR21, 0xFF21; NR31, 0xFF1B; NR41, 0xFF20)
+		protected uint _soundLengthTimer = 0;
+		private const uint kSoundLengthTime = 0;
+
+		// Other settings. (NR14, 0xFF14; NR24, 0xFF24; NR34, 0xFF1E; NR44, 0xFF23)
+		public bool CounterContinuousSelection = false;
+
 		// The actual sound output device.
 		protected WaveOutEvent _waveOut = new();
 
 		// Anything louder than this is too loud.
-		protected float _maxVolume = 0.2f;
+		protected const float kMaxVolume = 0.2f;
 
 		~Channel()
 		{
 			_waveOut.Dispose();
+		}
+
+		public void Initialize()
+		{
+			SoundOn = true;
+		}
+
+		public void SetSoundLength(uint soundLength)
+		{
+			_soundLengthTimer = soundLength;
 		}
 
 		public void Play()
@@ -28,7 +45,27 @@ namespace GBSharp
 			_waveOut.Stop();
 		}
 
-		public abstract void Update();
+		public virtual void UpdateDiv(ushort divApu)
+		{
+			// DIV-APU runs at 512Hz, sound length at 256Hz
+			if (divApu % 2 == 0)
+			{
+				// Update length timer.
+				if (CounterContinuousSelection)
+				{
+					_soundLengthTimer++;
+					if (_soundLengthTimer == kSoundLengthTime)
+					{
+						SoundOn = false;
+					}
+				}
+			}
+		}
+
+		public virtual void Update()
+		{
+			;
+		}
 	}
 
 	// A pulse wave generator for sound channels 1 and 2.
@@ -98,49 +135,95 @@ namespace GBSharp
 
 	// TODO: Other generators for sound channels 3 and 4.
 
-	// Sound channels 1 and 2 are a rectangular, "pulse" wave.
+	// Sound channels 1 and 2 are a rectangular, "pulse" wave. Note that channel 2 doesn't support sweep.
 	internal class PulseWave : Channel
 	{
 		private readonly PulseWaveProvider _pulseWaveProvider = new();
 
 		// The sweep settings. (NR10, 0xFF10)
+		private readonly bool _sweepEnabled = false;
 		public byte SweepTime = 0x00;
 		public byte SweepIncDec = 0x00;
 		public byte SweepShiftNumber = 0x00;
 
-		// The waveform duty and sound length timer. (NR11 and NR21, 0xFF11 and 0xFF21)
+		// The waveform duty. (NR11 and NR21, 0xFF11 and 0xFF21)
 		private uint _lastWaveformDuty = 0;
 		public uint WaveformDuty = 0;
-		public byte SoundLength = 0x00;
 
 		// The envelope settings. (NR12 and NR22, 0xFF12 and 0xFF22)
-		public uint DefaultEnvelopeValue = 0;
-		public byte EnvelopeUpDown = 0x00;
-		public byte LengthOfEnvelopeSteps = 0x00;
+		private uint _currentEnvelopeValue = 0;
+		public uint DefaultEnvelopeValue { get; private set; } = 0;
+		public bool EnvelopeUpDown = false;
+		private uint _currentEnvelopeStep = 0;
+		public uint LengthOfEnvelopeSteps { get; private set; } = 0;
 
 		// The low-order frequency period. (NR13 and NR23, 0xFF13 and 0xFF23)
 		public uint LowOrderFrequencyData = 0;
 
-		// The high-order frequency period and other settings. (NR14 and NR24, 0xFF14 and 0xFF24)
-		public bool Initialize = false;
-		public bool CounterContinuousSelection = false;
+		// The high-order frequency period. (NR14 and NR24, 0xFF14 and 0xFF24)
 		public uint HighOrderFrequencyData = 0;
 
-		public PulseWave()
+		public PulseWave(bool sweepEnabled = false)
 		{
+			_sweepEnabled = sweepEnabled;
 			_waveOut.Init(new SampleToWaveProvider(_pulseWaveProvider));
+		}
+
+		public override void UpdateDiv(ushort divApu)
+		{
+			// Update length timer.
+			base.UpdateDiv(divApu);
+
+			// DIV-APU runs at 512Hz, envelope sweep at 64Hz
+			if (divApu % 8 == 0)
+			{
+				// Apply the envelope sweep, if it's enabled.
+				if (LengthOfEnvelopeSteps != 0)
+				{
+					_currentEnvelopeStep++;
+					if (_currentEnvelopeStep >= LengthOfEnvelopeSteps)
+					{
+						if (EnvelopeUpDown && _currentEnvelopeValue < 15)
+						{
+							_currentEnvelopeValue++;
+						}
+						else if (!EnvelopeUpDown && _currentEnvelopeValue > 0)
+						{
+							_currentEnvelopeValue--;
+						}
+						_currentEnvelopeStep = 0;
+					}
+				}
+			}
+
+			// DIV-APU runs at 512Hz, frequency sweep at 128Hz.
+			if (divApu % 4 == 0)
+			{
+				// TODO: Implement sweep support.
+			}
 		}
 
 		public override void Update()
 		{
 			// Are we muted?
-			if (!Sound.Instance.AllSoundOn || !SoundOn)
+			if (!Sound.Instance.IsOn() ||
+				// TODO: Support stereo sound.
+				/*
+				(_sweepEnabled && !Sound.Instance.Channel1LeftOn) ||
+				(_sweepEnabled && !Sound.Instance.Channel1RightOn) ||
+				(!_sweepEnabled && !Sound.Instance.Channel2LeftOn) ||
+				(!_sweepEnabled && !Sound.Instance.Channel2RightOn) ||
+				*/
+				!SoundOn)
 			{
 				_pulseWaveProvider._volume = 0.0f;
 			}
 			else
 			{
-				_pulseWaveProvider._volume = DefaultEnvelopeValue / 15.0f * _maxVolume;
+                // TODO: Support stereo sound.
+                _pulseWaveProvider._volume =
+					Sound.Instance.LeftOutputVolume / 7.0f * _currentEnvelopeValue / 15.0f *
+					kMaxVolume;
 
 				// If the shape of the waveform has changed, rebuild it.
 				if (WaveformDuty != _lastWaveformDuty)
@@ -155,6 +238,18 @@ namespace GBSharp
 				_pulseWaveProvider._frequency = newFrequency;
 			}
 		}
+
+		public void SetDefaultEnvelopeValue(uint defaultEnvelopeValue)
+		{
+			_currentEnvelopeValue = defaultEnvelopeValue;
+			DefaultEnvelopeValue = defaultEnvelopeValue;
+		}
+
+		public void SetLengthOfEnvelopeSteps(uint lengthOfEnvelopeSteps)
+		{
+			_currentEnvelopeStep = 0;
+			LengthOfEnvelopeSteps = lengthOfEnvelopeSteps;
+		}
 	}
 
 	// Sound channel 3 is a user-defined wave channel.
@@ -166,18 +261,13 @@ namespace GBSharp
 		// Is sound output enabled? (NR30, 0xFF1A)
 		public bool SoundEnabled = false;
 
-		// The sound length timer. (NR31, 0xFF1B)
-		public byte SoundLength = 0x00;
-
 		// The output level. (NR32, 0xFF1C)
 		public byte OutputLevel = 0x00;
 
 		// The low-order frequency period. (NR33, 0xFF1D)
 		public byte LowOrderFrequencyData = 0x00;
 
-		// The high-order frequency period and other settings. (NR34, 0xFF1E)
-		public bool Initialize = false;
-		public bool CounterContinuousSelection = false;
+		// The high-order frequency period. (NR34, 0xFF1E)
 		public byte HighOrderFrequencyData = 0x00;
 
 		// The composition of the waveform. (0xFF30 through 0xFF3F)
@@ -194,7 +284,20 @@ namespace GBSharp
 
 		public override void Update()
 		{
-			// TODO: Implement.
+			// Are we muted?
+			if (!Sound.Instance.IsOn() ||
+				// TODO: Support stereo sound.
+				//!Sound.Instance.Channel3LeftOn ||
+				//!Sound.Instance.Channel3RightOn ||
+				!SoundOn)
+			{
+				_pulseWaveProvider._volume = 0.0f;
+			}
+			else
+			{
+				// TODO: Implementation.
+				_pulseWaveProvider._volume = 0.0f;
+			}
 		}
 	}
 
@@ -203,9 +306,6 @@ namespace GBSharp
 	{
 		// TODO: Use the correct wave generator.
 		private readonly PulseWaveProvider _pulseWaveProvider = new();
-
-		// The sound length timer. (NR41, 0xFF20)
-		public byte SoundLength = 0x00;
 
 		// The envelope settings. (NR42, 0xFF21)
 		public byte DefaultEnvelopeValue = 0x00;
@@ -217,10 +317,6 @@ namespace GBSharp
 		public bool CounterSteps = false;
 		public byte DivisionRatioFrequency = 0x00;
 
-		// Other settings. (NR44, 0xFF23)
-		public bool Initialize = false;
-		public bool CounterContinuousSelection = false;
-
 		public NoiseGenerator()
 		{
 			// TODO: Use the correct wave generator.
@@ -230,7 +326,20 @@ namespace GBSharp
 
 		public override void Update()
 		{
-			// TODO: Implement.
+			// Are we muted?
+			if (!Sound.Instance.IsOn() ||
+				// TODO: Support stereo sound.
+				//!Sound.Instance.Channel4LeftOn ||
+				//!Sound.Instance.Channel4RightOn ||
+				!SoundOn)
+			{
+				_pulseWaveProvider._volume = 0.0f;
+			}
+			else
+			{
+				// TODO: Implementation.
+				_pulseWaveProvider._volume = 0.0f;
+			}
 		}
 	}
 }

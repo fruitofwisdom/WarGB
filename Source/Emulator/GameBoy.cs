@@ -10,12 +10,11 @@
 		// Accurately time frames.
 		private DateTime _lastFrameTime;
 		private bool _frameDone;
+		private const float kFps = 59.7f;
 
 		// Current count of clock cycles.
 		private uint _clocks;
-
-		// How often to sleep the thread.
-		private const uint kClocksToSleep = PPU.kDotsPerLine * PPU.kLinesPerFrame;
+		private const uint kClocksPerFrame = PPU.kDotsPerLine * PPU.kLinesPerFrame;
 
 		// Debug output for the MainForm.
 		public static string DebugOutput = "";
@@ -72,11 +71,11 @@
 				}
 
 				// When ready for a new frame, wait so our timing is accurate.
+				// When a frame is done, wait until our timing is accurate.
 				if (_frameDone)
 				{
 					double elapsedMs = (DateTime.Now - _lastFrameTime).TotalMilliseconds;
-					// The Game Boy runs at 59.7fps.
-					double msToSleep = 1000 / 59.7d - elapsedMs;
+					double msToSleep = 1000 / kFps - elapsedMs;
 					if (msToSleep > 0.0d)
 					{
 						Thread.Sleep(0);
@@ -110,6 +109,9 @@
 					}
 				}
 
+				// Update the APU.
+				Sound.Instance.Update();
+
 				// Update the PPU.
 				PPU.Instance.Update();
 
@@ -125,11 +127,9 @@
 				_logFile.Write(LogOutput);
 				LogOutput = "";
 
-				// Do end-of-frame activities, like updating the sound chip, saving, and sleeping.
-				if (_clocks == kClocksToSleep)
+				// Trigger end-of-frame activities, like saving.
+				if (_clocks == kClocksPerFrame)
 				{
-					Sound.Instance.Update();
-
 					if (Memory.Instance.SaveNeeded)
 					{
 						Memory.Instance.Save();

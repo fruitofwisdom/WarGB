@@ -29,6 +29,7 @@
 		// The divider and timer registers.
 		public ushort Divider;
 		public byte DIV;
+		private ushort _divApu;
 		// TODO: Implement the timer and interrupt.
 		public byte TIMA;
 		public byte TMA;
@@ -75,6 +76,7 @@
 			// TODO: Correct initial values?
 			Divider = 0;
 			DIV = 0x00;
+			_divApu = 0;
 			TIMA = 0x00;
 			TMA = 0x00;
 			// TODO: Implement timer control.
@@ -147,11 +149,20 @@
 
 		public void UpdateDividerAndTimer()
 		{
+			byte previousDiv = DIV;
+
 			Divider++;
 			// DIV is the top 8 bits of the internal divider.
 			DIV = (byte)(Divider >> 8);
 
-			// TODO: Implement the timer and interrupt.
+            // TODO: Implement the timer and interrupt.
+
+			// Update the APU's DIV-APU-based events.
+            if ((previousDiv & 0x08) == 0x08 && (DIV & 0x08) == 0x00)
+            {
+				_divApu++;
+				Sound.Instance.UpdateDiv(_divApu);
+			}
 		}
 
 		private byte GetF()
