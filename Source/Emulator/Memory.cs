@@ -514,18 +514,18 @@
 			}
 			else if (address == 0xFF21)
 			{
-				byte defaultEnvelopeValue = Utilities.GetBitsFromByte(data, 4, 7);
-				byte envelopeUpDown = Utilities.GetBitsFromByte(data, 3, 3);
-				byte lengthOfEnvelopeSteps = Utilities.GetBitsFromByte(data, 0, 2);
-				((NoiseGeneratorChannel)APU.Instance.Channels[3]).DefaultEnvelopeValue = defaultEnvelopeValue;
+				uint defaultEnvelopeValue = Utilities.GetBitsFromByte(data, 4, 7);
+				((NoiseGeneratorChannel)APU.Instance.Channels[3]).SetDefaultEnvelopeValue(defaultEnvelopeValue);
+				bool envelopeUpDown = Utilities.GetBitsFromByte(data, 3, 3) != 0x00;
 				((NoiseGeneratorChannel)APU.Instance.Channels[3]).EnvelopeUpDown = envelopeUpDown;
-				((NoiseGeneratorChannel)APU.Instance.Channels[3]).LengthOfEnvelopeSteps = lengthOfEnvelopeSteps;
+				uint lengthOfEnvelopeSteps = Utilities.GetBitsFromByte(data, 0, 2);
+				((NoiseGeneratorChannel)APU.Instance.Channels[3]).SetLengthOfEnvelopeSteps(lengthOfEnvelopeSteps);
 			}
 			else if (address == 0xFF22)
 			{
-				byte shiftClockFrequency = Utilities.GetBitsFromByte(data, 4, 7);
+				int shiftClockFrequency = Utilities.GetBitsFromByte(data, 4, 7);
 				bool counterSteps = Utilities.GetBitsFromByte(data, 3, 3) != 0x00;
-				byte divisionRatioFrequency = Utilities.GetBitsFromByte(data, 0, 2);
+				uint divisionRatioFrequency = Utilities.GetBitsFromByte(data, 0, 2);
 				((NoiseGeneratorChannel)APU.Instance.Channels[3]).ShiftClockFrequency = shiftClockFrequency;
 				((NoiseGeneratorChannel)APU.Instance.Channels[3]).CounterSteps = counterSteps;
 				((NoiseGeneratorChannel)APU.Instance.Channels[3]).DivisionRatioFrequency = divisionRatioFrequency;

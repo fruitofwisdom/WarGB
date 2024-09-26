@@ -1,4 +1,6 @@
-﻿namespace GBSharp
+﻿using NAudio.Wave;
+
+namespace GBSharp
 {
 	internal class APU
 	{
@@ -140,6 +142,72 @@
 			Channel3RightOn = Utilities.GetBitsFromByte(soundOutputTerminals, 2, 2) != 0x00;
 			Channel4LeftOn = Utilities.GetBitsFromByte(soundOutputTerminals, 7, 7) != 0x00;
 			Channel4RightOn = Utilities.GetBitsFromByte(soundOutputTerminals, 3, 3) != 0x00;
+		}
+	}
+
+	// The base class for our sound channels.
+	internal abstract class Channel
+	{
+		public bool SoundOn = false;
+
+		// Current sound length, initialized from the channels' sound length registers. (NR11, 0xFF11; NR21, 0xFF21; NR31, 0xFF1B; NR41, 0xFF20)
+		protected uint _soundLengthTimer = 0;
+		private const uint kSoundLengthTime = 0;
+
+		// Other settings. (NR14, 0xFF14; NR24, 0xFF24; NR34, 0xFF1E; NR44, 0xFF23)
+		public bool CounterContinuousSelection = false;
+
+		// The actual sound output device.
+		protected WaveOutEvent _waveOut = new();
+
+		// Anything louder than this is too loud.
+		protected const float kMaxVolume = 0.2f;
+
+		~Channel()
+		{
+			_waveOut.Dispose();
+		}
+
+		public void Initialize()
+		{
+			SoundOn = true;
+		}
+
+		public void SetSoundLength(uint soundLength)
+		{
+			_soundLengthTimer = soundLength;
+		}
+
+		public void Play()
+		{
+			_waveOut.Play();
+		}
+
+		public void Stop()
+		{
+			_waveOut.Stop();
+		}
+
+		public virtual void UpdateDiv(ushort divApu)
+		{
+			// DIV-APU runs at 512Hz, sound length at 256Hz
+			if (divApu % 2 == 0)
+			{
+				// Update length timer.
+				if (CounterContinuousSelection)
+				{
+					_soundLengthTimer++;
+					if (_soundLengthTimer == kSoundLengthTime)
+					{
+						SoundOn = false;
+					}
+				}
+			}
+		}
+
+		public virtual void Update()
+		{
+			;
 		}
 	}
 }

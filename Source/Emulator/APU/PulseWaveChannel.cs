@@ -198,8 +198,9 @@ namespace GBSharp
 
 				uint frequencyData = LowOrderFrequencyData + (HighOrderFrequencyData << 8);
 				float periodValue = 2048 - frequencyData;
-				float newFrequency = 131072 / periodValue;
-				_pulseWaveProvider._frequency = newFrequency + _sweepFrequencyShift;
+				float newFrequency = (131072 / periodValue) + _sweepFrequencyShift;
+				newFrequency = Math.Max(0.0f, newFrequency);
+				_pulseWaveProvider._frequency = newFrequency;
 			}
 		}
 

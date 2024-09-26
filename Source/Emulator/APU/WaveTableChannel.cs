@@ -87,9 +87,7 @@ namespace GBSharp
 		public WaveTableChannel()
 		{
 			_waveformRAM = new byte[16];
-
 			_waveOut.Init(new SampleToWaveProvider(_waveTableProvider));
-			_waveTableProvider._volume = 0.0f;
 		}
 
 		public override void Update()
