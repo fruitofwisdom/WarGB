@@ -129,7 +129,7 @@
 			{
 				// Drawing pixels.
 				// TODO: Handle variable dot rendering speeds?
-				PPUMode = 0x11;
+				PPUMode = 0x03;
 			}
 			else
 			{
