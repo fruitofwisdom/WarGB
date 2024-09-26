@@ -68,55 +68,6 @@ namespace GBSharp
 		}
 	}
 
-	// Sound channel 3 is a user-defined wave channel.
-	internal class WaveTableChannel : Channel
-	{
-		// TODO: Use the correct wave generator.
-		private readonly PulseWaveProvider _pulseWaveProvider = new();
-
-		// Is sound output enabled? (NR30, 0xFF1A)
-		public bool SoundEnabled = false;
-
-		// The output level. (NR32, 0xFF1C)
-		public byte OutputLevel = 0x00;
-
-		// The low-order frequency period. (NR33, 0xFF1D)
-		public byte LowOrderFrequencyData = 0x00;
-
-		// The high-order frequency period. (NR34, 0xFF1E)
-		public byte HighOrderFrequencyData = 0x00;
-
-		// The composition of the waveform. (0xFF30 through 0xFF3F)
-		public byte[] WaveformRAM;
-
-		public WaveTableChannel()
-		{
-			WaveformRAM = new byte[16];
-
-			// TODO: Use the correct wave generator.
-			_waveOut.Init(new SampleToWaveProvider(_pulseWaveProvider));
-			_pulseWaveProvider._volume = 0.0f;
-		}
-
-		public override void Update()
-		{
-			// Are we muted?
-			if (!APU.Instance.IsOn() ||
-				// TODO: Support stereo sound.
-				//!Sound.Instance.Channel3LeftOn ||
-				//!Sound.Instance.Channel3RightOn ||
-				!SoundOn)
-			{
-				_pulseWaveProvider._volume = 0.0f;
-			}
-			else
-			{
-				// TODO: Implementation.
-				_pulseWaveProvider._volume = 0.0f;
-			}
-		}
-	}
-
 	// Sound channel 4 is a noise generator.
 	internal class NoiseGeneratorChannel : Channel
 	{

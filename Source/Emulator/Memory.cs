@@ -483,14 +483,12 @@
 			}
 			else if (address == 0xFF1B)
 			{
-				// TODO: Is this right?
-				uint soundLength = Utilities.GetBitsFromByte(data, 3, 7);
-				APU.Instance.Channels[2].SetSoundLength(soundLength);
+				APU.Instance.Channels[2].SetSoundLength(data);
 			}
 			else if (address == 0xFF1C)
 			{
 				byte outputLevel = Utilities.GetBitsFromByte(data, 5, 6);
-				((WaveTableChannel)APU.Instance.Channels[2]).OutputLevel = outputLevel;
+				((WaveTableChannel)APU.Instance.Channels[2]).SetOutputLevel(outputLevel);
 			}
 			else if (address == 0xFF1D)
 			{
@@ -575,7 +573,7 @@
 			}
 			else if (address >= 0xFF30 && address <= 0xFF3F)
 			{
-				((WaveTableChannel)APU.Instance.Channels[2]).WaveformRAM[address - 0xFF30] = data;
+				((WaveTableChannel)APU.Instance.Channels[2]).SetWaveformRAM(address - 0xFF30, data);
 			}
 			else if (address == 0xFF40)
 			{
