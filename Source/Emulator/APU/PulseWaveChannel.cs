@@ -1,26 +1,12 @@
-﻿using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
+﻿using NAudio.Wave.SampleProviders;
 
 namespace GBSharp
 {
 	// A pulse wave generator for sound channels 1 and 2.
-	internal class PulseWaveProvider : ISampleProvider
+	internal class PulseWaveProvider : SampleProvider
 	{
-		public WaveFormat WaveFormat { get; private set; }
-
-		private const int kSampleRate = 44100;
-		private readonly float[] _waveTable;
-
-		public float _frequency = 1000.0f;
-		private float _phase = 0.0f;
-		private float _phaseStep = 0.0f;
-		public float _volume = 0.0f;
-
 		public PulseWaveProvider()
 		{
-			// Build the shape of the rectangular waveform.
-			WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(kSampleRate, 1);
-			_waveTable = new float[kSampleRate];
 			BuildWaveform(0);
 		}
 
@@ -45,26 +31,6 @@ namespace GBSharp
 					_waveTable[i] = i > kSampleRate * 0.75f ? 1.0f : 0.0f;
 				}
 			}
-		}
-
-		public int Read(float[] buffer, int offset, int count)
-		{
-			// Update the phase step based on frequency.
-			_phaseStep = _waveTable.Length * (_frequency / WaveFormat.SampleRate);
-
-			// Fill the buffer.
-			for (int i = 0; i < count; i++)
-			{
-				int waveTableIndex = (int)_phase % _waveTable.Length;
-				buffer[i + offset] = _waveTable[waveTableIndex] * _volume;
-				_phase += _phaseStep;
-				while (_phase > _waveTable.Length)
-				{
-					_phase -= _waveTable.Length;
-				}
-			}
-
-			return count;
 		}
 	}
 

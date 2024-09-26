@@ -210,4 +210,46 @@ namespace GBSharp
 			;
 		}
 	}
+
+	// The base class for our sample providers.
+	internal abstract class SampleProvider : ISampleProvider
+	{
+		public WaveFormat WaveFormat { get; private set; }
+
+		protected readonly float[] _waveTable;
+
+		public float _frequency = 1000.0f;
+		private float _phase = 0.0f;
+		private float _phaseStep = 0.0f;
+		public float _volume = 0.0f;
+
+		// HACK: This sample rate avoids some timing issues?
+		protected const int kSampleRate = 32768;
+
+		public SampleProvider()
+		{
+			WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(kSampleRate, 1);
+			_waveTable = new float[kSampleRate];
+		}
+
+		public int Read(float[] buffer, int offset, int count)
+		{
+			// Update the phase step based on frequency.
+			_phaseStep = _waveTable.Length * (_frequency / WaveFormat.SampleRate);
+
+			// Fill the buffer.
+			for (int i = 0; i < count; i++)
+			{
+				int waveTableIndex = (int)_phase % _waveTable.Length;
+				buffer[i + offset] = _waveTable[waveTableIndex] * _volume;
+				_phase += _phaseStep;
+				while (_phase > _waveTable.Length)
+				{
+					_phase -= _waveTable.Length;
+				}
+			}
+
+			return count;
+		}
+	}
 }

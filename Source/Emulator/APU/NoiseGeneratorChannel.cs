@@ -1,25 +1,13 @@
-﻿using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
+﻿using NAudio.Wave.SampleProviders;
 
 namespace GBSharp
 {
 	// A noise generator for sound channel 4.
-	internal class NoiseProvider : ISampleProvider
+	internal class NoiseGeneratorProvider : SampleProvider
 	{
-		public WaveFormat WaveFormat { get; private set; }
-
-		private const int kSampleRate = 44100;
-		private readonly float[] _waveTable;
-
-		private float _frequency = 400.0f;
-		private float _phase = 0.0f;
-		private float _phaseStep = 0.0f;
-		public float _volume = 0.0f;
-
-		public NoiseProvider()
+		public NoiseGeneratorProvider()
 		{
-			WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(kSampleRate, 1);
-			_waveTable = new float[kSampleRate];
+			BuildWaveform(false);
 		}
 
 		public void BuildWaveform(bool on)
@@ -30,33 +18,13 @@ namespace GBSharp
 				_waveTable[i] = on ? 1.0f : 0.0f;
 			}
 		}
-
-		public int Read(float[] buffer, int offset, int count)
-		{
-			// Update the phase step based on frequency.
-			_phaseStep = _waveTable.Length * (_frequency / WaveFormat.SampleRate);
-
-			// Fill the buffer.
-			for (int i = 0; i < count; i++)
-			{
-				int waveTableIndex = (int)_phase % _waveTable.Length;
-				buffer[i + offset] = _waveTable[waveTableIndex] * _volume;
-				_phase += _phaseStep;
-				while (_phase > _waveTable.Length)
-				{
-					_phase -= _waveTable.Length;
-				}
-			}
-
-			return count;
-		}
 	}
 
 	// Sound channel 4 is a noise generator.
 	internal class NoiseGeneratorChannel : Channel
 	{
 		// TODO: Use the correct wave generator.
-		private readonly NoiseProvider _noiseProvider = new();
+		private readonly NoiseGeneratorProvider _noiseGeneratorProvider = new();
 
 		// The envelope settings. (NR42, 0xFF21)
 		private uint _currentEnvelopeValue = 0;
@@ -76,7 +44,7 @@ namespace GBSharp
 
 		public NoiseGeneratorChannel()
 		{
-			_waveOut.Init(new SampleToWaveProvider(_noiseProvider));
+			_waveOut.Init(new SampleToWaveProvider(_noiseGeneratorProvider));
 		}
 
 		public override void UpdateDiv(ushort divApu)
@@ -116,12 +84,12 @@ namespace GBSharp
 				//!Sound.Instance.Channel4RightOn ||
 				!SoundOn)
 			{
-				_noiseProvider._volume = 0.0f;
+				_noiseGeneratorProvider._volume = 0.0f;
 			}
 			else
 			{
 				// TODO: Support stereo sound.
-				_noiseProvider._volume =
+				_noiseGeneratorProvider._volume =
 					APU.Instance.LeftOutputVolume / 7.0f * _currentEnvelopeValue / 15.0f *
 					kMaxVolume;
 
@@ -149,7 +117,7 @@ namespace GBSharp
 						}
 					}
 					_lfsr >>= 1;
-					_noiseProvider.BuildWaveform(bit0);
+					_noiseGeneratorProvider.BuildWaveform(bit0);
 					_lfsrFrequency = 0;
 				}
 			}
