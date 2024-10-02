@@ -18,7 +18,7 @@ namespace GBSharp
 
 			s_pauseCallbackInternal = PauseInternal;
 
-			// Poll the Game Boy emulator every 10ms.
+			// Poll the Game Boy emulator at 60fps.
 			_gameBoyTimer.Tick += new EventHandler(ProcessOutput);
 			_gameBoyTimer.Interval = 1000 / 60;
 			_gameBoyTimer.Start();
@@ -46,7 +46,6 @@ namespace GBSharp
 
 					// Put the game name and ROM type in our title.
 					Text = "GB# - " + ROM.Instance.Title + " (" + ROM.Instance.CartridgeType.ToString().Replace("_", "+") + ")";
-					GameBoy.DebugStatus = "Loaded";
 
 					// Start a new thread to run the Game Boy.
 					_gameBoyThread = new Thread(new ThreadStart(_gameBoy.Run));
@@ -67,10 +66,52 @@ namespace GBSharp
 			Close();
 		}
 
+		private void OriginalGreenToolStripMenuClick(object sender, EventArgs e)
+		{
+			if (!originalGreenToolStripMenuItem.Checked)
+			{
+				originalGreenToolStripMenuItem.Checked = true;
+				blackAndWhiteToolStripMenuItem.Checked = false;
+				lcdControl.UseOriginalGreen = true;
+			}
+		}
+
+		private void BlackAndWhiteToolStripMenuClick(object sender, EventArgs e)
+		{
+			if (!blackAndWhiteToolStripMenuItem.Checked)
+			{
+				blackAndWhiteToolStripMenuItem.Checked = true;
+				originalGreenToolStripMenuItem.Checked = false;
+				lcdControl.UseOriginalGreen = false;
+			}
+		}
+
+		private void SoundToolStripMenuClick(object sender, EventArgs e)
+		{
+			soundToolStripMenuItem.Checked = !soundToolStripMenuItem.Checked;
+			_gameBoy.Mute(!soundToolStripMenuItem.Checked);
+		}
+
 		private void LogOpcodesToolStripMenuClick(object sender, EventArgs e)
 		{
 			logOpcodesToolStripMenuItem.Checked = !logOpcodesToolStripMenuItem.Checked;
 			GameBoy.ShouldLogOpcodes = logOpcodesToolStripMenuItem.Checked;
+		}
+
+		private void ShowDebugOutputToolStripMenuClick(object sender, EventArgs e)
+		{
+			if (showDebugOutputToolStripMenuItem.Checked)
+			{
+				showDebugOutputToolStripMenuItem.Checked = false;
+				debugRichTextBox.Hide();
+				Size = new Size(Width - 255, Height);
+			}
+			else
+			{
+				showDebugOutputToolStripMenuItem.Checked = true;
+				debugRichTextBox.Show();
+				Size = new Size(Width + 255, Height);
+			}
 		}
 
 		private void AboutGBSharpToolStripMenuItemClick(object sender, EventArgs e)
@@ -82,7 +123,6 @@ namespace GBSharp
 		private void PlayButtonClick(object sender, EventArgs e)
 		{
 			_gameBoy.Play();
-			GameBoy.DebugStatus = "Playing";
 
 			playButton.Enabled = false;
 			pauseButton.Enabled = true;
@@ -93,7 +133,6 @@ namespace GBSharp
 		private void PauseButtonClick(object sender, EventArgs e)
 		{
 			_gameBoy.Pause();
-			GameBoy.DebugStatus = "Paused";
 
 			playButton.Enabled = true;
 			pauseButton.Enabled = false;
@@ -114,7 +153,6 @@ namespace GBSharp
 		private void ResetButtonClick(object sender, EventArgs e)
 		{
 			_gameBoy.Reset();
-			GameBoy.DebugStatus = "Loaded";
 
 			playButton.Enabled = true;
 			pauseButton.Enabled = false;
@@ -140,7 +178,17 @@ namespace GBSharp
 				debugRichTextBox.AppendText(GameBoy.DebugOutput);
 				GameBoy.DebugOutput = "";
 			}
-			debugToolStripStatusLabel.Text = GameBoy.DebugStatus;
+			if (GameBoy.DebugStatus != "")
+			{
+				debugToolStripStatusLabel.Text = GameBoy.DebugStatus;
+			}
+			else
+			{
+				// If nothing is displayed, use the last real line of debug output.
+				string[] textBoxText = debugRichTextBox.Text.Split('\n');
+				int lastTextIndex = Math.Max(textBoxText.Length - 2, 0);
+				debugToolStripStatusLabel.Text = textBoxText[lastTextIndex];
+			}
 			lcdControl.Refresh();
 		}
 

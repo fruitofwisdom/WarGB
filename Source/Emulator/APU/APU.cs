@@ -4,6 +4,9 @@ namespace GBSharp
 {
 	internal class APU
 	{
+		// An emulator option.
+		public bool Mute = false;
+
 		// Master volume and stereo output. (NR50, 0xFF24)
 		// TODO: Support stereo sound.
 		public bool LeftOutputOn = false;
@@ -44,6 +47,9 @@ namespace GBSharp
 
 		public void Reset()
 		{
+			// Retain emulator options.
+			//Mute = false;
+
 			// TODO: Support stereo sound.
 			LeftOutputOn = false;
 			LeftOutputVolume = 0;
@@ -205,10 +211,7 @@ namespace GBSharp
 			}
 		}
 
-		public virtual void Update()
-		{
-			;
-		}
+		public abstract void Update();
 	}
 
 	// The base class for our sample providers.

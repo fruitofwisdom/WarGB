@@ -61,7 +61,7 @@ namespace GBSharp
 		public override void Update()
 		{
 			// Are we muted?
-			if (!APU.Instance.IsOn() ||
+			if (APU.Instance.Mute || !APU.Instance.IsOn() ||
 				// TODO: Support stereo sound.
 				//!Sound.Instance.Channel3LeftOn ||
 				//!Sound.Instance.Channel3RightOn ||

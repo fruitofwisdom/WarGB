@@ -33,8 +33,14 @@
 			fileToolStripMenuItem = new ToolStripMenuItem();
 			loadROMToolStripMenuItem = new ToolStripMenuItem();
 			exitToolStripMenuItem = new ToolStripMenuItem();
+			optionsToolStripMenuItem = new ToolStripMenuItem();
+			lcdColorToolStripMenuItem = new ToolStripMenuItem();
+			originalGreenToolStripMenuItem = new ToolStripMenuItem();
+			blackAndWhiteToolStripMenuItem = new ToolStripMenuItem();
+			soundToolStripMenuItem = new ToolStripMenuItem();
 			debugToolStripMenuItem = new ToolStripMenuItem();
 			logOpcodesToolStripMenuItem = new ToolStripMenuItem();
+			showDebugOutputToolStripMenuItem = new ToolStripMenuItem();
 			helpToolStripMenuItem = new ToolStripMenuItem();
 			aboutGBSharpToolStripMenuItem = new ToolStripMenuItem();
 			toolStrip = new ToolStrip();
@@ -53,10 +59,10 @@
 			// 
 			// menuStrip
 			// 
-			menuStrip.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, debugToolStripMenuItem, helpToolStripMenuItem });
+			menuStrip.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, optionsToolStripMenuItem, debugToolStripMenuItem, helpToolStripMenuItem });
 			menuStrip.Location = new Point(0, 0);
 			menuStrip.Name = "menuStrip";
-			menuStrip.Size = new Size(759, 24);
+			menuStrip.Size = new Size(504, 24);
 			menuStrip.TabIndex = 0;
 			menuStrip.Text = "menuStrip";
 			// 
@@ -82,9 +88,48 @@
 			exitToolStripMenuItem.Text = "Exit";
 			exitToolStripMenuItem.Click += ExitToolStripMenuItemClick;
 			// 
+			// optionsToolStripMenuItem
+			// 
+			optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { lcdColorToolStripMenuItem, soundToolStripMenuItem });
+			optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
+			optionsToolStripMenuItem.Size = new Size(61, 20);
+			optionsToolStripMenuItem.Text = "Options";
+			// 
+			// lcdColorToolStripMenuItem
+			// 
+			lcdColorToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { originalGreenToolStripMenuItem, blackAndWhiteToolStripMenuItem });
+			lcdColorToolStripMenuItem.Name = "lcdColorToolStripMenuItem";
+			lcdColorToolStripMenuItem.Size = new Size(180, 22);
+			lcdColorToolStripMenuItem.Text = "LCD Color";
+			// 
+			// originalGreenToolStripMenuItem
+			// 
+			originalGreenToolStripMenuItem.Checked = true;
+			originalGreenToolStripMenuItem.CheckState = CheckState.Checked;
+			originalGreenToolStripMenuItem.Name = "originalGreenToolStripMenuItem";
+			originalGreenToolStripMenuItem.Size = new Size(180, 22);
+			originalGreenToolStripMenuItem.Text = "Original Green";
+			originalGreenToolStripMenuItem.Click += OriginalGreenToolStripMenuClick;
+			// 
+			// blackAndWhiteToolStripMenuItem
+			// 
+			blackAndWhiteToolStripMenuItem.Name = "blackAndWhiteToolStripMenuItem";
+			blackAndWhiteToolStripMenuItem.Size = new Size(180, 22);
+			blackAndWhiteToolStripMenuItem.Text = "Black and White";
+			blackAndWhiteToolStripMenuItem.Click += BlackAndWhiteToolStripMenuClick;
+			// 
+			// soundToolStripMenuItem
+			// 
+			soundToolStripMenuItem.Checked = true;
+			soundToolStripMenuItem.CheckState = CheckState.Checked;
+			soundToolStripMenuItem.Name = "soundToolStripMenuItem";
+			soundToolStripMenuItem.Size = new Size(180, 22);
+			soundToolStripMenuItem.Text = "Sound";
+			soundToolStripMenuItem.Click += SoundToolStripMenuClick;
+			// 
 			// debugToolStripMenuItem
 			// 
-			debugToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { logOpcodesToolStripMenuItem });
+			debugToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { logOpcodesToolStripMenuItem, showDebugOutputToolStripMenuItem });
 			debugToolStripMenuItem.Name = "debugToolStripMenuItem";
 			debugToolStripMenuItem.Size = new Size(54, 20);
 			debugToolStripMenuItem.Text = "Debug";
@@ -92,10 +137,17 @@
 			// logOpcodesToolStripMenuItem
 			// 
 			logOpcodesToolStripMenuItem.Name = "logOpcodesToolStripMenuItem";
-			logOpcodesToolStripMenuItem.Size = new Size(149, 22);
+			logOpcodesToolStripMenuItem.Size = new Size(182, 22);
 			logOpcodesToolStripMenuItem.Text = "Log Opcodes";
 			logOpcodesToolStripMenuItem.ToolTipText = "Write opcodes, CPU state, etc to a log file. (This file will get very large.)";
 			logOpcodesToolStripMenuItem.Click += LogOpcodesToolStripMenuClick;
+			// 
+			// showDebugOutputToolStripMenuItem
+			// 
+			showDebugOutputToolStripMenuItem.Name = "showDebugOutputToolStripMenuItem";
+			showDebugOutputToolStripMenuItem.Size = new Size(182, 22);
+			showDebugOutputToolStripMenuItem.Text = "Show Debug Output";
+			showDebugOutputToolStripMenuItem.Click += ShowDebugOutputToolStripMenuClick;
 			// 
 			// helpToolStripMenuItem
 			// 
@@ -116,7 +168,7 @@
 			toolStrip.Items.AddRange(new ToolStripItem[] { playButton, pauseButton, stepButton, resetButton });
 			toolStrip.Location = new Point(0, 24);
 			toolStrip.Name = "toolStrip";
-			toolStrip.Size = new Size(759, 25);
+			toolStrip.Size = new Size(504, 25);
 			toolStrip.TabIndex = 1;
 			toolStrip.Text = "toolStrip";
 			// 
@@ -180,13 +232,14 @@
 			debugRichTextBox.Size = new Size(250, 432);
 			debugRichTextBox.TabIndex = 3;
 			debugRichTextBox.Text = "";
+			debugRichTextBox.Visible = false;
 			// 
 			// statusStrip
 			// 
 			statusStrip.Items.AddRange(new ToolStripItem[] { debugToolStripStatusLabel });
 			statusStrip.Location = new Point(0, 496);
 			statusStrip.Name = "statusStrip";
-			statusStrip.Size = new Size(759, 22);
+			statusStrip.Size = new Size(504, 22);
 			statusStrip.TabIndex = 4;
 			statusStrip.Text = "statusStrip";
 			// 
@@ -199,7 +252,7 @@
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(759, 518);
+			ClientSize = new Size(504, 518);
 			Controls.Add(statusStrip);
 			Controls.Add(debugRichTextBox);
 			Controls.Add(lcdControl);
@@ -228,18 +281,24 @@
 		private ToolStripMenuItem fileToolStripMenuItem;
 		private ToolStripMenuItem loadROMToolStripMenuItem;
 		private ToolStripMenuItem exitToolStripMenuItem;
+		private ToolStripMenuItem optionsToolStripMenuItem;
+		private ToolStripMenuItem lcdColorToolStripMenuItem;
+		private ToolStripMenuItem originalGreenToolStripMenuItem;
+		private ToolStripMenuItem blackAndWhiteToolStripMenuItem;
+		private ToolStripMenuItem soundToolStripMenuItem;
 		private ToolStripMenuItem debugToolStripMenuItem;
 		private ToolStripMenuItem logOpcodesToolStripMenuItem;
+		private ToolStripMenuItem showDebugOutputToolStripMenuItem;
 		private ToolStripMenuItem helpToolStripMenuItem;
 		private ToolStripMenuItem aboutGBSharpToolStripMenuItem;
 		private ToolStrip toolStrip;
 		private ToolStripButton playButton;
 		private ToolStripButton pauseButton;
 		private ToolStripButton stepButton;
+		private ToolStripButton resetButton;
 		private LCDControl lcdControl;
 		private RichTextBox debugRichTextBox;
 		private StatusStrip statusStrip;
 		private ToolStripStatusLabel debugToolStripStatusLabel;
-		private ToolStripButton resetButton;
 	}
 }

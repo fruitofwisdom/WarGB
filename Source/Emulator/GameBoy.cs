@@ -16,9 +16,12 @@
 		private uint _clocks;
 		private const uint kClocksPerFrame = PPU.kDotsPerLine * PPU.kLinesPerFrame;
 
+		// Emulator options for the MainForm.
+		private bool _mute = false;
+
 		// Debug output for the MainForm.
 		public static string DebugOutput = "";
-		public static string DebugStatus = "Nothing Loaded";
+		public static string DebugStatus = "";
 
 		// Debug output for the log file.
 		public static bool ShouldLogOpcodes = false;
@@ -45,6 +48,9 @@
 			_frameDone = false;
 
 			_clocks = 0;
+
+			// NOTE: Retain emulator options.
+			//_mute = false;
 		}
 
 		// The Game Boy runs in its own thread.
@@ -168,6 +174,13 @@
 		public void Step()
 		{
 			_stepRequested = true;
+		}
+
+		// Mute all sound.
+		public void Mute(bool mute)
+		{
+			_mute = mute;
+			APU.Instance.Mute = mute;
 		}
 	}
 }
