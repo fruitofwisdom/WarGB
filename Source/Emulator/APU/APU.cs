@@ -7,15 +7,14 @@ namespace GBSharp
 		// An emulator option.
 		public bool Mute = false;
 
-		// Master volume and stereo output. (NR50, 0xFF24)
-		// TODO: Support stereo sound.
-		public bool LeftOutputOn = false;
+		// Master volume and vin output. (NR50, 0xFF24)
+		// NOTE: Vin output is external hardware.
+		public bool VinLeftOn = false;
 		public uint LeftOutputVolume = 0;
-		public bool RightOutputOn = false;
+		public bool VinRightOn = false;
 		public uint RightOutputVolume = 0;
 
 		// Maps sound channels to terminals (speakers). (NR51, 0xFF25)
-		// TODO: Support stereo sound.
 		public bool Channel1LeftOn = false;
 		public bool Channel2LeftOn = false;
 		public bool Channel3LeftOn = false;
@@ -50,10 +49,9 @@ namespace GBSharp
 			// Retain emulator options.
 			//Mute = false;
 
-			// TODO: Support stereo sound.
-			LeftOutputOn = false;
+			VinLeftOn = false;
 			LeftOutputVolume = 0;
-			RightOutputOn = false;
+			VinRightOn = false;
 			RightOutputVolume = 0;
 
 			Channel1LeftOn = false;
@@ -166,9 +164,6 @@ namespace GBSharp
 		// The actual sound output device.
 		protected WaveOutEvent _waveOut = new();
 
-		// Anything louder than this is too loud.
-		protected const float kMaxVolume = 0.2f;
-
 		~Channel()
 		{
 			_waveOut.Dispose();
@@ -224,14 +219,18 @@ namespace GBSharp
 		public float _frequency = 1000.0f;
 		private float _phase = 0.0f;
 		private float _phaseStep = 0.0f;
-		public float _volume = 0.0f;
+		public float _leftVolume = 0.0f;
+		public float _rightVolume = 0.0f;
+
+		// Anything louder than this is too loud.
+		protected const float kMaxVolume = 0.2f;
 
 		// HACK: This sample rate avoids some timing issues?
 		protected const int kSampleRate = 32768;
 
 		public SampleProvider()
 		{
-			WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(kSampleRate, 1);
+			WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(kSampleRate, 2);
 			_waveTable = new float[kSampleRate];
 		}
 
@@ -241,10 +240,13 @@ namespace GBSharp
 			_phaseStep = _waveTable.Length * (_frequency / WaveFormat.SampleRate);
 
 			// Fill the buffer.
-			for (int i = 0; i < count; i++)
+			for (int i = 0; i < count; i += 2)
 			{
 				int waveTableIndex = (int)_phase % _waveTable.Length;
-				buffer[i + offset] = _waveTable[waveTableIndex] * _volume;
+				float leftVolume = _leftVolume * (APU.Instance.LeftOutputVolume / 7.0f) * kMaxVolume;
+				buffer[i + offset] = _waveTable[waveTableIndex] * leftVolume;
+				float rightVolume = _rightVolume * (APU.Instance.RightOutputVolume / 7.0f) * kMaxVolume;
+				buffer[i + offset + 1] = _waveTable[waveTableIndex] * rightVolume;
 				_phase += _phaseStep;
 				while (_phase > _waveTable.Length)
 				{

@@ -136,24 +136,26 @@ namespace GBSharp
 		public override void Update()
 		{
 			// Are we muted?
-			if (APU.Instance.Mute || !APU.Instance.IsOn() ||
-				// TODO: Support stereo sound.
-				/*
-				(_sweepEnabled && !Sound.Instance.Channel1LeftOn) ||
-				(_sweepEnabled && !Sound.Instance.Channel1RightOn) ||
-				(!_sweepEnabled && !Sound.Instance.Channel2LeftOn) ||
-				(!_sweepEnabled && !Sound.Instance.Channel2RightOn) ||
-				*/
-				!SoundOn)
+			if (APU.Instance.Mute || !APU.Instance.IsOn() || !SoundOn)
 			{
-				_pulseWaveProvider._volume = 0.0f;
+				_pulseWaveProvider._leftVolume = 0.0f;
+				_pulseWaveProvider._rightVolume = 0.0f;
 			}
 			else
 			{
-				// TODO: Support stereo sound.
-				_pulseWaveProvider._volume =
-					APU.Instance.LeftOutputVolume / 7.0f * _currentEnvelopeValue / 15.0f *
-					kMaxVolume;
+				// Set volume levels.
+				// NOTE: Channel 1 is the pulse wave channel with sweep enabled.
+				if (_sweepEnabled)
+				{
+					_pulseWaveProvider._leftVolume = APU.Instance.Channel1LeftOn ? _currentEnvelopeValue / 15.0f : 0.0f;
+					_pulseWaveProvider._rightVolume = APU.Instance.Channel1RightOn ? _currentEnvelopeValue / 15.0f : 0.0f;
+				}
+				// NOTE: Channel 2 is the other.
+				else
+				{
+					_pulseWaveProvider._leftVolume = APU.Instance.Channel2LeftOn ? _currentEnvelopeValue / 15.0f : 0.0f;
+					_pulseWaveProvider._rightVolume = APU.Instance.Channel2RightOn ? _currentEnvelopeValue / 15.0f : 0.0f;
+				}
 
 				// If the shape of the waveform has changed, rebuild it.
 				if (WaveformDuty != _lastWaveformDuty)
@@ -162,6 +164,7 @@ namespace GBSharp
 					_lastWaveformDuty = WaveformDuty;
 				}
 
+				// Update the frequency.
 				uint frequencyData = LowOrderFrequencyData + (HighOrderFrequencyData << 8);
 				float periodValue = 2048 - frequencyData;
 				float newFrequency = (131072 / periodValue) + _sweepFrequencyShift;

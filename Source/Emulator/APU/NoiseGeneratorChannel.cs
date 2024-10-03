@@ -78,21 +78,18 @@ namespace GBSharp
 		public override void Update()
 		{
 			// Are we muted?
-			if (APU.Instance.Mute || !APU.Instance.IsOn() ||
-				// TODO: Support stereo sound.
-				//!Sound.Instance.Channel4LeftOn ||
-				//!Sound.Instance.Channel4RightOn ||
-				!SoundOn)
+			if (APU.Instance.Mute || !APU.Instance.IsOn() || !SoundOn)
 			{
-				_noiseGeneratorProvider._volume = 0.0f;
+				_noiseGeneratorProvider._leftVolume = 0.0f;
+				_noiseGeneratorProvider._rightVolume = 0.0f;
 			}
 			else
 			{
-				// TODO: Support stereo sound.
-				_noiseGeneratorProvider._volume =
-					APU.Instance.LeftOutputVolume / 7.0f * _currentEnvelopeValue / 15.0f *
-					kMaxVolume;
+				// Set volume levels.
+				_noiseGeneratorProvider._leftVolume = APU.Instance.Channel4LeftOn ? _currentEnvelopeValue / 15.0f : 0.0f;
+				_noiseGeneratorProvider._rightVolume = APU.Instance.Channel4RightOn ? _currentEnvelopeValue / 15.0f : 0.0f;
 
+				// Update the frequency.
 				float divider = DivisionRatioFrequency == 0 ? 0.5f : DivisionRatioFrequency;
 				float periodValue = divider * (2 << ShiftClockFrequency);
 				float newFrequency = 262144 / periodValue;

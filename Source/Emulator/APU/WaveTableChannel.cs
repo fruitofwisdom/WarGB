@@ -61,20 +61,18 @@ namespace GBSharp
 		public override void Update()
 		{
 			// Are we muted?
-			if (APU.Instance.Mute || !APU.Instance.IsOn() ||
-				// TODO: Support stereo sound.
-				//!Sound.Instance.Channel3LeftOn ||
-				//!Sound.Instance.Channel3RightOn ||
-				!SoundOn || !SoundEnabled)
+			if (APU.Instance.Mute || !APU.Instance.IsOn() || !SoundOn || !SoundEnabled)
 			{
-				_waveTableProvider._volume = 0.0f;
+				_waveTableProvider._leftVolume = 0.0f;
+				_waveTableProvider._rightVolume = 0.0f;
 			}
 			else
 			{
-				_waveTableProvider._volume =
-					APU.Instance.LeftOutputVolume / 7.0f * _outputLevel *
-					kMaxVolume;
+				// Set volume levels.
+				_waveTableProvider._leftVolume = APU.Instance.Channel3LeftOn ? _outputLevel : 0.0f;
+				_waveTableProvider._rightVolume = APU.Instance.Channel3RightOn ? _outputLevel : 0.0f;
 
+				// Update the frequency.
 				uint frequencyData = LowOrderFrequencyData + (HighOrderFrequencyData << 8);
 				float periodValue = 2048 - frequencyData;
 				float newFrequency = 65536 / periodValue;

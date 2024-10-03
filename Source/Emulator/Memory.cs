@@ -542,13 +542,13 @@
 			}
 			else if (address == 0xFF24)
 			{
-				bool leftOutputOn = Utilities.GetBitsFromByte(data, 7, 7) != 0x00;
+				bool vinLeftOn = Utilities.GetBitsFromByte(data, 7, 7) != 0x00;
 				uint leftOutputVolume = Utilities.GetBitsFromByte(data, 4, 6);
-				bool rightOutputOn = Utilities.GetBitsFromByte(data, 3, 3) != 0x00;
+				bool vinRightOn = Utilities.GetBitsFromByte(data, 3, 3) != 0x00;
 				uint rightOutputVolume = Utilities.GetBitsFromByte(data, 0, 2);
-				APU.Instance.LeftOutputOn = leftOutputOn;
+				APU.Instance.VinLeftOn = vinLeftOn;
 				APU.Instance.LeftOutputVolume = leftOutputVolume;
-				APU.Instance.RightOutputOn = rightOutputOn;
+				APU.Instance.VinRightOn = vinRightOn;
 				APU.Instance.RightOutputVolume = rightOutputVolume;
 			}
 			else if (address == 0xFF25)
