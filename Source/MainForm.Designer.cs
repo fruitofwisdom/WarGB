@@ -46,8 +46,8 @@
 			toolStrip = new ToolStrip();
 			playButton = new ToolStripButton();
 			pauseButton = new ToolStripButton();
-			stepButton = new ToolStripButton();
 			resetButton = new ToolStripButton();
+			stepButton = new ToolStripButton();
 			lcdControl = new LCDControl();
 			debugRichTextBox = new RichTextBox();
 			statusStrip = new StatusStrip();
@@ -99,7 +99,7 @@
 			// 
 			lcdColorToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { originalGreenToolStripMenuItem, blackAndWhiteToolStripMenuItem });
 			lcdColorToolStripMenuItem.Name = "lcdColorToolStripMenuItem";
-			lcdColorToolStripMenuItem.Size = new Size(180, 22);
+			lcdColorToolStripMenuItem.Size = new Size(128, 22);
 			lcdColorToolStripMenuItem.Text = "LCD Color";
 			// 
 			// originalGreenToolStripMenuItem
@@ -107,14 +107,14 @@
 			originalGreenToolStripMenuItem.Checked = true;
 			originalGreenToolStripMenuItem.CheckState = CheckState.Checked;
 			originalGreenToolStripMenuItem.Name = "originalGreenToolStripMenuItem";
-			originalGreenToolStripMenuItem.Size = new Size(180, 22);
+			originalGreenToolStripMenuItem.Size = new Size(159, 22);
 			originalGreenToolStripMenuItem.Text = "Original Green";
 			originalGreenToolStripMenuItem.Click += OriginalGreenToolStripMenuClick;
 			// 
 			// blackAndWhiteToolStripMenuItem
 			// 
 			blackAndWhiteToolStripMenuItem.Name = "blackAndWhiteToolStripMenuItem";
-			blackAndWhiteToolStripMenuItem.Size = new Size(180, 22);
+			blackAndWhiteToolStripMenuItem.Size = new Size(159, 22);
 			blackAndWhiteToolStripMenuItem.Text = "Black and White";
 			blackAndWhiteToolStripMenuItem.Click += BlackAndWhiteToolStripMenuClick;
 			// 
@@ -123,7 +123,7 @@
 			soundToolStripMenuItem.Checked = true;
 			soundToolStripMenuItem.CheckState = CheckState.Checked;
 			soundToolStripMenuItem.Name = "soundToolStripMenuItem";
-			soundToolStripMenuItem.Size = new Size(180, 22);
+			soundToolStripMenuItem.Size = new Size(128, 22);
 			soundToolStripMenuItem.Text = "Sound";
 			soundToolStripMenuItem.Click += SoundToolStripMenuClick;
 			// 
@@ -165,7 +165,7 @@
 			// 
 			// toolStrip
 			// 
-			toolStrip.Items.AddRange(new ToolStripItem[] { playButton, pauseButton, stepButton, resetButton });
+			toolStrip.Items.AddRange(new ToolStripItem[] { playButton, pauseButton, resetButton, stepButton });
 			toolStrip.Location = new Point(0, 24);
 			toolStrip.Name = "toolStrip";
 			toolStrip.Size = new Size(504, 25);
@@ -194,17 +194,6 @@
 			pauseButton.ToolTipText = "Pause";
 			pauseButton.Click += PauseButtonClick;
 			// 
-			// stepButton
-			// 
-			stepButton.DisplayStyle = ToolStripItemDisplayStyle.Text;
-			stepButton.Enabled = false;
-			stepButton.Font = new Font("Segoe MDL2 Assets", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-			stepButton.Name = "stepButton";
-			stepButton.Size = new Size(23, 22);
-			stepButton.Text = "";
-			stepButton.ToolTipText = "Step";
-			stepButton.Click += StepButtonClick;
-			// 
 			// resetButton
 			// 
 			resetButton.DisplayStyle = ToolStripItemDisplayStyle.Text;
@@ -215,6 +204,18 @@
 			resetButton.Text = "";
 			resetButton.ToolTipText = "Reset";
 			resetButton.Click += ResetButtonClick;
+			// 
+			// stepButton
+			// 
+			stepButton.DisplayStyle = ToolStripItemDisplayStyle.Text;
+			stepButton.Enabled = false;
+			stepButton.Font = new Font("Segoe MDL2 Assets", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+			stepButton.Name = "stepButton";
+			stepButton.Size = new Size(23, 22);
+			stepButton.Text = "";
+			stepButton.ToolTipText = "Step";
+			stepButton.Visible = false;
+			stepButton.Click += StepButtonClick;
 			// 
 			// lcdControl
 			// 
@@ -294,8 +295,8 @@
 		private ToolStrip toolStrip;
 		private ToolStripButton playButton;
 		private ToolStripButton pauseButton;
-		private ToolStripButton stepButton;
 		private ToolStripButton resetButton;
+		private ToolStripButton stepButton;
 		private LCDControl lcdControl;
 		private RichTextBox debugRichTextBox;
 		private StatusStrip statusStrip;

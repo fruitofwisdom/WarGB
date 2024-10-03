@@ -105,12 +105,18 @@ namespace GBSharp
 				showDebugOutputToolStripMenuItem.Checked = false;
 				debugRichTextBox.Hide();
 				Size = new Size(Width - 255, Height);
+
+				// Also hide the step button.
+				stepButton.Visible = false;
 			}
 			else
 			{
 				showDebugOutputToolStripMenuItem.Checked = true;
 				debugRichTextBox.Show();
 				Size = new Size(Width + 255, Height);
+
+				// Also show the step button.
+				stepButton.Visible = true;
 			}
 		}
 
@@ -126,8 +132,8 @@ namespace GBSharp
 
 			playButton.Enabled = false;
 			pauseButton.Enabled = true;
-			stepButton.Enabled = false;
 			resetButton.Enabled = false;
+			stepButton.Enabled = false;
 		}
 
 		private void PauseButtonClick(object sender, EventArgs e)
@@ -136,18 +142,8 @@ namespace GBSharp
 
 			playButton.Enabled = true;
 			pauseButton.Enabled = false;
-			stepButton.Enabled = true;
 			resetButton.Enabled = true;
-		}
-
-		private void StepButtonClick(object sender, EventArgs e)
-		{
-			_gameBoy.Step();
-
-			playButton.Enabled = true;
-			pauseButton.Enabled = false;
 			stepButton.Enabled = true;
-			resetButton.Enabled = true;
 		}
 
 		private void ResetButtonClick(object sender, EventArgs e)
@@ -156,8 +152,18 @@ namespace GBSharp
 
 			playButton.Enabled = true;
 			pauseButton.Enabled = false;
-			stepButton.Enabled = true;
 			resetButton.Enabled = false;
+			stepButton.Enabled = true;
+		}
+
+		private void StepButtonClick(object sender, EventArgs e)
+		{
+			_gameBoy.Step();
+
+			playButton.Enabled = true;
+			pauseButton.Enabled = false;
+			resetButton.Enabled = true;
+			stepButton.Enabled = true;
 		}
 
 		public static void Pause()
