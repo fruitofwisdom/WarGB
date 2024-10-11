@@ -16,6 +16,8 @@
 
 		private bool RAMEnabled;
 		public uint ROMBank { get; private set; }
+		private uint MBC1RAMBank = 0;
+		private bool MBC1BankingMode = false;
 
 		public bool SaveNeeded { get; private set; }
 
@@ -56,6 +58,8 @@
 			RAMEnabled = false;
 			// NOTE: By default, 0x4000 to 0x7FFF is mapped to bank 1.
 			ROMBank = 1;
+			MBC1RAMBank = 0;
+			MBC1BankingMode = false;
 
 			SaveNeeded = false;
 			if (ROM.Instance.HasBattery)
@@ -106,6 +110,7 @@
 			{
 				if (ROM.Instance.Data is not null)
 				{
+					// TODO: Support the MBC1's advanced banking mode.
 					data = ROM.Instance.Data[address];
 				}
 			}
@@ -124,6 +129,7 @@
 			{
 				if (RAMEnabled)
 				{
+					// TODO: Support the MBC1's RAM bank switching.
 					data = ExternalRAM[address - 0xA000];
 				}
 				else
@@ -239,6 +245,10 @@
 			{
 				data = PPU.Instance.LYC;
 			}
+			else if (address == 0xFF47)
+			{
+				data = PPU.Instance.BGPaletteData;
+			}
 			else if (address == 0xFF4A)
 			{
 				data = (byte)(PPU.Instance.WY);
@@ -265,11 +275,42 @@
 				return;
 			}
 
-			if (address >= 0x0000 && address <= 0x3FFF)
+			// Handle MBC-specific address ranges.
+			if (ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1 ||
+				ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1_RAM ||
+				ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1_RAM_BATTERY)
 			{
-				// Handle MBC-specific address ranges.
-				if (ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2 ||
-					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2_BATTERY)
+				if (address >= 0x0000 && address <= 0x1FFF)
+				{
+					RAMEnabled = data == 0x0A;
+				}
+				else if (address >= 0x2000 && address <= 0x3FFF)
+				{
+					// Select the ROM bank (a 5-bit register).
+					if (data == 0x00)
+					{
+						ROMBank = 1;
+					}
+					else
+					{
+						ROMBank = (uint)(data & 0x1F);
+					}
+				}
+				else if (address >= 0x4000 && address <= 0x5FFF)
+				{
+					// TODO: Support the MBC1's RAM bank switching.
+					MBC1RAMBank = (uint)(data & 0x03);
+				}
+				else if (address >= 0x6000 && address <= 0x7FFF)
+				{
+					// TODO: Support the MBC1's advanced banking mode.
+					MBC1BankingMode = (data & 0x01) == 0x01;
+				}
+			}
+			else if (ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2 ||
+				ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2_BATTERY)
+			{
+				if (address >= 0x0000 && address <= 0x3FFF)
 				{
 					// This bit specifies selecting a ROM bank.
 					if ((address & 0x0100) == 0x0100)
@@ -290,26 +331,25 @@
 						RAMEnabled = data == 0x0A;
 					}
 				}
-				else
+				else if (address >= 0x4000 && address <= 0x7FFF)
 				{
-					// TODO: Other MBC behaviors?
-					GameBoy.DebugOutput += $"Writing to ROM: 0x{address:X4}!\n";
-					MainForm.Pause();
+					// NOTE: Ignore?
+					//GameBoy.DebugOutput += "Writing to ROM!\n";
+					//MainForm.Pause();
 				}
 			}
-			else if (address >= 0x4000 && address <= 0x5FFF)
+			// TODO: Support other MBCs.
+			else
 			{
-				// TODO: ROM/RAM bank number.
-				GameBoy.DebugOutput += $"Writing to ROM: 0x{address:X4}!\n";
-				MainForm.Pause();
+				if (address >= 0x0000 && address <= 0x7FFF)
+				{
+					// NOTE: Ignore?
+					//GameBoy.DebugOutput += "Writing to ROM!\n";
+					//MainForm.Pause();
+				}
 			}
-			else if (address >= 0x6000 && address <= 0x7FFF)
-			{
-				// TODO: ROM/RAM mode select.
-				//MainForm.PrintDebugMessage($"Writing to ROM: 0x{address:X4}!\n");
-				//MainForm.Pause();
-			}
-			else if (address >= 0x8000 && address <= 0x9FFF)
+
+			if (address >= 0x8000 && address <= 0x9FFF)
 			{
 				VRAM[address - 0x8000] = data;
 			}
@@ -323,7 +363,7 @@
 				else
 				{
 					// TODO: Is this a real problem?
-					//GameBoy.DebugOutput += $"Writing to external RAM while RAM is disabled!\n";
+					//GameBoy.DebugOutput += "Writing to external RAM while RAM is disabled!\n";
 					//MainForm.Pause();
 				}
 			}

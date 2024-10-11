@@ -679,6 +679,15 @@
 					}
 					break;
 
+				case 0x33:      // INC SP
+					{
+						SP++;
+						PrintOpcode(instruction, "INC SP");
+						PC++;
+						cycles += 2;
+					}
+					break;
+
 				case 0x34:      // INC (HL)
 					{
 						byte d8 = Memory.Instance.Read(HL);
@@ -754,6 +763,15 @@
 						A = Memory.Instance.Read(HL);
 						HL--;
 						PrintOpcode(instruction, "LD A, (HL-)");
+						PC++;
+						cycles += 2;
+					}
+					break;
+
+				case 0x3B:      // DEC SP
+					{
+						SP--;
+						PrintOpcode(instruction, "DEC SP");
 						PC++;
 						cycles += 2;
 					}
@@ -1433,6 +1451,17 @@
 						PrintOpcode(instruction, "ADC A, H");
 						PC++;
 						cycles++;
+					}
+					break;
+
+				case 0x8E:      // ADC A, (HL)
+					{
+						byte d8 = Memory.Instance.Read(HL);
+						byte d8AndCY = (byte)(d8 + (CY ? 0x01 : 0x00));
+						Add(ref A, d8AndCY);
+						PrintOpcode(instruction, "ADC A, (HL)");
+						PC++;
+						cycles += 2;
 					}
 					break;
 
@@ -2437,6 +2466,20 @@
 					}
 					break;
 
+				case 0xE7:      // RST 4
+					{
+						ushort nextPC = (ushort)(PC + 1);
+						byte pcHigher = (byte)((nextPC & 0xFF00) >> 8);
+						Memory.Instance.Write(SP - 1, pcHigher);
+						byte pcLower = (byte)(nextPC & 0x00FF);
+						Memory.Instance.Write(SP - 2, pcLower);
+						SP -= 2;
+						PrintOpcode(instruction, "RST 4");
+						PC = 0x0020;
+						cycles += 4;
+					}
+					break;
+
 				case 0xE9:      // JP HL
 					{
 						PrintOpcode(instruction, $"JP HL");
@@ -2843,6 +2886,23 @@
 					}
 					break;
 
+				case 0x16:      // RL (HL)
+					{
+						byte d8 = Memory.Instance.Read(HL);
+						bool newCY = (byte)(d8 & 0x80) == 0x80;
+						d8 = (byte)(d8 << 1);
+						d8 |= (byte)(CY ? 0x01 : 0x00);
+						Memory.Instance.Write(HL, d8);
+						CY = newCY;
+						Z = d8 == 0x00;
+						N = false;
+						H = false;
+						PrintOpcode(instruction, "RL (HL)");
+						PC += 2;
+						cycles += 4;
+					}
+					break;
+
 				case 0x17:      // RL A
 					{
 						bool newCY = (byte)(A & 0x80) == 0x80;
@@ -2968,6 +3028,21 @@
 						PrintOpcode(instruction, "RR (HL)");
 						PC += 2;
 						cycles += 4;
+					}
+					break;
+
+				case 0x1F:      // RR A
+					{
+						bool newCY = (byte)(A & 0x01) == 0x01;
+						A = (byte)(A >> 1);
+						A |= (byte)(CY ? 0x80 : 0x00);
+						CY = newCY;
+						Z = A == 0x00;
+						N = false;
+						H = false;
+						PrintOpcode(instruction, "RR A");
+						PC += 2;
+						cycles += 2;
 					}
 					break;
 
@@ -3141,6 +3216,36 @@
 						H = false;
 						CY = false;
 						PrintOpcode(instruction, "SWAP B");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0x31:      // SWAP C
+					{
+						byte lower = (byte)(C & 0x0F);
+						byte higher = (byte)(C & 0xF0);
+						C = (byte)((higher >> 4) + (lower << 4));
+						Z = C == 0x00;
+						N = false;
+						H = false;
+						CY = false;
+						PrintOpcode(instruction, "SWAP C");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0x32:      // SWAP D
+					{
+						byte lower = (byte)(D & 0x0F);
+						byte higher = (byte)(D & 0xF0);
+						D = (byte)((higher >> 4) + (lower << 4));
+						Z = D == 0x00;
+						N = false;
+						H = false;
+						CY = false;
+						PrintOpcode(instruction, "SWAP D");
 						PC += 2;
 						cycles += 2;
 					}
@@ -3691,6 +3796,19 @@
 						PrintOpcode(instruction, "BIT 4, L");
 						PC += 2;
 						cycles += 2;
+					}
+					break;
+
+				case 0x66:      // BIT 4, (HL)
+					{
+						byte d8 = Memory.Instance.Read(HL);
+						byte bit = Utilities.GetBitsFromByte(d8, 4, 4);
+						Z = bit == 0x00;
+						N = false;
+						H = true;
+						PrintOpcode(instruction, "BIT 4, (HL)");
+						PC += 2;
+						cycles += 3;
 					}
 					break;
 
@@ -4402,6 +4520,15 @@
 						Utilities.SetBitsInByte(ref l, 0x01, 4, 4);
 						HL = (ushort)((h << 8) + l);
 						PrintOpcode(instruction, "SET 4, L");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0xE7:      // SET 4, A
+					{
+						Utilities.SetBitsInByte(ref A, 0x01, 4, 4);
+						PrintOpcode(instruction, "SET 4, A");
 						PC += 2;
 						cycles += 2;
 					}
