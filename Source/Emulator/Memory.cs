@@ -249,6 +249,14 @@
 			{
 				data = PPU.Instance.BGPaletteData;
 			}
+			else if (address == 0xFF48)
+			{
+				data = PPU.Instance.OBJPaletteData0;
+			}
+			else if (address == 0xFF49)
+			{
+				data = PPU.Instance.OBJPaletteData1;
+			}
 			else if (address == 0xFF4A)
 			{
 				data = (byte)(PPU.Instance.WY);
