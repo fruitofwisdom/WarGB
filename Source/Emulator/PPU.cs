@@ -329,18 +329,23 @@
 					tileAddress += tileNumber * 16;
 				}
 				byte attributes = Memory.Instance.Read(objAddress + 3);
-				// TODO: Priority.
+				bool priority = Utilities.GetBitsFromByte(attributes, 7, 7) != 0x00;
 				bool yFlip = Utilities.GetBitsFromByte(attributes, 6, 6) != 0x00;
 				bool xFlip = Utilities.GetBitsFromByte(attributes, 5, 5) != 0x00;
 				byte objPaletteData = Utilities.GetBitsFromByte(attributes, 4, 4) == 0x20 ? OBJPaletteData1 : OBJPaletteData0;
 
-				RenderTile(tileAddress, x, yFlip ? y + 8 : y, objPaletteData, true, xFlip, yFlip);
-
-				// In 8x16 mode, also render the next tile immediately below.
-				if (OBJSize)
+				// Render tile(s) for 8x8 or 8x16 mode.
+				if (!OBJSize)
 				{
+					RenderTile(tileAddress, x, y, objPaletteData, true, xFlip, yFlip, priority);
+				}
+				else
+				{
+					RenderTile(tileAddress, x, yFlip ? y + 8 : y, objPaletteData, true, xFlip, yFlip, priority);
+
+					// In 8x16 mode, also render the next tile immediately below.
 					tileAddress = 0x8000 + (tileNumber | 0x01) * 16;
-					RenderTile(tileAddress, x, yFlip ? y : y + 8, objPaletteData, true, xFlip, yFlip);
+					RenderTile(tileAddress, x, yFlip ? y : y + 8, objPaletteData, true, xFlip, yFlip, priority);
 				}
 			}
 
@@ -350,7 +355,7 @@
 
 		// Draw an individual tile with data from an address at a location with a palette.
 		private void RenderTile(int tileAddress, int x, int y, byte palette,
-			bool transparency = false, bool xFlip = false, bool yFlip = false)
+			bool transparency = false, bool xFlip = false, bool yFlip = false, bool priority = false)
 		{
 			// Draw each tile, pixel by pixel.
 			for (int pixelY = 0; pixelY < 8; ++pixelY)
@@ -373,7 +378,19 @@
 						int lcdY = yFlip ? y + 7 - pixelY : y + pixelY;
 						if (lcdX >= 0 && lcdX < kWidth && lcdY >= 0 && lcdY < kHeight)
 						{
-							LCDBackBuffer[lcdX, lcdY] = lcdColor;
+							if (!priority)
+							{
+								LCDBackBuffer[lcdX, lcdY] = lcdColor;
+							}
+							else
+							{
+								// If priority is on, only render above BG color 0.
+								int bgColor0 = Utilities.GetBitsFromByte(BGPaletteData, 0, 1);
+								if (LCDBackBuffer[lcdX, lcdY] == bgColor0)
+								{
+									LCDBackBuffer[lcdX, lcdY] = lcdColor;
+								}
+							}
 						}
 					}
 				}
