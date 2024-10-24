@@ -37,6 +37,7 @@
 		//public byte TAC;
 
 		private bool _halted;
+		private bool _was16BitOpcode;
 
 		private static CPU? _instance;
 		public static CPU Instance
@@ -56,16 +57,16 @@
 		// Reset the CPU's registers and flags.
 		public void Reset()
 		{
-			A = 0x00;
+			A = 0x01;
 			Z = true;
 			N = false;
 			H = true;
 			CY = true;
 			B = 0x00;
-			C = 0x00;
+			C = 0x13;
 			D = 0x00;
-			E = 0x00;
-			HL = 0x0000;
+			E = 0xD8;
+			HL = 0x014D;
 			PC = 0x0100;
 			SP = 0xFFFE;
 
@@ -73,9 +74,8 @@
 			IE = 0x00;
 			IME = false;
 
-			// TODO: Correct initial values?
-			Divider = 0;
-			DIV = 0x00;
+			Divider = 0xAB00;
+			DIV = 0;
 			_divApu = 0;
 			TIMA = 0x00;
 			TMA = 0x00;
@@ -83,6 +83,7 @@
 			//TAC = 0x00;
 
 			_halted = false;
+			_was16BitOpcode = false;
 		}
 
 		// Step through one instruction and return the number of cycles elapsed.
@@ -189,12 +190,21 @@
 		{
 			if (GameBoy.ShouldLogOpcodes)
 			{
-				string output = $"[0x{PC:X4} {Memory.Instance.ROMBank}] 0x{instruction:X2}: " + opcode;
+				string output = $"[0x{PC:X4} {Memory.Instance.ROMBank}]";
+				if (_was16BitOpcode)
+				{
+					output += $" 0xCB{instruction:X2}: " + opcode;
+				}
+				else
+				{
+					output += $"   0x{instruction:X2}: " + opcode;
+				}
 				for (int i = output.Length; i < 40; ++i)
 				{
 					output += " ";
 				}
-				output += $"A=0x{A:X2}, F=0x{GetF():X2}, BC=0x{B:X2}{C:X2}, DE=0x{D:X2}{E:X2}, HL=0x{HL:X4}, SP=0x{SP:X4}\n";
+				byte d8 = Memory.Instance.Read(HL);
+				output += $"A=0x{A:X2}, F=0x{GetF():X2}, BC=0x{B:X2}{C:X2}, DE=0x{D:X2}{E:X2}, HL=0x{HL:X4} (0x{d8:X2}), SP=0x{SP:X4}\n";
 				GameBoy.LogOutput += output;
 			}
 		}

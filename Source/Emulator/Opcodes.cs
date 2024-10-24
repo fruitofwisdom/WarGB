@@ -89,6 +89,7 @@
 		// Run an instruction and return how many cycles elapsed.
 		private void HandleOpcode(byte instruction, out uint cycles)
 		{
+			_was16BitOpcode = false;
 			cycles = 0;
 
 			switch (instruction)
@@ -328,9 +329,10 @@
 
 				case 0x17:      // RLA
 					{
-						CY = (byte)(A & 0x80) == 0x80;
+						bool newCY = (byte)(A & 0x80) == 0x80;
 						A = (byte)(A << 1);
 						A |= (byte)(CY ? 0x01 : 0x00);
+						CY = newCY;
 						Z = A == 0x00;
 						N = false;
 						H = false;
@@ -2743,6 +2745,7 @@
 		// Run a 16-bit instruction and return how many cycles elapsed.
 		private void Handle16BitOpcode(byte instruction, out uint cycles)
 		{
+			_was16BitOpcode = true;
 			cycles = 0;
 
 			switch (instruction)
@@ -2770,6 +2773,34 @@
 						N = false;
 						H = false;
 						PrintOpcode(instruction, "RLC C");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0x02:      // RLC D
+					{
+						CY = (byte)(D & 0x80) == 0x80;
+						D = (byte)(D << 1);
+						D |= (byte)(CY ? 0x01 : 0x00);
+						Z = D == 0x00;
+						N = false;
+						H = false;
+						PrintOpcode(instruction, "RLC D");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0x03:      // RLC E
+					{
+						CY = (byte)(E & 0x80) == 0x80;
+						E = (byte)(E << 1);
+						E |= (byte)(CY ? 0x01 : 0x00);
+						Z = E == 0x00;
+						N = false;
+						H = false;
+						PrintOpcode(instruction, "RLC E");
 						PC += 2;
 						cycles += 2;
 					}
@@ -3212,6 +3243,36 @@
 						N = false;
 						H = false;
 						PrintOpcode(instruction, "SLA A");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0x28:      // SRA B
+					{
+						CY = (byte)(B & 0x01) == 0x01;
+						byte b7 = (byte)(B & 0x80);
+						B = (byte)(B >> 1);
+						B |= b7;
+						Z = B == 0x00;
+						N = false;
+						H = false;
+						PrintOpcode(instruction, "SRA B");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0x29:      // SRA C
+					{
+						CY = (byte)(C & 0x01) == 0x01;
+						byte c7 = (byte)(C & 0x80);
+						C = (byte)(C >> 1);
+						C |= c7;
+						Z = C == 0x00;
+						N = false;
+						H = false;
+						PrintOpcode(instruction, "SRA C");
 						PC += 2;
 						cycles += 2;
 					}
@@ -4656,6 +4717,17 @@
 						PrintOpcode(instruction, "SET 4, L");
 						PC += 2;
 						cycles += 2;
+					}
+					break;
+
+				case 0xE6:      // SET 4, (HL)
+					{
+						byte d8 = Memory.Instance.Read(HL);
+						Utilities.SetBitsInByte(ref d8, 0x01, 4, 4);
+						Memory.Instance.Write(HL, d8);
+						PrintOpcode(instruction, "SET 4, (HL)");
+						PC += 2;
+						cycles += 4;
 					}
 					break;
 
