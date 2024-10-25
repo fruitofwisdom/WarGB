@@ -33,7 +33,7 @@
 			labelProductName = new Label();
 			labelVersion = new Label();
 			labelAuthor = new Label();
-			labelWebsite = new Label();
+			labelWebsite = new LinkLabel();
 			textBoxDescription = new TextBox();
 			okButton = new Button();
 			tableLayoutPanel.SuspendLayout();
@@ -99,7 +99,7 @@
 			labelVersion.MaximumSize = new Size(0, 20);
 			labelVersion.Name = "labelVersion";
 			labelVersion.Size = new Size(316, 20);
-			labelVersion.TabIndex = 0;
+			labelVersion.TabIndex = 20;
 			labelVersion.Text = "Version 0.2-alpha";
 			labelVersion.TextAlign = ContentAlignment.MiddleLeft;
 			// 
@@ -117,15 +117,16 @@
 			// 
 			// labelWebsite
 			// 
-			labelWebsite.Dock = DockStyle.Fill;
-			labelWebsite.Location = new Point(167, 90);
-			labelWebsite.Margin = new Padding(7, 0, 4, 0);
-			labelWebsite.MaximumSize = new Size(0, 20);
+			labelWebsite.AutoSize = true;
+			labelWebsite.Location = new Point(163, 90);
 			labelWebsite.Name = "labelWebsite";
-			labelWebsite.Size = new Size(316, 20);
+			labelWebsite.Padding = new Padding(4, 0, 0, 0);
+			labelWebsite.Size = new Size(243, 15);
 			labelWebsite.TabIndex = 22;
+			labelWebsite.TabStop = true;
 			labelWebsite.Text = "https://github.com/fruitofwisdom/GBSharp";
 			labelWebsite.TextAlign = ContentAlignment.MiddleLeft;
+			labelWebsite.LinkClicked += LabelWebsiteLinkClicked;
 			// 
 			// textBoxDescription
 			// 
@@ -182,7 +183,7 @@
 		private System.Windows.Forms.Label labelProductName;
 		private System.Windows.Forms.Label labelVersion;
 		private System.Windows.Forms.Label labelAuthor;
-		private System.Windows.Forms.Label labelWebsite;
+		private LinkLabel labelWebsite;
 		private System.Windows.Forms.TextBox textBoxDescription;
 		private System.Windows.Forms.Button okButton;
 	}
