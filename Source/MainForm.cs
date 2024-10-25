@@ -53,6 +53,7 @@ namespace GBSharp
 					_gameBoyThread.Start();
 					playButton.Enabled = true;
 					pauseButton.Enabled = false;
+					resetButton.Enabled = true;
 					stepButton.Enabled = true;
 
 					// Play automatically.
@@ -64,6 +65,12 @@ namespace GBSharp
 		private void ExitToolStripMenuItemClick(object sender, EventArgs e)
 		{
 			Close();
+		}
+
+		private void ControlsToolStripMenuItemClick(object sender, EventArgs e)
+		{
+			ControlsForm controlsForm = new();
+			controlsForm.ShowDialog();
 		}
 
 		private void OriginalGreenToolStripMenuClick(object sender, EventArgs e)
@@ -86,10 +93,10 @@ namespace GBSharp
 			}
 		}
 
-		private void SoundToolStripMenuClick(object sender, EventArgs e)
+		private void MuteSoundToolStripMenuClick(object sender, EventArgs e)
 		{
-			soundToolStripMenuItem.Checked = !soundToolStripMenuItem.Checked;
-			_gameBoy.Mute(!soundToolStripMenuItem.Checked);
+			muteSoundToolStripMenuItem.Checked = !muteSoundToolStripMenuItem.Checked;
+			_gameBoy.Mute(muteSoundToolStripMenuItem.Checked);
 		}
 
 		private void LogOpcodesToolStripMenuClick(object sender, EventArgs e)
@@ -132,7 +139,6 @@ namespace GBSharp
 
 			playButton.Enabled = false;
 			pauseButton.Enabled = true;
-			resetButton.Enabled = false;
 			stepButton.Enabled = false;
 		}
 
@@ -142,18 +148,28 @@ namespace GBSharp
 
 			playButton.Enabled = true;
 			pauseButton.Enabled = false;
-			resetButton.Enabled = true;
 			stepButton.Enabled = true;
 		}
 
 		private void ResetButtonClick(object sender, EventArgs e)
 		{
+			bool wasPlaying = _gameBoy.Playing;
 			_gameBoy.Reset();
 
-			playButton.Enabled = true;
-			pauseButton.Enabled = false;
-			resetButton.Enabled = false;
-			stepButton.Enabled = true;
+			if (wasPlaying)
+			{
+				_gameBoy.Play();
+
+				playButton.Enabled = false;
+				pauseButton.Enabled = true;
+				stepButton.Enabled = false;
+			}
+			else
+			{
+				playButton.Enabled = true;
+				pauseButton.Enabled = false;
+				stepButton.Enabled = true;
+			}
 		}
 
 		private void StepButtonClick(object sender, EventArgs e)
@@ -162,7 +178,6 @@ namespace GBSharp
 
 			playButton.Enabled = true;
 			pauseButton.Enabled = false;
-			resetButton.Enabled = true;
 			stepButton.Enabled = true;
 		}
 
@@ -228,7 +243,7 @@ namespace GBSharp
 			{
 				Controller.Instance.Up = true;
 			}
-			if (e.KeyCode == Keys.S ||  e.KeyCode == Keys.Down)
+			if (e.KeyCode == Keys.S || e.KeyCode == Keys.Down)
 			{
 				Controller.Instance.Down = true;
 			}

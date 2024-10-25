@@ -100,7 +100,7 @@
 			labelVersion.Name = "labelVersion";
 			labelVersion.Size = new Size(316, 20);
 			labelVersion.TabIndex = 0;
-			labelVersion.Text = "Version 0.1-alpha";
+			labelVersion.Text = "Version 0.2-alpha";
 			labelVersion.TextAlign = ContentAlignment.MiddleLeft;
 			// 
 			// labelAuthor
@@ -139,7 +139,7 @@
 			textBoxDescription.Size = new Size(316, 147);
 			textBoxDescription.TabIndex = 23;
 			textBoxDescription.TabStop = false;
-			textBoxDescription.Text = "Welcome to version 0.1-alpha of GB#!";
+			textBoxDescription.Text = "Welcome to version 0.2-alpha of GB#, a Game Boy emulator written in C#.";
 			// 
 			// okButton
 			// 

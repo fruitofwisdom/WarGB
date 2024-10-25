@@ -3,8 +3,8 @@
 	internal class GameBoy
 	{
 		// Emulator state booleans.
+		public bool Playing { get; private set; }
 		private bool _needToStop;
-		private bool _playing;
 		private bool _stepRequested;
 
 		// Accurately time frames.
@@ -40,8 +40,8 @@
 			PPU.Instance.Reset();
 			APU.Instance.Reset();
 
+			Playing = false;
 			_needToStop = false;
-			_playing = false;
 			_stepRequested = false;
 
 			_lastFrameTime = DateTime.Now;
@@ -70,7 +70,7 @@
 			while (!_needToStop)
 			{
 				// Do nothing if we're paused, unless a step was requested.
-				if (!_playing && !_stepRequested)
+				if (!Playing && !_stepRequested)
 				{
 					Thread.Sleep(0);
 					continue;
@@ -109,7 +109,7 @@
 
 					if (_stepRequested)
 					{
-						_playing = false;
+						Playing = false;
 						_stepRequested = false;
 						APU.Instance.Stop();
 					}
@@ -159,14 +159,14 @@
 		// Start the emulator.
 		public void Play()
 		{
-			_playing = true;
+			Playing = true;
 			APU.Instance.Play();
 		}
 
 		// Pause the emulator.
 		public void Pause()
 		{
-			_playing = false;
+			Playing = false;
 			APU.Instance.Stop();
 		}
 

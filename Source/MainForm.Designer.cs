@@ -34,10 +34,11 @@
 			loadROMToolStripMenuItem = new ToolStripMenuItem();
 			exitToolStripMenuItem = new ToolStripMenuItem();
 			optionsToolStripMenuItem = new ToolStripMenuItem();
+			controlsToolStripMenuItem = new ToolStripMenuItem();
 			lcdColorToolStripMenuItem = new ToolStripMenuItem();
 			originalGreenToolStripMenuItem = new ToolStripMenuItem();
 			blackAndWhiteToolStripMenuItem = new ToolStripMenuItem();
-			soundToolStripMenuItem = new ToolStripMenuItem();
+			muteSoundToolStripMenuItem = new ToolStripMenuItem();
 			debugToolStripMenuItem = new ToolStripMenuItem();
 			logOpcodesToolStripMenuItem = new ToolStripMenuItem();
 			showDebugOutputToolStripMenuItem = new ToolStripMenuItem();
@@ -76,7 +77,8 @@
 			// loadROMToolStripMenuItem
 			// 
 			loadROMToolStripMenuItem.Name = "loadROMToolStripMenuItem";
-			loadROMToolStripMenuItem.Size = new Size(139, 22);
+			loadROMToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.O;
+			loadROMToolStripMenuItem.Size = new Size(182, 22);
 			loadROMToolStripMenuItem.Text = "Load ROM...";
 			loadROMToolStripMenuItem.Click += LoadROMToolStripMenuItemClick;
 			// 
@@ -84,22 +86,30 @@
 			// 
 			exitToolStripMenuItem.Name = "exitToolStripMenuItem";
 			exitToolStripMenuItem.ShortcutKeys = Keys.Alt | Keys.F4;
-			exitToolStripMenuItem.Size = new Size(139, 22);
+			exitToolStripMenuItem.Size = new Size(182, 22);
 			exitToolStripMenuItem.Text = "Exit";
 			exitToolStripMenuItem.Click += ExitToolStripMenuItemClick;
 			// 
 			// optionsToolStripMenuItem
 			// 
-			optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { lcdColorToolStripMenuItem, soundToolStripMenuItem });
+			optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { controlsToolStripMenuItem, lcdColorToolStripMenuItem, muteSoundToolStripMenuItem });
 			optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
 			optionsToolStripMenuItem.Size = new Size(61, 20);
 			optionsToolStripMenuItem.Text = "Options";
+			// 
+			// controlsToolStripMenuItem
+			// 
+			controlsToolStripMenuItem.Name = "controlsToolStripMenuItem";
+			controlsToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.C;
+			controlsToolStripMenuItem.Size = new Size(184, 22);
+			controlsToolStripMenuItem.Text = "Controls...";
+			controlsToolStripMenuItem.Click += ControlsToolStripMenuItemClick;
 			// 
 			// lcdColorToolStripMenuItem
 			// 
 			lcdColorToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { originalGreenToolStripMenuItem, blackAndWhiteToolStripMenuItem });
 			lcdColorToolStripMenuItem.Name = "lcdColorToolStripMenuItem";
-			lcdColorToolStripMenuItem.Size = new Size(128, 22);
+			lcdColorToolStripMenuItem.Size = new Size(184, 22);
 			lcdColorToolStripMenuItem.Text = "LCD Color";
 			// 
 			// originalGreenToolStripMenuItem
@@ -107,25 +117,26 @@
 			originalGreenToolStripMenuItem.Checked = true;
 			originalGreenToolStripMenuItem.CheckState = CheckState.Checked;
 			originalGreenToolStripMenuItem.Name = "originalGreenToolStripMenuItem";
-			originalGreenToolStripMenuItem.Size = new Size(159, 22);
+			originalGreenToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.D1;
+			originalGreenToolStripMenuItem.Size = new Size(199, 22);
 			originalGreenToolStripMenuItem.Text = "Original Green";
 			originalGreenToolStripMenuItem.Click += OriginalGreenToolStripMenuClick;
 			// 
 			// blackAndWhiteToolStripMenuItem
 			// 
 			blackAndWhiteToolStripMenuItem.Name = "blackAndWhiteToolStripMenuItem";
-			blackAndWhiteToolStripMenuItem.Size = new Size(159, 22);
+			blackAndWhiteToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.D2;
+			blackAndWhiteToolStripMenuItem.Size = new Size(199, 22);
 			blackAndWhiteToolStripMenuItem.Text = "Black and White";
 			blackAndWhiteToolStripMenuItem.Click += BlackAndWhiteToolStripMenuClick;
 			// 
-			// soundToolStripMenuItem
+			// muteSoundToolStripMenuItem
 			// 
-			soundToolStripMenuItem.Checked = true;
-			soundToolStripMenuItem.CheckState = CheckState.Checked;
-			soundToolStripMenuItem.Name = "soundToolStripMenuItem";
-			soundToolStripMenuItem.Size = new Size(128, 22);
-			soundToolStripMenuItem.Text = "Sound";
-			soundToolStripMenuItem.Click += SoundToolStripMenuClick;
+			muteSoundToolStripMenuItem.Name = "muteSoundToolStripMenuItem";
+			muteSoundToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.M;
+			muteSoundToolStripMenuItem.Size = new Size(184, 22);
+			muteSoundToolStripMenuItem.Text = "Mute Sound";
+			muteSoundToolStripMenuItem.Click += MuteSoundToolStripMenuClick;
 			// 
 			// debugToolStripMenuItem
 			// 
@@ -137,7 +148,8 @@
 			// logOpcodesToolStripMenuItem
 			// 
 			logOpcodesToolStripMenuItem.Name = "logOpcodesToolStripMenuItem";
-			logOpcodesToolStripMenuItem.Size = new Size(182, 22);
+			logOpcodesToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.L;
+			logOpcodesToolStripMenuItem.Size = new Size(224, 22);
 			logOpcodesToolStripMenuItem.Text = "Log Opcodes";
 			logOpcodesToolStripMenuItem.ToolTipText = "Write opcodes, CPU state, etc to a log file. (This file will get very large.)";
 			logOpcodesToolStripMenuItem.Click += LogOpcodesToolStripMenuClick;
@@ -145,7 +157,8 @@
 			// showDebugOutputToolStripMenuItem
 			// 
 			showDebugOutputToolStripMenuItem.Name = "showDebugOutputToolStripMenuItem";
-			showDebugOutputToolStripMenuItem.Size = new Size(182, 22);
+			showDebugOutputToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.D;
+			showDebugOutputToolStripMenuItem.Size = new Size(224, 22);
 			showDebugOutputToolStripMenuItem.Text = "Show Debug Output";
 			showDebugOutputToolStripMenuItem.Click += ShowDebugOutputToolStripMenuClick;
 			// 
@@ -159,7 +172,8 @@
 			// aboutGBSharpToolStripMenuItem
 			// 
 			aboutGBSharpToolStripMenuItem.Name = "aboutGBSharpToolStripMenuItem";
-			aboutGBSharpToolStripMenuItem.Size = new Size(155, 22);
+			aboutGBSharpToolStripMenuItem.ShortcutKeys = Keys.F1;
+			aboutGBSharpToolStripMenuItem.Size = new Size(174, 22);
 			aboutGBSharpToolStripMenuItem.Text = "About GBSharp";
 			aboutGBSharpToolStripMenuItem.Click += AboutGBSharpToolStripMenuItemClick;
 			// 
@@ -283,10 +297,11 @@
 		private ToolStripMenuItem loadROMToolStripMenuItem;
 		private ToolStripMenuItem exitToolStripMenuItem;
 		private ToolStripMenuItem optionsToolStripMenuItem;
+		private ToolStripMenuItem controlsToolStripMenuItem;
 		private ToolStripMenuItem lcdColorToolStripMenuItem;
 		private ToolStripMenuItem originalGreenToolStripMenuItem;
 		private ToolStripMenuItem blackAndWhiteToolStripMenuItem;
-		private ToolStripMenuItem soundToolStripMenuItem;
+		private ToolStripMenuItem muteSoundToolStripMenuItem;
 		private ToolStripMenuItem debugToolStripMenuItem;
 		private ToolStripMenuItem logOpcodesToolStripMenuItem;
 		private ToolStripMenuItem showDebugOutputToolStripMenuItem;
