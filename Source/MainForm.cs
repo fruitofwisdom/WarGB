@@ -8,6 +8,9 @@ namespace GBSharp
 		// A timer used to poll and render the state of the Game Boy.
 		private readonly System.Windows.Forms.Timer _gameBoyTimer = new();
 
+		// The two customizable sets of controller assignments.
+		private readonly KeyMapping _keyMapping = new();
+
 		// A callback to pause the emulator.
 		private delegate void PauseCallback();
 		private static PauseCallback? s_pauseCallbackInternal;
@@ -69,7 +72,7 @@ namespace GBSharp
 
 		private void ControlsToolStripMenuItemClick(object sender, EventArgs e)
 		{
-			ControlsForm controlsForm = new();
+			ControlsForm controlsForm = new(_keyMapping);
 			controlsForm.ShowDialog();
 		}
 
@@ -213,76 +216,113 @@ namespace GBSharp
 			lcdControl.Refresh();
 		}
 
-		private void MainForm_KeyDown(object sender, KeyEventArgs e)
+		private void lcdControl_KeyDown(object sender, KeyEventArgs e)
 		{
-			if (e.KeyCode == Keys.K || e.KeyCode == Keys.NumPad2)
-			{
-				Controller.Instance.A = true;
-			}
-			if (e.KeyCode == Keys.J || e.KeyCode == Keys.NumPad1)
-			{
-				Controller.Instance.B = true;
-			}
-			if (e.KeyCode == Keys.ShiftKey || e.KeyCode == Keys.Oemplus)
-			{
-				Controller.Instance.Select = true;
-			}
-			if (e.KeyCode == Keys.Enter)
-			{
-				Controller.Instance.Start = true;
-			}
-			if (e.KeyCode == Keys.D || e.KeyCode == Keys.Right)
-			{
-				Controller.Instance.Right = true;
-			}
-			if (e.KeyCode == Keys.A || e.KeyCode == Keys.Left)
-			{
-				Controller.Instance.Left = true;
-			}
-			if (e.KeyCode == Keys.W || e.KeyCode == Keys.Up)
+			if (e.KeyCode == _keyMapping.Up1Key || e.KeyCode == _keyMapping.Up2Key)
 			{
 				Controller.Instance.Up = true;
 			}
-			if (e.KeyCode == Keys.S || e.KeyCode == Keys.Down)
+			if (e.KeyCode == _keyMapping.Left1Key || e.KeyCode == _keyMapping.Left2Key)
+			{
+				Controller.Instance.Left = true;
+			}
+			if (e.KeyCode == _keyMapping.Down1Key || e.KeyCode == _keyMapping.Down2Key)
 			{
 				Controller.Instance.Down = true;
 			}
+			if (e.KeyCode == _keyMapping.Right1Key || e.KeyCode == _keyMapping.Right2Key)
+			{
+				Controller.Instance.Right = true;
+			}
+			if (e.KeyCode == _keyMapping.A1Key || e.KeyCode == _keyMapping.A2Key)
+			{
+				Controller.Instance.A = true;
+			}
+			if (e.KeyCode == _keyMapping.B1Key || e.KeyCode == _keyMapping.B2Key)
+			{
+				Controller.Instance.B = true;
+			}
+			if (e.KeyCode == _keyMapping.Start1Key || e.KeyCode == _keyMapping.Start2Key)
+			{
+				Controller.Instance.Start = true;
+			}
+			if (e.KeyCode == _keyMapping.Select1Key || e.KeyCode == _keyMapping.Select2Key)
+			{
+				Controller.Instance.Select = true;
+			}
 		}
 
-		private void MainForm_KeyUp(object sender, KeyEventArgs e)
+		private void lcdControl_KeyUp(object sender, KeyEventArgs e)
 		{
-			if (e.KeyCode == Keys.K || e.KeyCode == Keys.NumPad2)
-			{
-				Controller.Instance.A = false;
-			}
-			if (e.KeyCode == Keys.J || e.KeyCode == Keys.NumPad1)
-			{
-				Controller.Instance.B = false;
-			}
-			if (e.KeyCode == Keys.ShiftKey || e.KeyCode == Keys.Oemplus)
-			{
-				Controller.Instance.Select = false;
-			}
-			if (e.KeyCode == Keys.Enter)
-			{
-				Controller.Instance.Start = false;
-			}
-			if (e.KeyCode == Keys.D || e.KeyCode == Keys.Right)
-			{
-				Controller.Instance.Right = false;
-			}
-			if (e.KeyCode == Keys.A || e.KeyCode == Keys.Left)
-			{
-				Controller.Instance.Left = false;
-			}
-			if (e.KeyCode == Keys.W || e.KeyCode == Keys.Up)
+			if (e.KeyCode == _keyMapping.Up1Key || e.KeyCode == _keyMapping.Up2Key)
 			{
 				Controller.Instance.Up = false;
 			}
-			if (e.KeyCode == Keys.S || e.KeyCode == Keys.Down)
+			if (e.KeyCode == _keyMapping.Left1Key || e.KeyCode == _keyMapping.Left2Key)
+			{
+				Controller.Instance.Left = false;
+			}
+			if (e.KeyCode == _keyMapping.Down1Key || e.KeyCode == _keyMapping.Down2Key)
 			{
 				Controller.Instance.Down = false;
 			}
+			if (e.KeyCode == _keyMapping.Right1Key || e.KeyCode == _keyMapping.Right2Key)
+			{
+				Controller.Instance.Right = false;
+			}
+			if (e.KeyCode == _keyMapping.A1Key || e.KeyCode == _keyMapping.A2Key)
+			{
+				Controller.Instance.A = false;
+			}
+			if (e.KeyCode == _keyMapping.B1Key || e.KeyCode == _keyMapping.B2Key)
+			{
+				Controller.Instance.B = false;
+			}
+			if (e.KeyCode == _keyMapping.Start1Key || e.KeyCode == _keyMapping.Start2Key)
+			{
+				Controller.Instance.Start = false;
+			}
+			if (e.KeyCode == _keyMapping.Select1Key || e.KeyCode == _keyMapping.Select2Key)
+			{
+				Controller.Instance.Select = false;
+			}
 		}
+
+		private void lcdControl_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+		{
+			// NOTE: Arrow key (and some other) inputs aren't normally passed along. Fix that.
+			switch (e.KeyCode)
+			{
+				case Keys.Down:
+				case Keys.Left:
+				case Keys.Right:
+				case Keys.Up:
+				case Keys.Tab:
+				case Keys.Escape:
+					e.IsInputKey = true;
+					break;
+			}
+		}
+	}
+
+	// A mapping of two sets of inputs (both are for player one).
+	public class KeyMapping
+	{
+		public Keys Up1Key { get; set; } = Keys.W;
+		public Keys Left1Key { get; set; } = Keys.A;
+		public Keys Down1Key { get; set; } = Keys.S;
+		public Keys Right1Key { get; set; } = Keys.D;
+		public Keys A1Key { get; set; } = Keys.K;
+		public Keys B1Key { get; set; } = Keys.J;
+		public Keys Start1Key { get; set; } = Keys.Enter;
+		public Keys Select1Key { get; set; } = Keys.ShiftKey;
+		public Keys Up2Key { get; set; } = Keys.Up;
+		public Keys Left2Key { get; set; } = Keys.Left;
+		public Keys Down2Key { get; set; } = Keys.Down;
+		public Keys Right2Key { get; set; } = Keys.Right;
+		public Keys A2Key { get; set; } = Keys.NumPad5;
+		public Keys B2Key { get; set; } = Keys.NumPad4;
+		public Keys Start2Key { get; set; } = Keys.Enter;
+		public Keys Select2Key { get; set; } = Keys.Add;
 	}
 }

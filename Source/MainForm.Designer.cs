@@ -237,6 +237,9 @@
 			lcdControl.Name = "lcdControl";
 			lcdControl.Size = new Size(480, 432);
 			lcdControl.TabIndex = 2;
+			lcdControl.KeyDown += lcdControl_KeyDown;
+			lcdControl.KeyUp += lcdControl_KeyUp;
+			lcdControl.PreviewKeyDown += lcdControl_PreviewKeyDown;
 			// 
 			// debugRichTextBox
 			// 
@@ -278,8 +281,6 @@
 			MainMenuStrip = menuStrip;
 			Name = "MainForm";
 			Text = "GB#";
-			KeyDown += MainForm_KeyDown;
-			KeyUp += MainForm_KeyUp;
 			menuStrip.ResumeLayout(false);
 			menuStrip.PerformLayout();
 			toolStrip.ResumeLayout(false);
