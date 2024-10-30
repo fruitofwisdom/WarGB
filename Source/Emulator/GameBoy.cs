@@ -8,6 +8,7 @@
 		private bool _stepRequested;
 
 		// Accurately time frames.
+		public bool DisplayFrameTime = false;
 		private DateTime _lastFrameTime;
 		private bool _frameDone;
 		private const float kFps = 59.7f;
@@ -81,6 +82,12 @@
 				if (_frameDone)
 				{
 					double elapsedMs = (DateTime.Now - _lastFrameTime).TotalMilliseconds;
+					if (DisplayFrameTime)
+					{
+						double fps = 1000.0d / elapsedMs;
+						DebugStatus = $"{elapsedMs:F3}ms, {fps:F1} fps";
+					}
+
 					double msToSleep = 1000 / kFps - elapsedMs;
 					if (msToSleep > 0.0d)
 					{
@@ -174,6 +181,12 @@
 		public void Step()
 		{
 			_stepRequested = true;
+		}
+
+		// Enable accurate rendering.
+		public void EnableAccurateRendering(bool accurate)
+		{
+			PPU.Instance.Accurate = accurate;
 		}
 
 		// Mute all sound.

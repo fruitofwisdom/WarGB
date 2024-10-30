@@ -34,12 +34,14 @@
 			loadROMToolStripMenuItem = new ToolStripMenuItem();
 			exitToolStripMenuItem = new ToolStripMenuItem();
 			optionsToolStripMenuItem = new ToolStripMenuItem();
+			accurateRenderingToolStripMenuItem = new ToolStripMenuItem();
 			controlsToolStripMenuItem = new ToolStripMenuItem();
 			lcdColorToolStripMenuItem = new ToolStripMenuItem();
 			originalGreenToolStripMenuItem = new ToolStripMenuItem();
 			blackAndWhiteToolStripMenuItem = new ToolStripMenuItem();
 			muteSoundToolStripMenuItem = new ToolStripMenuItem();
 			debugToolStripMenuItem = new ToolStripMenuItem();
+			displayFrameTimeToolStripMenuItem = new ToolStripMenuItem();
 			logOpcodesToolStripMenuItem = new ToolStripMenuItem();
 			showDebugOutputToolStripMenuItem = new ToolStripMenuItem();
 			helpToolStripMenuItem = new ToolStripMenuItem();
@@ -92,16 +94,26 @@
 			// 
 			// optionsToolStripMenuItem
 			// 
-			optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { controlsToolStripMenuItem, lcdColorToolStripMenuItem, muteSoundToolStripMenuItem });
+			optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { accurateRenderingToolStripMenuItem, controlsToolStripMenuItem, lcdColorToolStripMenuItem, muteSoundToolStripMenuItem });
 			optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
 			optionsToolStripMenuItem.Size = new Size(61, 20);
 			optionsToolStripMenuItem.Text = "Options";
+			// 
+			// accurateRenderingToolStripMenuItem
+			// 
+			accurateRenderingToolStripMenuItem.Checked = true;
+			accurateRenderingToolStripMenuItem.CheckState = CheckState.Checked;
+			accurateRenderingToolStripMenuItem.Name = "accurateRenderingToolStripMenuItem";
+			accurateRenderingToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.A;
+			accurateRenderingToolStripMenuItem.Size = new Size(220, 22);
+			accurateRenderingToolStripMenuItem.Text = "Accurate Rendering";
+			accurateRenderingToolStripMenuItem.Click += AccurateRenderingToolStripMenuClick;
 			// 
 			// controlsToolStripMenuItem
 			// 
 			controlsToolStripMenuItem.Name = "controlsToolStripMenuItem";
 			controlsToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.C;
-			controlsToolStripMenuItem.Size = new Size(184, 22);
+			controlsToolStripMenuItem.Size = new Size(220, 22);
 			controlsToolStripMenuItem.Text = "Controls...";
 			controlsToolStripMenuItem.Click += ControlsToolStripMenuItemClick;
 			// 
@@ -109,7 +121,7 @@
 			// 
 			lcdColorToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { originalGreenToolStripMenuItem, blackAndWhiteToolStripMenuItem });
 			lcdColorToolStripMenuItem.Name = "lcdColorToolStripMenuItem";
-			lcdColorToolStripMenuItem.Size = new Size(184, 22);
+			lcdColorToolStripMenuItem.Size = new Size(220, 22);
 			lcdColorToolStripMenuItem.Text = "LCD Color";
 			// 
 			// originalGreenToolStripMenuItem
@@ -134,16 +146,24 @@
 			// 
 			muteSoundToolStripMenuItem.Name = "muteSoundToolStripMenuItem";
 			muteSoundToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.M;
-			muteSoundToolStripMenuItem.Size = new Size(184, 22);
+			muteSoundToolStripMenuItem.Size = new Size(220, 22);
 			muteSoundToolStripMenuItem.Text = "Mute Sound";
 			muteSoundToolStripMenuItem.Click += MuteSoundToolStripMenuClick;
 			// 
 			// debugToolStripMenuItem
 			// 
-			debugToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { logOpcodesToolStripMenuItem, showDebugOutputToolStripMenuItem });
+			debugToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { displayFrameTimeToolStripMenuItem, logOpcodesToolStripMenuItem, showDebugOutputToolStripMenuItem });
 			debugToolStripMenuItem.Name = "debugToolStripMenuItem";
 			debugToolStripMenuItem.Size = new Size(54, 20);
 			debugToolStripMenuItem.Text = "Debug";
+			// 
+			// displayFrameTimeToolStripMenuItem
+			// 
+			displayFrameTimeToolStripMenuItem.Name = "displayFrameTimeToolStripMenuItem";
+			displayFrameTimeToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.F;
+			displayFrameTimeToolStripMenuItem.Size = new Size(224, 22);
+			displayFrameTimeToolStripMenuItem.Text = "Display Frame Time";
+			displayFrameTimeToolStripMenuItem.Click += DisplayFrameTimeToolStripMenuClick;
 			// 
 			// logOpcodesToolStripMenuItem
 			// 
@@ -298,12 +318,14 @@
 		private ToolStripMenuItem loadROMToolStripMenuItem;
 		private ToolStripMenuItem exitToolStripMenuItem;
 		private ToolStripMenuItem optionsToolStripMenuItem;
+		private ToolStripMenuItem accurateRenderingToolStripMenuItem;
 		private ToolStripMenuItem controlsToolStripMenuItem;
 		private ToolStripMenuItem lcdColorToolStripMenuItem;
 		private ToolStripMenuItem originalGreenToolStripMenuItem;
 		private ToolStripMenuItem blackAndWhiteToolStripMenuItem;
 		private ToolStripMenuItem muteSoundToolStripMenuItem;
 		private ToolStripMenuItem debugToolStripMenuItem;
+		private ToolStripMenuItem displayFrameTimeToolStripMenuItem;
 		private ToolStripMenuItem logOpcodesToolStripMenuItem;
 		private ToolStripMenuItem showDebugOutputToolStripMenuItem;
 		private ToolStripMenuItem helpToolStripMenuItem;

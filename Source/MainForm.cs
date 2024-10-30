@@ -70,6 +70,12 @@ namespace GBSharp
 			Close();
 		}
 
+		private void AccurateRenderingToolStripMenuClick(object sender, EventArgs e)
+		{
+			accurateRenderingToolStripMenuItem.Checked = !accurateRenderingToolStripMenuItem.Checked;
+			_gameBoy.EnableAccurateRendering(accurateRenderingToolStripMenuItem.Checked);
+		}
+
 		private void ControlsToolStripMenuItemClick(object sender, EventArgs e)
 		{
 			ControlsForm controlsForm = new(_keyMapping);
@@ -100,6 +106,12 @@ namespace GBSharp
 		{
 			muteSoundToolStripMenuItem.Checked = !muteSoundToolStripMenuItem.Checked;
 			_gameBoy.Mute(muteSoundToolStripMenuItem.Checked);
+		}
+
+		private void DisplayFrameTimeToolStripMenuClick(object sender, EventArgs e)
+		{
+			displayFrameTimeToolStripMenuItem.Checked = !displayFrameTimeToolStripMenuItem.Checked;
+			_gameBoy.DisplayFrameTime = displayFrameTimeToolStripMenuItem.Checked;
 		}
 
 		private void LogOpcodesToolStripMenuClick(object sender, EventArgs e)

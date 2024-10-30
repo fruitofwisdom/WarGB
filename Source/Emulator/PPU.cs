@@ -2,6 +2,10 @@
 {
 	internal class PPU
 	{
+		// An Emulator option. Enable slower, but scanline-accurate rendering.
+		public bool Accurate = true;
+		private int _objectsRendered = 0;
+
 		public const int kWidth = 160;
 		public const int kHeight = 144;
 		// Represents each pixel of the LCD, where the data is the palette color.
@@ -33,6 +37,7 @@
 		private bool Mode0IntSelect;
 		private bool LYCEqualsLY;
 		private byte PPUMode;
+		private byte _lastPPUMode;
 
 		// The scroll Y and X values (FF42 and FF43)
 		public int SCY;
@@ -70,6 +75,10 @@
 
 		public void Reset()
 		{
+			// Retain emulator options.
+			//Accurate = true;
+			_objectsRendered = 0;
+
 			Clear();
 
 			Dots = 0;
@@ -89,6 +98,7 @@
 			Mode0IntSelect = false;
 			LYCEqualsLY = false;
 			PPUMode = 0x00;
+			_lastPPUMode = 0x00;
 
 			SCY = 0;
 			SCX = 0;
@@ -128,14 +138,20 @@
 			else if (Dots % kDotsPerLine < 252)
 			{
 				// Drawing pixels.
-				// TODO: Handle variable dot rendering speeds?
 				PPUMode = 0x03;
+
+				if (Accurate && _lastPPUMode != 0x03 && LY < 144)
+				{
+					// Actually render to LCD data.
+					Render();
+				}
 			}
 			else
 			{
 				// Horizontal blank.
 				PPUMode = 0x00;
 			}
+			_lastPPUMode = PPUMode;
 
 			// Did we start rendering a new scanline?
 			if (newLY != LY)
@@ -150,8 +166,14 @@
 						GameBoy.LogOutput += $"[{Dots}, {LY}] A v-blank occurred with PC=0x{CPU.Instance.PC:X4}.\n";
 					}
 
-					// Actually render to our LCD data.
-					Render();
+					// Actually render to LCD data.
+					if (!Accurate)
+					{
+						Render();
+					}
+
+					// When done, copy the back buffer to the front buffer.
+					Array.Copy(LCDBackBuffer, LCDFrontBuffer, LCDBackBuffer.Length);
 
 					// Set the v-blank IF flag.
 					CPU.Instance.IF |= 0x01;
@@ -232,7 +254,6 @@
 
 		public void Render()
 		{
-			// TODO: Move this after clearing?
 			if (!LCDEnabled)
 			{
 				return;
@@ -298,22 +319,33 @@
 						}
 
 						// NOTE: The window has a 7 pixel x-offset.
-						RenderTile(tileAddress, tileX * 8 + WX - 7, tileY * 8 + WY, BGPaletteData);
+						int x = tileX * 8 + WX - 7;
+						int y = tileY * 8 + WY;
+						RenderTile(tileAddress, x, y, BGPaletteData);
 					}
 				}
 			}
 
 			// Draw the objects by iterating over each of their tiles.
-			// TODO: Enforce 10 objects-per-scanline limitation?
+			// TODO: Handle variable dot rendering speeds?
+			_objectsRendered = 0;
 			for (int objAddress = 0xFE00; objAddress <= 0xFE9C; objAddress += 0x04)
 			{
 				byte byte1 = Memory.Instance.Read(objAddress);
 				int y = byte1;
+
 				// Objects with a Y of 0 or 160 are hidden.
 				if (y == 0 || y == 160)
 				{
 					continue;
 				}
+
+				// Enforce 10 objects-per-scanline limitation.
+				if (Accurate && _objectsRendered == 10)
+				{
+					continue;
+				}
+
 				// The X and Y values are actually offset.
 				y -= 16;
 				byte byte2 = Memory.Instance.Read(objAddress + 1);
@@ -335,33 +367,53 @@
 				byte objPaletteData = Utilities.GetBitsFromByte(attributes, 4, 4) == 0x20 ? OBJPaletteData1 : OBJPaletteData0;
 
 				// Render tile(s) for 8x8 or 8x16 mode.
+				bool rendered = false;
 				if (!OBJSize)
 				{
-					RenderTile(tileAddress, x, y, objPaletteData, true, xFlip, yFlip, priority);
+					rendered = RenderTile(tileAddress, x, y, objPaletteData, true, xFlip, yFlip, priority);
 				}
 				else
 				{
-					RenderTile(tileAddress, x, yFlip ? y + 8 : y, objPaletteData, true, xFlip, yFlip, priority);
+					rendered = RenderTile(tileAddress, x, yFlip ? y + 8 : y, objPaletteData, true, xFlip, yFlip, priority);
 
 					// In 8x16 mode, also render the next tile immediately below.
 					tileAddress = 0x8000 + (tileNumber | 0x01) * 16;
-					RenderTile(tileAddress, x, yFlip ? y : y + 8, objPaletteData, true, xFlip, yFlip, priority);
+					rendered = RenderTile(tileAddress, x, yFlip ? y : y + 8, objPaletteData, true, xFlip, yFlip, priority);
+				}
+
+				if (rendered)
+				{
+					_objectsRendered++;
 				}
 			}
-
-			// When done, copy the back buffer to the front buffer.
-			Array.Copy(LCDBackBuffer, LCDFrontBuffer, LCDBackBuffer.Length);
 		}
 
 		// Draw an individual tile with data from an address at a location with a palette.
-		private void RenderTile(int tileAddress, int x, int y, byte palette,
+		private bool RenderTile(int tileAddress, int x, int y, byte palette,
 			bool transparency = false, bool xFlip = false, bool yFlip = false, bool priority = false)
 		{
+			bool rendered = false;
+
+			// Exit early if we wouldn't render on this particular scanline.
+			if (Accurate && (y <= LY - 8 || y > LY))
+			{
+				return rendered;
+			}
+
 			// Draw each tile, pixel by pixel.
 			for (int pixelY = 0; pixelY < 8; ++pixelY)
 			{
 				for (int pixelX = 0; pixelX < 8; ++pixelX)
 				{
+					int lcdX = xFlip ? x + 7 - pixelX : x + pixelX;
+					int lcdY = yFlip ? y + 7 - pixelY : y + pixelY;
+
+					// Only render the line that corresponds to the current LY.
+					if (Accurate && lcdY != LY)
+					{
+						continue;
+					}
+
 					// Each line in the tile is two bytes (each pixel is 2-bits of color).
 					int pixelAddress = tileAddress + pixelY * 2;
 					byte byte1 = Memory.Instance.Read(pixelAddress);
@@ -374,13 +426,12 @@
 					if (!(transparency && colorId == 0))
 					{
 						int lcdColor = Utilities.GetBitsFromByte(palette, colorId * 2, colorId * 2 + 1);
-						int lcdX = xFlip ? x + 7 - pixelX : x + pixelX;
-						int lcdY = yFlip ? y + 7 - pixelY : y + pixelY;
 						if (lcdX >= 0 && lcdX < kWidth && lcdY >= 0 && lcdY < kHeight)
 						{
 							if (!priority)
 							{
 								LCDBackBuffer[lcdX, lcdY] = lcdColor;
+								rendered = true;
 							}
 							else
 							{
@@ -389,12 +440,15 @@
 								if (LCDBackBuffer[lcdX, lcdY] == bgColor0)
 								{
 									LCDBackBuffer[lcdX, lcdY] = lcdColor;
+									rendered = true;
 								}
 							}
 						}
 					}
 				}
 			}
+
+			return rendered;
 		}
 	}
 }
