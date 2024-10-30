@@ -102,6 +102,76 @@ namespace GBSharp
 			}
 		}
 
+		private void OneXToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			oneXToolStripMenuItem.Checked = true;
+			twoXToolStripMenuItem.Checked = false;
+			threeXToolStripMenuItem.Checked = false;
+			fourXToolStripMenuItem.Checked = false;
+			fiveXToolStripMenuItem.Checked = false;
+			lcdControl.Width = PPU.kWidth;
+			lcdControl.Height = PPU.kHeight;
+			Width = lcdControl.Width + (showDebugOutputToolStripMenuItem.Checked ? 295 : 40);
+			Height = lcdControl.Height + 125;
+			debugRichTextBox.Left = lcdControl.Right + 6;
+		}
+
+		private void TwoXToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			oneXToolStripMenuItem.Checked = false;
+			twoXToolStripMenuItem.Checked = true;
+			threeXToolStripMenuItem.Checked = false;
+			fourXToolStripMenuItem.Checked = false;
+			fiveXToolStripMenuItem.Checked = false;
+			lcdControl.Width = PPU.kWidth * 2;
+			lcdControl.Height = PPU.kHeight * 2;
+			Width = lcdControl.Width + (showDebugOutputToolStripMenuItem.Checked ? 295 : 40);
+			Height = lcdControl.Height + 125;
+			debugRichTextBox.Left = lcdControl.Right + 6;
+		}
+
+		private void ThreeXToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			oneXToolStripMenuItem.Checked = false;
+			twoXToolStripMenuItem.Checked = false;
+			threeXToolStripMenuItem.Checked = true;
+			fourXToolStripMenuItem.Checked = false;
+			fiveXToolStripMenuItem.Checked = false;
+			lcdControl.Width = PPU.kWidth * 3;
+			lcdControl.Height = PPU.kHeight * 3;
+			Width = lcdControl.Width + (showDebugOutputToolStripMenuItem.Checked ? 295 : 40);
+			Height = lcdControl.Height + 125;
+			debugRichTextBox.Left = lcdControl.Right + 6;
+		}
+
+		private void FourXToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			oneXToolStripMenuItem.Checked = false;
+			twoXToolStripMenuItem.Checked = false;
+			threeXToolStripMenuItem.Checked = false;
+			fourXToolStripMenuItem.Checked = true;
+			fiveXToolStripMenuItem.Checked = false;
+			lcdControl.Width = PPU.kWidth * 4;
+			lcdControl.Height = PPU.kHeight * 4;
+			Width = lcdControl.Width + (showDebugOutputToolStripMenuItem.Checked ? 295 : 40);
+			Height = lcdControl.Height + 125;
+			debugRichTextBox.Left = lcdControl.Right + 6;
+		}
+
+		private void FiveXToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			oneXToolStripMenuItem.Checked = false;
+			twoXToolStripMenuItem.Checked = false;
+			threeXToolStripMenuItem.Checked = false;
+			fourXToolStripMenuItem.Checked = false;
+			fiveXToolStripMenuItem.Checked = true;
+			lcdControl.Width = PPU.kWidth * 5;
+			lcdControl.Height = PPU.kHeight * 5;
+			Width = lcdControl.Width + (showDebugOutputToolStripMenuItem.Checked ? 295 : 40);
+			Height = lcdControl.Height + 125;
+			debugRichTextBox.Left = lcdControl.Right + 6;
+		}
+
 		private void MuteSoundToolStripMenuClick(object sender, EventArgs e)
 		{
 			muteSoundToolStripMenuItem.Checked = !muteSoundToolStripMenuItem.Checked;

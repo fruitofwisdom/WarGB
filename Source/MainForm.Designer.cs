@@ -39,6 +39,12 @@
 			lcdColorToolStripMenuItem = new ToolStripMenuItem();
 			originalGreenToolStripMenuItem = new ToolStripMenuItem();
 			blackAndWhiteToolStripMenuItem = new ToolStripMenuItem();
+			lcdSizeToolStripMenuItem = new ToolStripMenuItem();
+			oneXToolStripMenuItem = new ToolStripMenuItem();
+			twoXToolStripMenuItem = new ToolStripMenuItem();
+			threeXToolStripMenuItem = new ToolStripMenuItem();
+			fourXToolStripMenuItem = new ToolStripMenuItem();
+			fiveXToolStripMenuItem = new ToolStripMenuItem();
 			muteSoundToolStripMenuItem = new ToolStripMenuItem();
 			debugToolStripMenuItem = new ToolStripMenuItem();
 			displayFrameTimeToolStripMenuItem = new ToolStripMenuItem();
@@ -65,7 +71,7 @@
 			menuStrip.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, optionsToolStripMenuItem, debugToolStripMenuItem, helpToolStripMenuItem });
 			menuStrip.Location = new Point(0, 0);
 			menuStrip.Name = "menuStrip";
-			menuStrip.Size = new Size(504, 24);
+			menuStrip.Size = new Size(664, 24);
 			menuStrip.TabIndex = 0;
 			menuStrip.Text = "menuStrip";
 			// 
@@ -94,7 +100,7 @@
 			// 
 			// optionsToolStripMenuItem
 			// 
-			optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { accurateRenderingToolStripMenuItem, controlsToolStripMenuItem, lcdColorToolStripMenuItem, muteSoundToolStripMenuItem });
+			optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { accurateRenderingToolStripMenuItem, controlsToolStripMenuItem, lcdColorToolStripMenuItem, lcdSizeToolStripMenuItem, muteSoundToolStripMenuItem });
 			optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
 			optionsToolStripMenuItem.Size = new Size(61, 20);
 			optionsToolStripMenuItem.Text = "Options";
@@ -129,18 +135,67 @@
 			originalGreenToolStripMenuItem.Checked = true;
 			originalGreenToolStripMenuItem.CheckState = CheckState.Checked;
 			originalGreenToolStripMenuItem.Name = "originalGreenToolStripMenuItem";
-			originalGreenToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.D1;
-			originalGreenToolStripMenuItem.Size = new Size(199, 22);
+			originalGreenToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.G;
+			originalGreenToolStripMenuItem.Size = new Size(200, 22);
 			originalGreenToolStripMenuItem.Text = "Original Green";
 			originalGreenToolStripMenuItem.Click += OriginalGreenToolStripMenuClick;
 			// 
 			// blackAndWhiteToolStripMenuItem
 			// 
 			blackAndWhiteToolStripMenuItem.Name = "blackAndWhiteToolStripMenuItem";
-			blackAndWhiteToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.D2;
-			blackAndWhiteToolStripMenuItem.Size = new Size(199, 22);
+			blackAndWhiteToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.B;
+			blackAndWhiteToolStripMenuItem.Size = new Size(200, 22);
 			blackAndWhiteToolStripMenuItem.Text = "Black and White";
 			blackAndWhiteToolStripMenuItem.Click += BlackAndWhiteToolStripMenuClick;
+			// 
+			// lcdSizeToolStripMenuItem
+			// 
+			lcdSizeToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { oneXToolStripMenuItem, twoXToolStripMenuItem, threeXToolStripMenuItem, fourXToolStripMenuItem, fiveXToolStripMenuItem });
+			lcdSizeToolStripMenuItem.Name = "lcdSizeToolStripMenuItem";
+			lcdSizeToolStripMenuItem.Size = new Size(220, 22);
+			lcdSizeToolStripMenuItem.Text = "LCD Size";
+			// 
+			// oneXToolStripMenuItem
+			// 
+			oneXToolStripMenuItem.Name = "oneXToolStripMenuItem";
+			oneXToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.D1;
+			oneXToolStripMenuItem.Size = new Size(180, 22);
+			oneXToolStripMenuItem.Text = "1x";
+			oneXToolStripMenuItem.Click += OneXToolStripMenuItem_Click;
+			// 
+			// twoXToolStripMenuItem
+			// 
+			twoXToolStripMenuItem.Name = "twoXToolStripMenuItem";
+			twoXToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.D2;
+			twoXToolStripMenuItem.Size = new Size(180, 22);
+			twoXToolStripMenuItem.Text = "2x";
+			twoXToolStripMenuItem.Click += TwoXToolStripMenuItem_Click;
+			// 
+			// threeXToolStripMenuItem
+			// 
+			threeXToolStripMenuItem.Name = "threeXToolStripMenuItem";
+			threeXToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.D3;
+			threeXToolStripMenuItem.Size = new Size(180, 22);
+			threeXToolStripMenuItem.Text = "3x";
+			threeXToolStripMenuItem.Click += ThreeXToolStripMenuItem_Click;
+			// 
+			// fourXToolStripMenuItem
+			// 
+			fourXToolStripMenuItem.Checked = true;
+			fourXToolStripMenuItem.CheckState = CheckState.Checked;
+			fourXToolStripMenuItem.Name = "fourXToolStripMenuItem";
+			fourXToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.D4;
+			fourXToolStripMenuItem.Size = new Size(180, 22);
+			fourXToolStripMenuItem.Text = "4x";
+			fourXToolStripMenuItem.Click += FourXToolStripMenuItem_Click;
+			// 
+			// fiveXToolStripMenuItem
+			// 
+			fiveXToolStripMenuItem.Name = "fiveXToolStripMenuItem";
+			fiveXToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.D5;
+			fiveXToolStripMenuItem.Size = new Size(180, 22);
+			fiveXToolStripMenuItem.Text = "5x";
+			fiveXToolStripMenuItem.Click += FiveXToolStripMenuItem_Click;
 			// 
 			// muteSoundToolStripMenuItem
 			// 
@@ -202,7 +257,7 @@
 			toolStrip.Items.AddRange(new ToolStripItem[] { playButton, pauseButton, resetButton, stepButton });
 			toolStrip.Location = new Point(0, 24);
 			toolStrip.Name = "toolStrip";
-			toolStrip.Size = new Size(504, 25);
+			toolStrip.Size = new Size(664, 25);
 			toolStrip.TabIndex = 1;
 			toolStrip.Text = "toolStrip";
 			// 
@@ -255,7 +310,7 @@
 			// 
 			lcdControl.Location = new Point(12, 52);
 			lcdControl.Name = "lcdControl";
-			lcdControl.Size = new Size(480, 432);
+			lcdControl.Size = new Size(640, 576);
 			lcdControl.TabIndex = 2;
 			lcdControl.KeyDown += lcdControl_KeyDown;
 			lcdControl.KeyUp += lcdControl_KeyUp;
@@ -264,10 +319,10 @@
 			// debugRichTextBox
 			// 
 			debugRichTextBox.Font = new Font("Cascadia Code", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-			debugRichTextBox.Location = new Point(498, 52);
+			debugRichTextBox.Location = new Point(658, 52);
 			debugRichTextBox.Name = "debugRichTextBox";
 			debugRichTextBox.ReadOnly = true;
-			debugRichTextBox.Size = new Size(250, 432);
+			debugRichTextBox.Size = new Size(250, 576);
 			debugRichTextBox.TabIndex = 3;
 			debugRichTextBox.Text = "";
 			debugRichTextBox.Visible = false;
@@ -275,9 +330,9 @@
 			// statusStrip
 			// 
 			statusStrip.Items.AddRange(new ToolStripItem[] { debugToolStripStatusLabel });
-			statusStrip.Location = new Point(0, 496);
+			statusStrip.Location = new Point(0, 640);
 			statusStrip.Name = "statusStrip";
-			statusStrip.Size = new Size(504, 22);
+			statusStrip.Size = new Size(664, 22);
 			statusStrip.TabIndex = 4;
 			statusStrip.Text = "statusStrip";
 			// 
@@ -290,7 +345,7 @@
 			// 
 			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(504, 518);
+			ClientSize = new Size(664, 662);
 			Controls.Add(statusStrip);
 			Controls.Add(debugRichTextBox);
 			Controls.Add(lcdControl);
@@ -323,6 +378,12 @@
 		private ToolStripMenuItem lcdColorToolStripMenuItem;
 		private ToolStripMenuItem originalGreenToolStripMenuItem;
 		private ToolStripMenuItem blackAndWhiteToolStripMenuItem;
+		private ToolStripMenuItem lcdSizeToolStripMenuItem;
+		private ToolStripMenuItem oneXToolStripMenuItem;
+		private ToolStripMenuItem twoXToolStripMenuItem;
+		private ToolStripMenuItem threeXToolStripMenuItem;
+		private ToolStripMenuItem fourXToolStripMenuItem;
+		private ToolStripMenuItem fiveXToolStripMenuItem;
 		private ToolStripMenuItem muteSoundToolStripMenuItem;
 		private ToolStripMenuItem debugToolStripMenuItem;
 		private ToolStripMenuItem displayFrameTimeToolStripMenuItem;
