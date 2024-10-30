@@ -45,6 +45,8 @@
 			_needToStop = false;
 			_stepRequested = false;
 
+			// Retain emulator options.
+			//DisplayFrameTime = false;
 			_lastFrameTime = DateTime.Now;
 			_frameDone = false;
 
@@ -82,12 +84,6 @@
 				if (_frameDone)
 				{
 					double elapsedMs = (DateTime.Now - _lastFrameTime).TotalMilliseconds;
-					if (DisplayFrameTime)
-					{
-						double fps = 1000.0d / elapsedMs;
-						DebugStatus = $"{elapsedMs:F3}ms, {fps:F1}fps";
-					}
-
 					double msToSleep = 1000 / kFps - elapsedMs;
 					if (msToSleep > 0.0d)
 					{
@@ -146,6 +142,13 @@
 					if (Memory.Instance.SaveNeeded)
 					{
 						Memory.Instance.Save();
+					}
+
+					double elapsedMs = (DateTime.Now - _lastFrameTime).TotalMilliseconds;
+					if (DisplayFrameTime)
+					{
+						double fps = 1000.0d / elapsedMs;
+						DebugStatus = $"{elapsedMs:F3}ms, {fps:F1}fps";
 					}
 
 					_frameDone = true;
