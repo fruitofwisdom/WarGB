@@ -85,7 +85,7 @@
 					if (DisplayFrameTime)
 					{
 						double fps = 1000.0d / elapsedMs;
-						DebugStatus = $"{elapsedMs:F3}ms, {fps:F1} fps";
+						DebugStatus = $"{elapsedMs:F3}ms, {fps:F1}fps";
 					}
 
 					double msToSleep = 1000 / kFps - elapsedMs;

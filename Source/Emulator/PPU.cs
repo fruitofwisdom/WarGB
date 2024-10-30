@@ -212,14 +212,14 @@
 
 		public void SetLCDC(byte lcdc)
 		{
-			LCDEnabled = Utilities.GetBitsFromByte(lcdc, 7, 7) != 0x00;
-			WindowTileMapArea = Utilities.GetBitsFromByte(lcdc, 6, 6) != 0x00;
-			WindowEnabled = Utilities.GetBitsFromByte(lcdc, 5, 5) != 0x00;
-			BGWindowTileDataArea = Utilities.GetBitsFromByte(lcdc, 4, 4) != 0x00;
-			BGTileMapArea = Utilities.GetBitsFromByte(lcdc, 3, 3) != 0x00;
-			OBJSize = Utilities.GetBitsFromByte(lcdc, 2, 2) != 0x00;
-			OBJEnabled = Utilities.GetBitsFromByte(lcdc, 1, 1) != 0x00;
-			BGWindowEnable = Utilities.GetBitsFromByte(lcdc, 0, 0) != 0x00;
+			LCDEnabled = Utilities.GetBoolFromByte(lcdc, 7);
+			WindowTileMapArea = Utilities.GetBoolFromByte(lcdc, 6);
+			WindowEnabled = Utilities.GetBoolFromByte(lcdc, 5);
+			BGWindowTileDataArea = Utilities.GetBoolFromByte(lcdc, 4);
+			BGTileMapArea = Utilities.GetBoolFromByte(lcdc, 3);
+			OBJSize = Utilities.GetBoolFromByte(lcdc, 2);
+			OBJEnabled = Utilities.GetBoolFromByte(lcdc, 1);
+			BGWindowEnable = Utilities.GetBoolFromByte(lcdc, 0);
 		}
 
 		public byte GetSTAT()
@@ -238,11 +238,11 @@
 
 		public void SetSTAT(byte stat)
 		{
-			LYCIntSelect = Utilities.GetBitsFromByte(stat, 6, 6) != 0x00;
-			Mode2IntSelect = Utilities.GetBitsFromByte(stat, 5, 5) != 0x00;
-			Mode1IntSelect = Utilities.GetBitsFromByte(stat, 4, 4) != 0x00;
-			Mode0IntSelect = Utilities.GetBitsFromByte(stat, 3, 3) != 0x00;
-			LYCEqualsLY = Utilities.GetBitsFromByte(stat, 2, 2) != 0x00;
+			LYCIntSelect = Utilities.GetBoolFromByte(stat, 6);
+			Mode2IntSelect = Utilities.GetBoolFromByte(stat, 5);
+			Mode1IntSelect = Utilities.GetBoolFromByte(stat, 4);
+			Mode0IntSelect = Utilities.GetBoolFromByte(stat, 3);
+			LYCEqualsLY = Utilities.GetBoolFromByte(stat, 2);
 			PPUMode = Utilities.GetBitsFromByte(stat, 0, 1);
 		}
 
@@ -361,10 +361,10 @@
 					tileAddress += tileNumber * 16;
 				}
 				byte attributes = Memory.Instance.Read(objAddress + 3);
-				bool priority = Utilities.GetBitsFromByte(attributes, 7, 7) != 0x00;
-				bool yFlip = Utilities.GetBitsFromByte(attributes, 6, 6) != 0x00;
-				bool xFlip = Utilities.GetBitsFromByte(attributes, 5, 5) != 0x00;
-				byte objPaletteData = Utilities.GetBitsFromByte(attributes, 4, 4) == 0x20 ? OBJPaletteData1 : OBJPaletteData0;
+				bool priority = Utilities.GetBoolFromByte(attributes, 7);
+				bool yFlip = Utilities.GetBoolFromByte(attributes, 6);
+				bool xFlip = Utilities.GetBoolFromByte(attributes, 5);
+				byte objPaletteData = Utilities.GetBoolFromByte(attributes, 4) ? OBJPaletteData1 : OBJPaletteData0;
 
 				// Render tile(s) for 8x8 or 8x16 mode.
 				bool rendered = false;

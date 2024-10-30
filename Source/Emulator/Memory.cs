@@ -454,7 +454,7 @@
 			{
 				uint sweepTime = Utilities.GetBitsFromByte(data, 4, 6);
 				((PulseWaveChannel)APU.Instance.Channels[0]).SweepTime = sweepTime;
-				bool sweepIncDec = Utilities.GetBitsFromByte(data, 3, 3) != 0x00;
+				bool sweepIncDec = Utilities.GetBoolFromByte(data, 3);
 				((PulseWaveChannel)APU.Instance.Channels[0]).SweepIncDec = sweepIncDec;
 				int sweepShiftNumber = Utilities.GetBitsFromByte(data, 0, 2);
 				((PulseWaveChannel)APU.Instance.Channels[0]).SweepShiftNumber = sweepShiftNumber;
@@ -470,7 +470,7 @@
 			{
 				uint defaultEnvelopeValue = Utilities.GetBitsFromByte(data, 4, 7);
 				((PulseWaveChannel)APU.Instance.Channels[0]).SetDefaultEnvelopeValue(defaultEnvelopeValue);
-				bool envelopeUpDown = Utilities.GetBitsFromByte(data, 3, 3) != 0x00;
+				bool envelopeUpDown = Utilities.GetBoolFromByte(data, 3);
 				((PulseWaveChannel)APU.Instance.Channels[0]).EnvelopeUpDown = envelopeUpDown;
 				uint lengthOfEnvelopeSteps = Utilities.GetBitsFromByte(data, 0, 2);
 				((PulseWaveChannel)APU.Instance.Channels[0]).SetLengthOfEnvelopeSteps(lengthOfEnvelopeSteps);
@@ -482,12 +482,12 @@
 			}
 			else if (address == 0xFF14)
 			{
-				bool initialize = Utilities.GetBitsFromByte(data, 7, 7) != 0x00;
+				bool initialize = Utilities.GetBoolFromByte(data, 7);
 				if (initialize)
 				{
 					APU.Instance.Channels[0].Initialize();
 				}
-				bool counterContinuousSelection = Utilities.GetBitsFromByte(data, 6, 6) != 0x00;
+				bool counterContinuousSelection = Utilities.GetBoolFromByte(data, 6);
 				uint highOrderFrequencyData = Utilities.GetBitsFromByte(data, 0, 2);
 				((PulseWaveChannel)APU.Instance.Channels[0]).CounterContinuousSelection = counterContinuousSelection;
 				((PulseWaveChannel)APU.Instance.Channels[0]).HighOrderFrequencyData = highOrderFrequencyData;
@@ -503,7 +503,7 @@
 			{
 				uint defaultEnvelopeValue = Utilities.GetBitsFromByte(data, 4, 7);
 				((PulseWaveChannel)APU.Instance.Channels[1]).SetDefaultEnvelopeValue(defaultEnvelopeValue);
-				bool envelopeUpDown = Utilities.GetBitsFromByte(data, 3, 3) != 0x00;
+				bool envelopeUpDown = Utilities.GetBoolFromByte(data, 3);
 				((PulseWaveChannel)APU.Instance.Channels[1]).EnvelopeUpDown = envelopeUpDown;
 				uint lengthOfEnvelopeSteps = Utilities.GetBitsFromByte(data, 0, 2);
 				((PulseWaveChannel)APU.Instance.Channels[1]).SetLengthOfEnvelopeSteps(lengthOfEnvelopeSteps);
@@ -515,12 +515,12 @@
 			}
 			else if (address == 0xFF19)
 			{
-				bool initialize = Utilities.GetBitsFromByte(data, 7, 7) != 0x00;
+				bool initialize = Utilities.GetBoolFromByte(data, 7);
 				if (initialize)
 				{
 					APU.Instance.Channels[1].Initialize();
 				}
-				bool counterContinuousSelection = Utilities.GetBitsFromByte(data, 6, 6) != 0x00;
+				bool counterContinuousSelection = Utilities.GetBoolFromByte(data, 6);
 				uint highOrderFrequencyData = Utilities.GetBitsFromByte(data, 0, 5);
 				((PulseWaveChannel)APU.Instance.Channels[1]).CounterContinuousSelection = counterContinuousSelection;
 				((PulseWaveChannel)APU.Instance.Channels[1]).HighOrderFrequencyData = highOrderFrequencyData;
@@ -545,12 +545,12 @@
 			}
 			else if (address == 0xFF1E)
 			{
-				bool initialize = Utilities.GetBitsFromByte(data, 7, 7) != 0x00;
+				bool initialize = Utilities.GetBoolFromByte(data, 7);
 				if (initialize)
 				{
 					APU.Instance.Channels[2].Initialize();
 				}
-				bool counterContinuousSelection = Utilities.GetBitsFromByte(data, 6, 6) != 0x00;
+				bool counterContinuousSelection = Utilities.GetBoolFromByte(data, 6);
 				byte highOrderFrequencyData = Utilities.GetBitsFromByte(data, 0, 2);
 				((WaveTableChannel)APU.Instance.Channels[2]).CounterContinuousSelection = counterContinuousSelection;
 				((WaveTableChannel)APU.Instance.Channels[2]).HighOrderFrequencyData = highOrderFrequencyData;
@@ -564,7 +564,7 @@
 			{
 				uint defaultEnvelopeValue = Utilities.GetBitsFromByte(data, 4, 7);
 				((NoiseGeneratorChannel)APU.Instance.Channels[3]).SetDefaultEnvelopeValue(defaultEnvelopeValue);
-				bool envelopeUpDown = Utilities.GetBitsFromByte(data, 3, 3) != 0x00;
+				bool envelopeUpDown = Utilities.GetBoolFromByte(data, 3);
 				((NoiseGeneratorChannel)APU.Instance.Channels[3]).EnvelopeUpDown = envelopeUpDown;
 				uint lengthOfEnvelopeSteps = Utilities.GetBitsFromByte(data, 0, 2);
 				((NoiseGeneratorChannel)APU.Instance.Channels[3]).SetLengthOfEnvelopeSteps(lengthOfEnvelopeSteps);
@@ -572,7 +572,7 @@
 			else if (address == 0xFF22)
 			{
 				int shiftClockFrequency = Utilities.GetBitsFromByte(data, 4, 7);
-				bool counterSteps = Utilities.GetBitsFromByte(data, 3, 3) != 0x00;
+				bool counterSteps = Utilities.GetBoolFromByte(data, 3);
 				uint divisionRatioFrequency = Utilities.GetBitsFromByte(data, 0, 2);
 				((NoiseGeneratorChannel)APU.Instance.Channels[3]).ShiftClockFrequency = shiftClockFrequency;
 				((NoiseGeneratorChannel)APU.Instance.Channels[3]).CounterSteps = counterSteps;
@@ -580,19 +580,19 @@
 			}
 			else if (address == 0xFF23)
 			{
-				bool initialize = Utilities.GetBitsFromByte(data, 7, 7) != 0x00;
+				bool initialize = Utilities.GetBoolFromByte(data, 7);
 				if (initialize)
 				{
 					APU.Instance.Channels[3].Initialize();
 				}
-				bool counterContinuousSelection = Utilities.GetBitsFromByte(data, 6, 6) != 0x00;
+				bool counterContinuousSelection = Utilities.GetBoolFromByte(data, 6);
 				((NoiseGeneratorChannel)APU.Instance.Channels[3]).CounterContinuousSelection = counterContinuousSelection;
 			}
 			else if (address == 0xFF24)
 			{
-				bool vinLeftOn = Utilities.GetBitsFromByte(data, 7, 7) != 0x00;
+				bool vinLeftOn = Utilities.GetBoolFromByte(data, 7);
 				uint leftOutputVolume = Utilities.GetBitsFromByte(data, 4, 6);
-				bool vinRightOn = Utilities.GetBitsFromByte(data, 3, 3) != 0x00;
+				bool vinRightOn = Utilities.GetBoolFromByte(data, 3);
 				uint rightOutputVolume = Utilities.GetBitsFromByte(data, 0, 2);
 				APU.Instance.VinLeftOn = vinLeftOn;
 				APU.Instance.LeftOutputVolume = leftOutputVolume;
@@ -605,7 +605,7 @@
 			}
 			else if (address == 0xFF26)
 			{
-				bool allSoundOn = Utilities.GetBitsFromByte(data, 7, 7) != 0x00;
+				bool allSoundOn = Utilities.GetBoolFromByte(data, 7);
 				if (allSoundOn)
 				{
 					APU.Instance.On();
@@ -614,10 +614,10 @@
 				{
 					APU.Instance.Off();
 				}
-				APU.Instance.Channels[0].SoundOn = Utilities.GetBitsFromByte(data, 0, 0) != 0x00;
-				APU.Instance.Channels[1].SoundOn = Utilities.GetBitsFromByte(data, 1, 1) != 0x00;
-				APU.Instance.Channels[2].SoundOn = Utilities.GetBitsFromByte(data, 2, 2) != 0x00;
-				APU.Instance.Channels[3].SoundOn = Utilities.GetBitsFromByte(data, 3, 3) != 0x00;
+				APU.Instance.Channels[0].SoundOn = Utilities.GetBoolFromByte(data, 0);
+				APU.Instance.Channels[1].SoundOn = Utilities.GetBoolFromByte(data, 1);
+				APU.Instance.Channels[2].SoundOn = Utilities.GetBoolFromByte(data, 2);
+				APU.Instance.Channels[3].SoundOn = Utilities.GetBoolFromByte(data, 3);
 			}
 			else if (address >= 0xFF30 && address <= 0xFF3F)
 			{

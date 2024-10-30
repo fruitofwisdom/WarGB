@@ -138,14 +138,14 @@ namespace GBSharp
 
 		public void SetSoundOutputTerminals(byte soundOutputTerminals)
 		{
-			Channel1LeftOn = Utilities.GetBitsFromByte(soundOutputTerminals, 4, 4) != 0x00;
-			Channel1RightOn = Utilities.GetBitsFromByte(soundOutputTerminals, 0, 0) != 0x00;
-			Channel2LeftOn = Utilities.GetBitsFromByte(soundOutputTerminals, 5, 5) != 0x00;
-			Channel2RightOn = Utilities.GetBitsFromByte(soundOutputTerminals, 1, 1) != 0x00;
-			Channel3LeftOn = Utilities.GetBitsFromByte(soundOutputTerminals, 6, 6) != 0x00;
-			Channel3RightOn = Utilities.GetBitsFromByte(soundOutputTerminals, 2, 2) != 0x00;
-			Channel4LeftOn = Utilities.GetBitsFromByte(soundOutputTerminals, 7, 7) != 0x00;
-			Channel4RightOn = Utilities.GetBitsFromByte(soundOutputTerminals, 3, 3) != 0x00;
+			Channel1LeftOn = Utilities.GetBoolFromByte(soundOutputTerminals, 4);
+			Channel1RightOn = Utilities.GetBoolFromByte(soundOutputTerminals, 0);
+			Channel2LeftOn = Utilities.GetBoolFromByte(soundOutputTerminals, 5);
+			Channel2RightOn = Utilities.GetBoolFromByte(soundOutputTerminals, 1);
+			Channel3LeftOn = Utilities.GetBoolFromByte(soundOutputTerminals, 6);
+			Channel3RightOn = Utilities.GetBoolFromByte(soundOutputTerminals, 2);
+			Channel4LeftOn = Utilities.GetBoolFromByte(soundOutputTerminals, 7);
+			Channel4RightOn = Utilities.GetBoolFromByte(soundOutputTerminals, 3);
 		}
 	}
 

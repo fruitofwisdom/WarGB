@@ -25,5 +25,13 @@
 			// Assign value in their place.
 			data |= or;
 		}
+
+		// Returns a bool that represents whether a particular bit is set. For example, data of 0x42 (0b00101010) and
+		// bit 3 would be true.
+		public static bool GetBoolFromByte(byte data, int bit)
+		{
+			byte bitmask = (byte)(1 << bit);
+			return (data & bitmask) != 0x00;
+		}
 	}
 }
