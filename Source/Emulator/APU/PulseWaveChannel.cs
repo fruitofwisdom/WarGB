@@ -136,7 +136,10 @@ namespace GBSharp
 		public override void Update()
 		{
 			// Are we muted?
-			if (APU.Instance.Mute || !APU.Instance.IsOn() || !SoundOn)
+			if (APU.Instance.Mute ||
+				(_sweepEnabled && APU.Instance.MuteChannels[0]) ||
+				(!_sweepEnabled && APU.Instance.MuteChannels[1]) ||
+				!APU.Instance.IsOn() || !SoundOn)
 			{
 				_pulseWaveProvider._leftVolume = 0.0f;
 				_pulseWaveProvider._rightVolume = 0.0f;

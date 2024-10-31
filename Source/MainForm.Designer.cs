@@ -46,6 +46,11 @@
 			fourXToolStripMenuItem = new ToolStripMenuItem();
 			fiveXToolStripMenuItem = new ToolStripMenuItem();
 			muteSoundToolStripMenuItem = new ToolStripMenuItem();
+			soundChannelsToolStripMenuItem = new ToolStripMenuItem();
+			pulseWaveChannel1ToolStripMenuItem = new ToolStripMenuItem();
+			pulseWaveChannel2ToolStripMenuItem = new ToolStripMenuItem();
+			waveTableChannel3ToolStripMenuItem = new ToolStripMenuItem();
+			noiseGeneratorChannel4ToolStripMenuItem = new ToolStripMenuItem();
 			debugToolStripMenuItem = new ToolStripMenuItem();
 			displayFrameTimeToolStripMenuItem = new ToolStripMenuItem();
 			logOpcodesToolStripMenuItem = new ToolStripMenuItem();
@@ -100,7 +105,7 @@
 			// 
 			// optionsToolStripMenuItem
 			// 
-			optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { accurateRenderingToolStripMenuItem, controlsToolStripMenuItem, lcdColorToolStripMenuItem, lcdSizeToolStripMenuItem, muteSoundToolStripMenuItem });
+			optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { accurateRenderingToolStripMenuItem, controlsToolStripMenuItem, lcdColorToolStripMenuItem, lcdSizeToolStripMenuItem, muteSoundToolStripMenuItem, soundChannelsToolStripMenuItem });
 			optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
 			optionsToolStripMenuItem.Size = new Size(61, 20);
 			optionsToolStripMenuItem.Text = "Options";
@@ -135,16 +140,14 @@
 			originalGreenToolStripMenuItem.Checked = true;
 			originalGreenToolStripMenuItem.CheckState = CheckState.Checked;
 			originalGreenToolStripMenuItem.Name = "originalGreenToolStripMenuItem";
-			originalGreenToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.G;
-			originalGreenToolStripMenuItem.Size = new Size(200, 22);
+			originalGreenToolStripMenuItem.Size = new Size(180, 22);
 			originalGreenToolStripMenuItem.Text = "Original Green";
 			originalGreenToolStripMenuItem.Click += OriginalGreenToolStripMenuClick;
 			// 
 			// blackAndWhiteToolStripMenuItem
 			// 
 			blackAndWhiteToolStripMenuItem.Name = "blackAndWhiteToolStripMenuItem";
-			blackAndWhiteToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.B;
-			blackAndWhiteToolStripMenuItem.Size = new Size(200, 22);
+			blackAndWhiteToolStripMenuItem.Size = new Size(180, 22);
 			blackAndWhiteToolStripMenuItem.Text = "Black and White";
 			blackAndWhiteToolStripMenuItem.Click += BlackAndWhiteToolStripMenuClick;
 			// 
@@ -158,7 +161,6 @@
 			// oneXToolStripMenuItem
 			// 
 			oneXToolStripMenuItem.Name = "oneXToolStripMenuItem";
-			oneXToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.D1;
 			oneXToolStripMenuItem.Size = new Size(180, 22);
 			oneXToolStripMenuItem.Text = "1x";
 			oneXToolStripMenuItem.Click += OneXToolStripMenuItem_Click;
@@ -166,7 +168,6 @@
 			// twoXToolStripMenuItem
 			// 
 			twoXToolStripMenuItem.Name = "twoXToolStripMenuItem";
-			twoXToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.D2;
 			twoXToolStripMenuItem.Size = new Size(180, 22);
 			twoXToolStripMenuItem.Text = "2x";
 			twoXToolStripMenuItem.Click += TwoXToolStripMenuItem_Click;
@@ -174,7 +175,6 @@
 			// threeXToolStripMenuItem
 			// 
 			threeXToolStripMenuItem.Name = "threeXToolStripMenuItem";
-			threeXToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.D3;
 			threeXToolStripMenuItem.Size = new Size(180, 22);
 			threeXToolStripMenuItem.Text = "3x";
 			threeXToolStripMenuItem.Click += ThreeXToolStripMenuItem_Click;
@@ -184,7 +184,6 @@
 			fourXToolStripMenuItem.Checked = true;
 			fourXToolStripMenuItem.CheckState = CheckState.Checked;
 			fourXToolStripMenuItem.Name = "fourXToolStripMenuItem";
-			fourXToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.D4;
 			fourXToolStripMenuItem.Size = new Size(180, 22);
 			fourXToolStripMenuItem.Text = "4x";
 			fourXToolStripMenuItem.Click += FourXToolStripMenuItem_Click;
@@ -192,7 +191,6 @@
 			// fiveXToolStripMenuItem
 			// 
 			fiveXToolStripMenuItem.Name = "fiveXToolStripMenuItem";
-			fiveXToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.D5;
 			fiveXToolStripMenuItem.Size = new Size(180, 22);
 			fiveXToolStripMenuItem.Text = "5x";
 			fiveXToolStripMenuItem.Click += FiveXToolStripMenuItem_Click;
@@ -204,6 +202,49 @@
 			muteSoundToolStripMenuItem.Size = new Size(220, 22);
 			muteSoundToolStripMenuItem.Text = "Mute Sound";
 			muteSoundToolStripMenuItem.Click += MuteSoundToolStripMenuClick;
+			// 
+			// soundChannelsToolStripMenuItem
+			// 
+			soundChannelsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { pulseWaveChannel1ToolStripMenuItem, pulseWaveChannel2ToolStripMenuItem, waveTableChannel3ToolStripMenuItem, noiseGeneratorChannel4ToolStripMenuItem });
+			soundChannelsToolStripMenuItem.Name = "soundChannelsToolStripMenuItem";
+			soundChannelsToolStripMenuItem.Size = new Size(220, 22);
+			soundChannelsToolStripMenuItem.Text = "Sound Channels";
+			// 
+			// pulseWaveChannel1ToolStripMenuItem
+			// 
+			pulseWaveChannel1ToolStripMenuItem.Checked = true;
+			pulseWaveChannel1ToolStripMenuItem.CheckState = CheckState.Checked;
+			pulseWaveChannel1ToolStripMenuItem.Name = "pulseWaveChannel1ToolStripMenuItem";
+			pulseWaveChannel1ToolStripMenuItem.Size = new Size(223, 22);
+			pulseWaveChannel1ToolStripMenuItem.Text = "Pulse Wave (Channel 1)";
+			pulseWaveChannel1ToolStripMenuItem.Click += pulseWaveChannel1ToolStripMenuItem_Click;
+			// 
+			// pulseWaveChannel2ToolStripMenuItem
+			// 
+			pulseWaveChannel2ToolStripMenuItem.Checked = true;
+			pulseWaveChannel2ToolStripMenuItem.CheckState = CheckState.Checked;
+			pulseWaveChannel2ToolStripMenuItem.Name = "pulseWaveChannel2ToolStripMenuItem";
+			pulseWaveChannel2ToolStripMenuItem.Size = new Size(223, 22);
+			pulseWaveChannel2ToolStripMenuItem.Text = "Pulse Wave (Channel 2)";
+			pulseWaveChannel2ToolStripMenuItem.Click += pulseWaveChannel2ToolStripMenuItem_Click;
+			// 
+			// waveTableChannel3ToolStripMenuItem
+			// 
+			waveTableChannel3ToolStripMenuItem.Checked = true;
+			waveTableChannel3ToolStripMenuItem.CheckState = CheckState.Checked;
+			waveTableChannel3ToolStripMenuItem.Name = "waveTableChannel3ToolStripMenuItem";
+			waveTableChannel3ToolStripMenuItem.Size = new Size(223, 22);
+			waveTableChannel3ToolStripMenuItem.Text = "Wave Table (Channel 3)";
+			waveTableChannel3ToolStripMenuItem.Click += waveTableChannel3ToolStripMenuItem_Click;
+			// 
+			// noiseGeneratorChannel4ToolStripMenuItem
+			// 
+			noiseGeneratorChannel4ToolStripMenuItem.Checked = true;
+			noiseGeneratorChannel4ToolStripMenuItem.CheckState = CheckState.Checked;
+			noiseGeneratorChannel4ToolStripMenuItem.Name = "noiseGeneratorChannel4ToolStripMenuItem";
+			noiseGeneratorChannel4ToolStripMenuItem.Size = new Size(223, 22);
+			noiseGeneratorChannel4ToolStripMenuItem.Text = "Noise Generator (Channel 4)";
+			noiseGeneratorChannel4ToolStripMenuItem.Click += noiseGeneratorChannel4ToolStripMenuItem_Click;
 			// 
 			// debugToolStripMenuItem
 			// 
@@ -385,6 +426,11 @@
 		private ToolStripMenuItem fourXToolStripMenuItem;
 		private ToolStripMenuItem fiveXToolStripMenuItem;
 		private ToolStripMenuItem muteSoundToolStripMenuItem;
+		private ToolStripMenuItem soundChannelsToolStripMenuItem;
+		private ToolStripMenuItem pulseWaveChannel1ToolStripMenuItem;
+		private ToolStripMenuItem pulseWaveChannel2ToolStripMenuItem;
+		private ToolStripMenuItem waveTableChannel3ToolStripMenuItem;
+		private ToolStripMenuItem noiseGeneratorChannel4ToolStripMenuItem;
 		private ToolStripMenuItem debugToolStripMenuItem;
 		private ToolStripMenuItem displayFrameTimeToolStripMenuItem;
 		private ToolStripMenuItem logOpcodesToolStripMenuItem;

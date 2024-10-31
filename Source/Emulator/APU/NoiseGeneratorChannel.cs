@@ -78,7 +78,7 @@ namespace GBSharp
 		public override void Update()
 		{
 			// Are we muted?
-			if (APU.Instance.Mute || !APU.Instance.IsOn() || !SoundOn)
+			if (APU.Instance.Mute || APU.Instance.MuteChannels[3] || !APU.Instance.IsOn() || !SoundOn)
 			{
 				_noiseGeneratorProvider._leftVolume = 0.0f;
 				_noiseGeneratorProvider._rightVolume = 0.0f;

@@ -6,6 +6,7 @@ namespace GBSharp
 	{
 		// An emulator option.
 		public bool Mute = false;
+		public bool[] MuteChannels = { false, false, false, false };
 
 		// Master volume and vin output. (NR50, 0xFF24)
 		// NOTE: Vin output is external hardware.
@@ -48,6 +49,7 @@ namespace GBSharp
 		{
 			// Retain emulator options.
 			//Mute = false;
+			//MuteChannels = { false, false, false, false };
 
 			VinLeftOn = false;
 			LeftOutputVolume = 0;

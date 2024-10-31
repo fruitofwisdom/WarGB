@@ -198,5 +198,11 @@
 			_mute = mute;
 			APU.Instance.Mute = mute;
 		}
+
+		// Mute individual channels.
+		public void MuteChannel(int channel, bool mute)
+		{
+			APU.Instance.MuteChannels[channel] = mute;
+		}
 	}
 }
