@@ -123,7 +123,7 @@
 			// controlsToolStripMenuItem
 			// 
 			controlsToolStripMenuItem.Name = "controlsToolStripMenuItem";
-			controlsToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.C;
+			controlsToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.N;
 			controlsToolStripMenuItem.Size = new Size(220, 22);
 			controlsToolStripMenuItem.Text = "Controls...";
 			controlsToolStripMenuItem.Click += ControlsToolStripMenuItemClick;
@@ -140,14 +140,14 @@
 			originalGreenToolStripMenuItem.Checked = true;
 			originalGreenToolStripMenuItem.CheckState = CheckState.Checked;
 			originalGreenToolStripMenuItem.Name = "originalGreenToolStripMenuItem";
-			originalGreenToolStripMenuItem.Size = new Size(180, 22);
+			originalGreenToolStripMenuItem.Size = new Size(159, 22);
 			originalGreenToolStripMenuItem.Text = "Original Green";
 			originalGreenToolStripMenuItem.Click += OriginalGreenToolStripMenuClick;
 			// 
 			// blackAndWhiteToolStripMenuItem
 			// 
 			blackAndWhiteToolStripMenuItem.Name = "blackAndWhiteToolStripMenuItem";
-			blackAndWhiteToolStripMenuItem.Size = new Size(180, 22);
+			blackAndWhiteToolStripMenuItem.Size = new Size(159, 22);
 			blackAndWhiteToolStripMenuItem.Text = "Black and White";
 			blackAndWhiteToolStripMenuItem.Click += BlackAndWhiteToolStripMenuClick;
 			// 
@@ -161,21 +161,21 @@
 			// oneXToolStripMenuItem
 			// 
 			oneXToolStripMenuItem.Name = "oneXToolStripMenuItem";
-			oneXToolStripMenuItem.Size = new Size(180, 22);
+			oneXToolStripMenuItem.Size = new Size(86, 22);
 			oneXToolStripMenuItem.Text = "1x";
 			oneXToolStripMenuItem.Click += OneXToolStripMenuItem_Click;
 			// 
 			// twoXToolStripMenuItem
 			// 
 			twoXToolStripMenuItem.Name = "twoXToolStripMenuItem";
-			twoXToolStripMenuItem.Size = new Size(180, 22);
+			twoXToolStripMenuItem.Size = new Size(86, 22);
 			twoXToolStripMenuItem.Text = "2x";
 			twoXToolStripMenuItem.Click += TwoXToolStripMenuItem_Click;
 			// 
 			// threeXToolStripMenuItem
 			// 
 			threeXToolStripMenuItem.Name = "threeXToolStripMenuItem";
-			threeXToolStripMenuItem.Size = new Size(180, 22);
+			threeXToolStripMenuItem.Size = new Size(86, 22);
 			threeXToolStripMenuItem.Text = "3x";
 			threeXToolStripMenuItem.Click += ThreeXToolStripMenuItem_Click;
 			// 
@@ -184,14 +184,14 @@
 			fourXToolStripMenuItem.Checked = true;
 			fourXToolStripMenuItem.CheckState = CheckState.Checked;
 			fourXToolStripMenuItem.Name = "fourXToolStripMenuItem";
-			fourXToolStripMenuItem.Size = new Size(180, 22);
+			fourXToolStripMenuItem.Size = new Size(86, 22);
 			fourXToolStripMenuItem.Text = "4x";
 			fourXToolStripMenuItem.Click += FourXToolStripMenuItem_Click;
 			// 
 			// fiveXToolStripMenuItem
 			// 
 			fiveXToolStripMenuItem.Name = "fiveXToolStripMenuItem";
-			fiveXToolStripMenuItem.Size = new Size(180, 22);
+			fiveXToolStripMenuItem.Size = new Size(86, 22);
 			fiveXToolStripMenuItem.Text = "5x";
 			fiveXToolStripMenuItem.Click += FiveXToolStripMenuItem_Click;
 			// 
