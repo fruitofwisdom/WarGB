@@ -289,11 +289,11 @@
 						int x = tileX * 8 - SCX;
 						int y = tileY * 8 - SCY;
 						// Background tiles can wrap around.
-						if (x < 0)
+						if (x < -32)
 						{
 							x += 256;
 						}
-						if (y < 0)
+						if (y < -32)
 						{
 							y += 256;
 						}

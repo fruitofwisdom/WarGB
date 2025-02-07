@@ -4379,6 +4379,15 @@
 					}
 					break;
 
+				case 0xA1:      // RES 4, C
+					{
+						Utilities.SetBitsInByte(ref C, 0x00, 4, 4);
+						PrintOpcode(instruction, "RES 4, C");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
 				case 0xA5:      // RES 4, L
 					{
 						byte h = (byte)((HL & 0xFF00) >> 8);
