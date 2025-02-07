@@ -115,7 +115,7 @@
 			accurateRenderingToolStripMenuItem.Checked = true;
 			accurateRenderingToolStripMenuItem.CheckState = CheckState.Checked;
 			accurateRenderingToolStripMenuItem.Name = "accurateRenderingToolStripMenuItem";
-			accurateRenderingToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.A;
+			accurateRenderingToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.U;
 			accurateRenderingToolStripMenuItem.Size = new Size(220, 22);
 			accurateRenderingToolStripMenuItem.Text = "Accurate Rendering";
 			accurateRenderingToolStripMenuItem.Click += AccurateRenderingToolStripMenuClick;

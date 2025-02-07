@@ -124,25 +124,36 @@
 			}
 			byte newLY = (byte)(Dots / kDotsPerLine);
 
-			// Set the PPU mode correctly.
 			if (newLY >= kVBlankLine)
 			{
 				// Vertical blank.
 				PPUMode = 0x01;
+
+				// A STAT interrupt has occurred.
+				if (_lastPPUMode != PPUMode && Mode1IntSelect)
+				{
+					CPU.Instance.IF |= 0x02;
+				}
 			}
 			else if (Dots % kDotsPerLine < 80)
 			{
 				// OAM scan.
 				PPUMode = 0x02;
+
+				// A STAT interrupt has occurred.
+				if (_lastPPUMode != PPUMode && Mode2IntSelect)
+				{
+					CPU.Instance.IF |= 0x02;
+				}
 			}
 			else if (Dots % kDotsPerLine < 252)
 			{
 				// Drawing pixels.
 				PPUMode = 0x03;
 
-				if (Accurate && _lastPPUMode != 0x03 && LY < 144)
+				// Actually render to LCD data.
+				if (Accurate && _lastPPUMode != PPUMode && LY < kVBlankLine)
 				{
-					// Actually render to LCD data.
 					Render();
 				}
 			}
@@ -150,6 +161,12 @@
 			{
 				// Horizontal blank.
 				PPUMode = 0x00;
+
+				// A STAT interrupt has occurred.
+				if (_lastPPUMode != PPUMode && Mode0IntSelect)
+				{
+					CPU.Instance.IF |= 0x02;
+				}
 			}
 			_lastPPUMode = PPUMode;
 
@@ -158,14 +175,8 @@
 			{
 				LY = newLY;
 
-				// Check for a v-blank interrupt.
 				if (LY == kVBlankLine)
 				{
-					if (GameBoy.ShouldLogOpcodes)
-					{
-						GameBoy.LogOutput += $"[{Dots}, {LY}] A v-blank occurred with PC=0x{CPU.Instance.PC:X4}.\n";
-					}
-
 					// Actually render to LCD data.
 					if (!Accurate)
 					{
@@ -174,6 +185,7 @@
 
 					// When done, copy the back buffer to the front buffer.
 					Array.Copy(LCDBackBuffer, LCDFrontBuffer, LCDBackBuffer.Length);
+					Array.Clear(LCDBackBuffer);
 
 					// Set the v-blank IF flag.
 					CPU.Instance.IF |= 0x01;
@@ -260,43 +272,46 @@
 			}
 
 			// Draw the background by iterating over each of its tiles.
-			for (int tileY = 0; tileY < 32; ++tileY)
+			if (BGWindowEnable)
 			{
-				for (int tileX = 0; tileX < 32; ++tileX)
+				for (int tileY = 0; tileY < 32; ++tileY)
 				{
-					int mapAddress = BGTileMapArea ? 0x9C00 : 0x9800;
-					mapAddress += tileY * 32 + tileX;
+					for (int tileX = 0; tileX < 32; ++tileX)
+					{
+						int mapAddress = BGTileMapArea ? 0x9C00 : 0x9800;
+						mapAddress += tileY * 32 + tileX;
 
-					// Each tile is 16 bytes, but can be addressed in one of two ways.
-					int tileAddress;
-					if (BGWindowTileDataArea)
-					{
-						byte tileNumber = Memory.Instance.Read(mapAddress);
-						tileAddress = 0x8000 + tileNumber * 16;
-					}
-					else
-					{
-						sbyte tileNumber = (sbyte)Memory.Instance.Read(mapAddress);
-						tileAddress = 0x9000 + tileNumber * 16;
-					}
+						// Each tile is 16 bytes, but can be addressed in one of two ways.
+						int tileAddress;
+						if (BGWindowTileDataArea)
+						{
+							byte tileNumber = Memory.Instance.Read(mapAddress);
+							tileAddress = 0x8000 + tileNumber * 16;
+						}
+						else
+						{
+							sbyte tileNumber = (sbyte)Memory.Instance.Read(mapAddress);
+							tileAddress = 0x9000 + tileNumber * 16;
+						}
 
-					int x = tileX * 8 - SCX;
-					int y = tileY * 8 - SCY;
-					// Background tiles can wrap around.
-					if (x < 0)
-					{
-						x += 256;
+						int x = tileX * 8 - SCX;
+						int y = tileY * 8 - SCY;
+						// Background tiles can wrap around.
+						if (x < 0)
+						{
+							x += 256;
+						}
+						if (y < 0)
+						{
+							y += 256;
+						}
+						RenderTile(tileAddress, x, y, BGPaletteData);
 					}
-					if (y < 0)
-					{
-						y += 256;
-					}
-					RenderTile(tileAddress, x, y, BGPaletteData);
 				}
 			}
 
 			// Draw the window as well.
-			if (WindowEnabled)
+			if (WindowEnabled && BGWindowEnable)
 			{
 				for (int tileY = 0; tileY < 32; ++tileY)
 				{
@@ -326,64 +341,67 @@
 				}
 			}
 
-			// Draw the objects by iterating over each of their tiles.
-			// TODO: Handle variable dot rendering speeds?
-			_objectsRendered = 0;
-			for (int objAddress = 0xFE00; objAddress <= 0xFE9C; objAddress += 0x04)
+			if (OBJEnabled)
 			{
-				byte byte1 = Memory.Instance.Read(objAddress);
-				int y = byte1;
+				// Draw the objects by iterating over each of their tiles.
+				// TODO: Handle variable dot rendering speeds?
+				_objectsRendered = 0;
+				for (int objAddress = 0xFE00; objAddress <= 0xFE9C; objAddress += 0x04)
+				{
+					byte byte1 = Memory.Instance.Read(objAddress);
+					int y = byte1;
 
-				// Objects with a Y of 0 or 160 are hidden.
-				if (y == 0 || y == 160)
-				{
-					continue;
-				}
+					// Objects with a Y of 0 or 160 are hidden.
+					if (y == 0 || y == 160)
+					{
+						continue;
+					}
 
-				// Enforce 10 objects-per-scanline limitation.
-				if (Accurate && _objectsRendered == 10)
-				{
-					continue;
-				}
+					// Enforce 10 objects-per-scanline limitation.
+					if (Accurate && _objectsRendered == 10)
+					{
+						continue;
+					}
 
-				// The X and Y values are actually offset.
-				y -= 16;
-				byte byte2 = Memory.Instance.Read(objAddress + 1);
-				int x = byte2 - 8;
-				byte tileNumber = Memory.Instance.Read(objAddress + 2);
-				int tileAddress = 0x8000;
-				if (OBJSize)
-				{
-					tileAddress += (tileNumber & 0xFE) * 16;
-				}
-				else
-				{
-					tileAddress += tileNumber * 16;
-				}
-				byte attributes = Memory.Instance.Read(objAddress + 3);
-				bool priority = Utilities.GetBoolFromByte(attributes, 7);
-				bool yFlip = Utilities.GetBoolFromByte(attributes, 6);
-				bool xFlip = Utilities.GetBoolFromByte(attributes, 5);
-				byte objPaletteData = Utilities.GetBoolFromByte(attributes, 4) ? OBJPaletteData1 : OBJPaletteData0;
+					// The X and Y values are actually offset.
+					y -= 16;
+					byte byte2 = Memory.Instance.Read(objAddress + 1);
+					int x = byte2 - 8;
+					byte tileNumber = Memory.Instance.Read(objAddress + 2);
+					int tileAddress = 0x8000;
+					if (OBJSize)
+					{
+						tileAddress += (tileNumber & 0xFE) * 16;
+					}
+					else
+					{
+						tileAddress += tileNumber * 16;
+					}
+					byte attributes = Memory.Instance.Read(objAddress + 3);
+					bool priority = Utilities.GetBoolFromByte(attributes, 7);
+					bool yFlip = Utilities.GetBoolFromByte(attributes, 6);
+					bool xFlip = Utilities.GetBoolFromByte(attributes, 5);
+					byte objPaletteData = Utilities.GetBoolFromByte(attributes, 4) ? OBJPaletteData1 : OBJPaletteData0;
 
-				// Render tile(s) for 8x8 or 8x16 mode.
-				bool rendered = false;
-				if (!OBJSize)
-				{
-					rendered = RenderTile(tileAddress, x, y, objPaletteData, true, xFlip, yFlip, priority);
-				}
-				else
-				{
-					rendered = RenderTile(tileAddress, x, yFlip ? y + 8 : y, objPaletteData, true, xFlip, yFlip, priority);
+					// Render tile(s) for 8x8 or 8x16 mode.
+					bool rendered = false;
+					if (!OBJSize)
+					{
+						rendered = RenderTile(tileAddress, x, y, objPaletteData, true, xFlip, yFlip, priority);
+					}
+					else
+					{
+						rendered = RenderTile(tileAddress, x, yFlip ? y + 8 : y, objPaletteData, true, xFlip, yFlip, priority);
 
-					// In 8x16 mode, also render the next tile immediately below.
-					tileAddress = 0x8000 + (tileNumber | 0x01) * 16;
-					rendered = RenderTile(tileAddress, x, yFlip ? y : y + 8, objPaletteData, true, xFlip, yFlip, priority);
-				}
+						// In 8x16 mode, also render the next tile immediately below.
+						tileAddress = 0x8000 + (tileNumber | 0x01) * 16;
+						rendered = RenderTile(tileAddress, x, yFlip ? y : y + 8, objPaletteData, true, xFlip, yFlip, priority);
+					}
 
-				if (rendered)
-				{
-					_objectsRendered++;
+					if (rendered)
+					{
+						_objectsRendered++;
+					}
 				}
 			}
 		}
