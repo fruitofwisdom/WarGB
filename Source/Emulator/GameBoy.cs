@@ -186,12 +186,6 @@
 			_stepRequested = true;
 		}
 
-		// Enable accurate rendering.
-		public void EnableAccurateRendering(bool accurate)
-		{
-			PPU.Instance.Accurate = accurate;
-		}
-
 		// Mute all sound.
 		public void Mute(bool mute)
 		{

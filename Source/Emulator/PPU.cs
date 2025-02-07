@@ -2,10 +2,6 @@
 {
 	internal class PPU
 	{
-		// An Emulator option. Enable slower, but scanline-accurate rendering.
-		public bool Accurate = true;
-		private int _objectsRendered = 0;
-
 		public const int kWidth = 160;
 		public const int kHeight = 144;
 		// Represents each pixel of the LCD, where the data is the palette color.
@@ -19,6 +15,8 @@
 		//public const uint kCyclesPerFrame = kDotsPerLine / 4 * kLinesPerFrame;
 
 		private uint Dots;
+		// Count objects rendered per scanline for accuracy.
+		private int _objectsRendered = 0;
 
 		// The LCDC register control flags (FF40)
 		private bool LCDEnabled;
@@ -152,7 +150,7 @@
 				PPUMode = 0x03;
 
 				// Actually render to LCD data.
-				if (Accurate && _lastPPUMode != PPUMode && LY < kVBlankLine)
+				if (_lastPPUMode != PPUMode && LY < kVBlankLine)
 				{
 					Render();
 				}
@@ -177,12 +175,6 @@
 
 				if (LY == kVBlankLine)
 				{
-					// Actually render to LCD data.
-					if (!Accurate)
-					{
-						Render();
-					}
-
 					// When done, copy the back buffer to the front buffer.
 					Array.Copy(LCDBackBuffer, LCDFrontBuffer, LCDBackBuffer.Length);
 					Array.Clear(LCDBackBuffer);
@@ -358,7 +350,7 @@
 					}
 
 					// Enforce 10 objects-per-scanline limitation.
-					if (Accurate && _objectsRendered == 10)
+					if (_objectsRendered == 10)
 					{
 						continue;
 					}
@@ -413,7 +405,7 @@
 			bool rendered = false;
 
 			// Exit early if we wouldn't render on this particular scanline.
-			if (Accurate && (y <= LY - 8 || y > LY))
+			if (y <= LY - 8 || y > LY)
 			{
 				return rendered;
 			}
@@ -427,7 +419,7 @@
 					int lcdY = yFlip ? y + 7 - pixelY : y + pixelY;
 
 					// Only render the line that corresponds to the current LY.
-					if (Accurate && lcdY != LY)
+					if (lcdY != LY)
 					{
 						continue;
 					}

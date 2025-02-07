@@ -34,7 +34,6 @@
 			loadROMToolStripMenuItem = new ToolStripMenuItem();
 			exitToolStripMenuItem = new ToolStripMenuItem();
 			optionsToolStripMenuItem = new ToolStripMenuItem();
-			accurateRenderingToolStripMenuItem = new ToolStripMenuItem();
 			controlsToolStripMenuItem = new ToolStripMenuItem();
 			lcdColorToolStripMenuItem = new ToolStripMenuItem();
 			originalGreenToolStripMenuItem = new ToolStripMenuItem();
@@ -105,20 +104,10 @@
 			// 
 			// optionsToolStripMenuItem
 			// 
-			optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { accurateRenderingToolStripMenuItem, controlsToolStripMenuItem, lcdColorToolStripMenuItem, lcdSizeToolStripMenuItem, muteSoundToolStripMenuItem, soundChannelsToolStripMenuItem });
+			optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { controlsToolStripMenuItem, lcdColorToolStripMenuItem, lcdSizeToolStripMenuItem, muteSoundToolStripMenuItem, soundChannelsToolStripMenuItem });
 			optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
 			optionsToolStripMenuItem.Size = new Size(61, 20);
 			optionsToolStripMenuItem.Text = "Options";
-			// 
-			// accurateRenderingToolStripMenuItem
-			// 
-			accurateRenderingToolStripMenuItem.Checked = true;
-			accurateRenderingToolStripMenuItem.CheckState = CheckState.Checked;
-			accurateRenderingToolStripMenuItem.Name = "accurateRenderingToolStripMenuItem";
-			accurateRenderingToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.U;
-			accurateRenderingToolStripMenuItem.Size = new Size(220, 22);
-			accurateRenderingToolStripMenuItem.Text = "Accurate Rendering";
-			accurateRenderingToolStripMenuItem.Click += AccurateRenderingToolStripMenuClick;
 			// 
 			// controlsToolStripMenuItem
 			// 
@@ -414,7 +403,6 @@
 		private ToolStripMenuItem loadROMToolStripMenuItem;
 		private ToolStripMenuItem exitToolStripMenuItem;
 		private ToolStripMenuItem optionsToolStripMenuItem;
-		private ToolStripMenuItem accurateRenderingToolStripMenuItem;
 		private ToolStripMenuItem controlsToolStripMenuItem;
 		private ToolStripMenuItem lcdColorToolStripMenuItem;
 		private ToolStripMenuItem originalGreenToolStripMenuItem;

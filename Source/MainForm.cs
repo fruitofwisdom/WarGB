@@ -70,12 +70,6 @@ namespace GBSharp
 			Close();
 		}
 
-		private void AccurateRenderingToolStripMenuClick(object sender, EventArgs e)
-		{
-			accurateRenderingToolStripMenuItem.Checked = !accurateRenderingToolStripMenuItem.Checked;
-			_gameBoy.EnableAccurateRendering(accurateRenderingToolStripMenuItem.Checked);
-		}
-
 		private void ControlsToolStripMenuItemClick(object sender, EventArgs e)
 		{
 			ControlsForm controlsForm = new(_keyMapping);
