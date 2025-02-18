@@ -5,7 +5,9 @@
 		// Emulator state booleans.
 		public bool Playing { get; private set; }
 		private bool _needToStop;
-		private bool _stepRequested;
+		private bool _stepFrameRequested;
+		private bool _stepOpcodeRequested;
+		private bool _stepScanlineRequested;
 
 		// Accurately time frames.
 		public bool DisplayFrameTime = false;
@@ -43,7 +45,9 @@
 
 			Playing = false;
 			_needToStop = false;
-			_stepRequested = false;
+			_stepFrameRequested = false;
+			_stepOpcodeRequested = false;
+			_stepScanlineRequested = false;
 
 			// Retain emulator options.
 			//DisplayFrameTime = false;
@@ -73,7 +77,7 @@
 			while (!_needToStop)
 			{
 				// Do nothing if we're paused, unless a step was requested.
-				if (!Playing && !_stepRequested)
+				if (!Playing && !(_stepFrameRequested || _stepOpcodeRequested || _stepScanlineRequested))
 				{
 					Thread.Sleep(0);
 					continue;
@@ -92,8 +96,19 @@
 					}
 					else
 					{
+						// Update the APU.
+						APU.Instance.Update();
+
 						_lastFrameTime = DateTime.Now;
 						_frameDone = false;
+
+						// Potentially trigger a frame step.
+						if (_stepFrameRequested)
+						{
+							Playing = false;
+							_stepFrameRequested = false;
+							APU.Instance.Stop();
+						}
 					}
 				}
 
@@ -110,19 +125,25 @@
 					// NOTE: The CPU runs at one quarter of the master clock.
 					clocksToNextCPUCycle *= 4;
 
-					if (_stepRequested)
+					// Potentially trigger an opcode step.
+					if (_stepOpcodeRequested)
 					{
 						Playing = false;
-						_stepRequested = false;
+						_stepOpcodeRequested = false;
 						APU.Instance.Stop();
 					}
 				}
 
-				// Update the APU.
-				APU.Instance.Update();
-
 				// Update the PPU.
-				PPU.Instance.Update();
+				bool didRender = PPU.Instance.Update();
+
+				// Potentially trigger a scanline step.
+				if (didRender && _stepScanlineRequested)
+				{
+					Playing = false;
+					_stepScanlineRequested = false;
+					APU.Instance.Stop();
+				}
 
 				_clocks++;
 
@@ -180,10 +201,22 @@
 			APU.Instance.Stop();
 		}
 
-		// Step the emulator through one opcode.
-		public void Step()
+		// Step the emulator through one frame.
+		public void NextFrame()
 		{
-			_stepRequested = true;
+			_stepFrameRequested = true;
+		}
+
+		// Step the emulator through one opcode.
+		public void NextOpcode()
+		{
+			_stepOpcodeRequested = true;
+		}
+
+		// Step the emulator through one scanline.
+		public void NextScanline()
+		{
+			_stepScanlineRequested = true;
 		}
 
 		// Mute all sound.

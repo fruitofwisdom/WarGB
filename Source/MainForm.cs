@@ -54,10 +54,8 @@ namespace GBSharp
 					_gameBoyThread = new Thread(new ThreadStart(_gameBoy.Run));
 					_gameBoyThread.IsBackground = true;
 					_gameBoyThread.Start();
-					playButton.Enabled = true;
-					pauseButton.Enabled = false;
 					resetButton.Enabled = true;
-					stepButton.Enabled = true;
+					UpdatePlayState();
 
 					// Play automatically.
 					PlayButtonClick(this, new EventArgs());
@@ -208,6 +206,24 @@ namespace GBSharp
 			GameBoy.ShouldLogOpcodes = logOpcodesToolStripMenuItem.Checked;
 		}
 
+		private void NextFrameToolStripMenuItemClick(object sender, EventArgs e)
+		{
+			_gameBoy.NextFrame();
+			UpdatePlayState();
+		}
+
+		private void NextOpcodeToolStripMenuItemClick(object sender, EventArgs e)
+		{
+			_gameBoy.NextOpcode();
+			UpdatePlayState();
+		}
+
+		private void NextScanlineToolStripMenuItemClick(object sender, EventArgs e)
+		{
+			_gameBoy.NextScanline();
+			UpdatePlayState();
+		}
+
 		private void ShowDebugOutputToolStripMenuClick(object sender, EventArgs e)
 		{
 			if (showDebugOutputToolStripMenuItem.Checked)
@@ -215,18 +231,12 @@ namespace GBSharp
 				showDebugOutputToolStripMenuItem.Checked = false;
 				debugRichTextBox.Hide();
 				Size = new Size(Width - 255, Height);
-
-				// Also hide the step button.
-				stepButton.Visible = false;
 			}
 			else
 			{
 				showDebugOutputToolStripMenuItem.Checked = true;
 				debugRichTextBox.Show();
 				Size = new Size(Width + 255, Height);
-
-				// Also show the step button.
-				stepButton.Visible = true;
 			}
 		}
 
@@ -239,49 +249,30 @@ namespace GBSharp
 		private void PlayButtonClick(object sender, EventArgs e)
 		{
 			_gameBoy.Play();
-
-			playButton.Enabled = false;
-			pauseButton.Enabled = true;
-			stepButton.Enabled = false;
+			UpdatePlayState();
 		}
 
 		private void PauseButtonClick(object sender, EventArgs e)
 		{
 			_gameBoy.Pause();
-
-			playButton.Enabled = true;
-			pauseButton.Enabled = false;
-			stepButton.Enabled = true;
+			UpdatePlayState();
 		}
 
 		private void ResetButtonClick(object sender, EventArgs e)
 		{
 			bool wasPlaying = _gameBoy.Playing;
 			_gameBoy.Reset();
-
 			if (wasPlaying)
 			{
 				_gameBoy.Play();
-
-				playButton.Enabled = false;
-				pauseButton.Enabled = true;
-				stepButton.Enabled = false;
 			}
-			else
-			{
-				playButton.Enabled = true;
-				pauseButton.Enabled = false;
-				stepButton.Enabled = true;
-			}
+			UpdatePlayState();
 		}
 
-		private void StepButtonClick(object sender, EventArgs e)
+		private void NextFrameButtonClick(object sender, EventArgs e)
 		{
-			_gameBoy.Step();
-
-			playButton.Enabled = true;
-			pauseButton.Enabled = false;
-			stepButton.Enabled = true;
+			_gameBoy.NextFrame();
+			UpdatePlayState();
 		}
 
 		public static void Pause()
@@ -402,6 +393,20 @@ namespace GBSharp
 					e.IsInputKey = true;
 					break;
 			}
+		}
+
+		// Update buttons and menu items based on whether the emulator is running.
+		private void UpdatePlayState()
+		{
+			bool playing = _gameBoy.Playing;
+
+			playButton.Enabled = !playing;
+			pauseButton.Enabled = playing;
+			nextFrameButton.Enabled = !playing;
+
+			nextFrameToolStripMenuItem.Enabled = !playing;
+			nextOpcodeToolStripMenuItem.Enabled = !playing;
+			nextScanlineToolStripMenuItem.Enabled = !playing;
 		}
 	}
 

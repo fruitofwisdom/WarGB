@@ -112,8 +112,11 @@
 			WX = 0;
 		}
 
-		public void Update()
+		// Update one dot of the PPU and return if rendering occurred.
+		public bool Update()
 		{
+			bool didRender = false;
+
 			Dots++;
 
 			if (Dots >= kDotsPerLine * kLinesPerFrame)
@@ -153,6 +156,7 @@
 				if (_lastPPUMode != PPUMode && LY < kVBlankLine)
 				{
 					Render();
+					didRender = true;
 				}
 			}
 			else
@@ -196,6 +200,8 @@
 					CPU.Instance.IF |= 0x02;
 				}
 			}
+
+			return didRender;
 		}
 
 		public byte GetLCDC()

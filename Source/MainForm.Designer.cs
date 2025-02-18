@@ -53,6 +53,9 @@
 			debugToolStripMenuItem = new ToolStripMenuItem();
 			displayFrameTimeToolStripMenuItem = new ToolStripMenuItem();
 			logOpcodesToolStripMenuItem = new ToolStripMenuItem();
+			nextFrameToolStripMenuItem = new ToolStripMenuItem();
+			nextOpcodeToolStripMenuItem = new ToolStripMenuItem();
+			nextScanlineToolStripMenuItem = new ToolStripMenuItem();
 			showDebugOutputToolStripMenuItem = new ToolStripMenuItem();
 			helpToolStripMenuItem = new ToolStripMenuItem();
 			aboutGBSharpToolStripMenuItem = new ToolStripMenuItem();
@@ -60,7 +63,7 @@
 			playButton = new ToolStripButton();
 			pauseButton = new ToolStripButton();
 			resetButton = new ToolStripButton();
-			stepButton = new ToolStripButton();
+			nextFrameButton = new ToolStripButton();
 			lcdControl = new LCDControl();
 			debugRichTextBox = new RichTextBox();
 			statusStrip = new StatusStrip();
@@ -113,7 +116,7 @@
 			// 
 			controlsToolStripMenuItem.Name = "controlsToolStripMenuItem";
 			controlsToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.N;
-			controlsToolStripMenuItem.Size = new Size(220, 22);
+			controlsToolStripMenuItem.Size = new Size(184, 22);
 			controlsToolStripMenuItem.Text = "Controls...";
 			controlsToolStripMenuItem.Click += ControlsToolStripMenuItemClick;
 			// 
@@ -121,7 +124,7 @@
 			// 
 			lcdColorToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { originalGreenToolStripMenuItem, blackAndWhiteToolStripMenuItem });
 			lcdColorToolStripMenuItem.Name = "lcdColorToolStripMenuItem";
-			lcdColorToolStripMenuItem.Size = new Size(220, 22);
+			lcdColorToolStripMenuItem.Size = new Size(184, 22);
 			lcdColorToolStripMenuItem.Text = "LCD Color";
 			// 
 			// originalGreenToolStripMenuItem
@@ -144,7 +147,7 @@
 			// 
 			lcdSizeToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { oneXToolStripMenuItem, twoXToolStripMenuItem, threeXToolStripMenuItem, fourXToolStripMenuItem, fiveXToolStripMenuItem });
 			lcdSizeToolStripMenuItem.Name = "lcdSizeToolStripMenuItem";
-			lcdSizeToolStripMenuItem.Size = new Size(220, 22);
+			lcdSizeToolStripMenuItem.Size = new Size(184, 22);
 			lcdSizeToolStripMenuItem.Text = "LCD Size";
 			// 
 			// oneXToolStripMenuItem
@@ -188,7 +191,7 @@
 			// 
 			muteSoundToolStripMenuItem.Name = "muteSoundToolStripMenuItem";
 			muteSoundToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.M;
-			muteSoundToolStripMenuItem.Size = new Size(220, 22);
+			muteSoundToolStripMenuItem.Size = new Size(184, 22);
 			muteSoundToolStripMenuItem.Text = "Mute Sound";
 			muteSoundToolStripMenuItem.Click += MuteSoundToolStripMenuClick;
 			// 
@@ -196,7 +199,7 @@
 			// 
 			soundChannelsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { pulseWaveChannel1ToolStripMenuItem, pulseWaveChannel2ToolStripMenuItem, waveTableChannel3ToolStripMenuItem, noiseGeneratorChannel4ToolStripMenuItem });
 			soundChannelsToolStripMenuItem.Name = "soundChannelsToolStripMenuItem";
-			soundChannelsToolStripMenuItem.Size = new Size(220, 22);
+			soundChannelsToolStripMenuItem.Size = new Size(184, 22);
 			soundChannelsToolStripMenuItem.Text = "Sound Channels";
 			// 
 			// pulseWaveChannel1ToolStripMenuItem
@@ -237,7 +240,7 @@
 			// 
 			// debugToolStripMenuItem
 			// 
-			debugToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { displayFrameTimeToolStripMenuItem, logOpcodesToolStripMenuItem, showDebugOutputToolStripMenuItem });
+			debugToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { displayFrameTimeToolStripMenuItem, logOpcodesToolStripMenuItem, nextFrameToolStripMenuItem, nextOpcodeToolStripMenuItem, nextScanlineToolStripMenuItem, showDebugOutputToolStripMenuItem });
 			debugToolStripMenuItem.Name = "debugToolStripMenuItem";
 			debugToolStripMenuItem.Size = new Size(54, 20);
 			debugToolStripMenuItem.Text = "Debug";
@@ -258,6 +261,33 @@
 			logOpcodesToolStripMenuItem.Text = "Log Opcodes";
 			logOpcodesToolStripMenuItem.ToolTipText = "Write opcodes, CPU state, etc to a log file. (This file will get very large.)";
 			logOpcodesToolStripMenuItem.Click += LogOpcodesToolStripMenuClick;
+			// 
+			// nextFrameToolStripMenuItem
+			// 
+			nextFrameToolStripMenuItem.Enabled = false;
+			nextFrameToolStripMenuItem.Name = "nextFrameToolStripMenuItem";
+			nextFrameToolStripMenuItem.ShortcutKeys = Keys.F10;
+			nextFrameToolStripMenuItem.Size = new Size(224, 22);
+			nextFrameToolStripMenuItem.Text = "Next Frame";
+			nextFrameToolStripMenuItem.Click += NextFrameToolStripMenuItemClick;
+			// 
+			// nextOpcodeToolStripMenuItem
+			// 
+			nextOpcodeToolStripMenuItem.Enabled = false;
+			nextOpcodeToolStripMenuItem.Name = "nextOpcodeToolStripMenuItem";
+			nextOpcodeToolStripMenuItem.ShortcutKeys = Keys.F7;
+			nextOpcodeToolStripMenuItem.Size = new Size(224, 22);
+			nextOpcodeToolStripMenuItem.Text = "Next Opcode";
+			nextOpcodeToolStripMenuItem.Click += NextOpcodeToolStripMenuItemClick;
+			// 
+			// nextScanlineToolStripMenuItem
+			// 
+			nextScanlineToolStripMenuItem.Enabled = false;
+			nextScanlineToolStripMenuItem.Name = "nextScanlineToolStripMenuItem";
+			nextScanlineToolStripMenuItem.ShortcutKeys = Keys.F11;
+			nextScanlineToolStripMenuItem.Size = new Size(224, 22);
+			nextScanlineToolStripMenuItem.Text = "Next Scanline";
+			nextScanlineToolStripMenuItem.Click += NextScanlineToolStripMenuItemClick;
 			// 
 			// showDebugOutputToolStripMenuItem
 			// 
@@ -284,7 +314,7 @@
 			// 
 			// toolStrip
 			// 
-			toolStrip.Items.AddRange(new ToolStripItem[] { playButton, pauseButton, resetButton, stepButton });
+			toolStrip.Items.AddRange(new ToolStripItem[] { playButton, pauseButton, resetButton, nextFrameButton });
 			toolStrip.Location = new Point(0, 24);
 			toolStrip.Name = "toolStrip";
 			toolStrip.Size = new Size(664, 25);
@@ -324,17 +354,16 @@
 			resetButton.ToolTipText = "Reset";
 			resetButton.Click += ResetButtonClick;
 			// 
-			// stepButton
+			// nextFrameButton
 			// 
-			stepButton.DisplayStyle = ToolStripItemDisplayStyle.Text;
-			stepButton.Enabled = false;
-			stepButton.Font = new Font("Segoe MDL2 Assets", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-			stepButton.Name = "stepButton";
-			stepButton.Size = new Size(23, 22);
-			stepButton.Text = "";
-			stepButton.ToolTipText = "Step";
-			stepButton.Visible = false;
-			stepButton.Click += StepButtonClick;
+			nextFrameButton.DisplayStyle = ToolStripItemDisplayStyle.Text;
+			nextFrameButton.Enabled = false;
+			nextFrameButton.Font = new Font("Segoe MDL2 Assets", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+			nextFrameButton.Name = "nextFrameButton";
+			nextFrameButton.Size = new Size(23, 22);
+			nextFrameButton.Text = "";
+			nextFrameButton.ToolTipText = "Next Frame";
+			nextFrameButton.Click += NextFrameButtonClick;
 			// 
 			// lcdControl
 			// 
@@ -422,6 +451,9 @@
 		private ToolStripMenuItem debugToolStripMenuItem;
 		private ToolStripMenuItem displayFrameTimeToolStripMenuItem;
 		private ToolStripMenuItem logOpcodesToolStripMenuItem;
+		private ToolStripMenuItem nextFrameToolStripMenuItem;
+		private ToolStripMenuItem nextOpcodeToolStripMenuItem;
+		private ToolStripMenuItem nextScanlineToolStripMenuItem;
 		private ToolStripMenuItem showDebugOutputToolStripMenuItem;
 		private ToolStripMenuItem helpToolStripMenuItem;
 		private ToolStripMenuItem aboutGBSharpToolStripMenuItem;
@@ -429,7 +461,7 @@
 		private ToolStripButton playButton;
 		private ToolStripButton pauseButton;
 		private ToolStripButton resetButton;
-		private ToolStripButton stepButton;
+		private ToolStripButton nextFrameButton;
 		private LCDControl lcdControl;
 		private RichTextBox debugRichTextBox;
 		private StatusStrip statusStrip;
