@@ -10,10 +10,10 @@
 		private bool _stepScanlineRequested;
 
 		// Accurately time frames.
+		public const float kFps = 59.7f;
 		public bool DisplayFrameTime = false;
 		private DateTime _lastFrameTime;
 		private bool _frameDone;
-		private const float kFps = 59.7f;
 
 		// Current count of clock cycles.
 		private uint _clocks;

@@ -216,47 +216,88 @@ namespace GBSharp
 	{
 		public WaveFormat WaveFormat { get; private set; }
 
+		// HACK: This sample rate avoids some timing issues?
+		protected const int kSampleRate = 48000;
 		protected readonly float[] _waveTable;
-
-		public float _frequency = 1000.0f;
 		private float _phase = 0.0f;
-		private float _phaseStep = 0.0f;
-		public float _leftVolume = 0.0f;
-		public float _rightVolume = 0.0f;
+
+		// The circular audio buffer holds five seconds of two-channel audio.
+		private const int kAudioBufferSize = kSampleRate * 2 * 5;
+		private readonly float[] _audioBuffer;
+		private int _bytesPending = 2;		// HACK: Can't start reading 0 bytes?
+		private int _readPosition = 0;
+		private int _writePosition = 0;
 
 		// Anything louder than this is too loud.
 		protected const float kMaxVolume = 0.2f;
-
-		// HACK: This sample rate avoids some timing issues?
-		protected const int kSampleRate = 32768;
+		public float _frequency = 1000.0f;
+		public float _leftVolume = 0.0f;
+		public float _rightVolume = 0.0f;
 
 		public SampleProvider()
 		{
 			WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(kSampleRate, 2);
 			_waveTable = new float[kSampleRate];
+			_audioBuffer = new float[kAudioBufferSize];
 		}
 
 		public int Read(float[] buffer, int offset, int count)
 		{
-			// Update the phase step based on frequency.
-			_phaseStep = _waveTable.Length * (_frequency / WaveFormat.SampleRate);
+			int read = 0;
 
-			// Fill the buffer.
-			for (int i = 0; i < count; i += 2)
+			// Fill the NAudio output buffer.
+			for (int i = 0; i < count && _bytesPending > 0; i += 2)
 			{
-				int waveTableIndex = (int)_phase % _waveTable.Length;
-				float leftVolume = _leftVolume * (APU.Instance.LeftOutputVolume / 7.0f) * kMaxVolume;
-				buffer[i + offset] = _waveTable[waveTableIndex] * leftVolume;
-				float rightVolume = _rightVolume * (APU.Instance.RightOutputVolume / 7.0f) * kMaxVolume;
-				buffer[i + offset + 1] = _waveTable[waveTableIndex] * rightVolume;
-				_phase += _phaseStep;
-				while (_phase > _waveTable.Length)
+				buffer[i + offset] = _audioBuffer[_readPosition];
+				buffer[i + offset + 1] = _audioBuffer[_readPosition + 1];
+				read += 2;
+
+				_bytesPending -= 2;
+				_readPosition += 2;
+				if (_readPosition >= _audioBuffer.Length)
 				{
-					_phase -= _waveTable.Length;
+					_readPosition -= _audioBuffer.Length;
 				}
 			}
 
-			return count;
+			// If we didn't read enough bytes, the audio is stalled.
+			if (read < count)
+			{
+				GameBoy.DebugOutput += "Audio buffer starved after " + read + " bytes. Wanted " + count + ".\n";
+			}
+
+			return read;
+		}
+
+		public void FillAudioBuffer()
+		{
+			// Update the phase step based on frequency.
+			float phaseStep = _waveTable.Length * (_frequency / WaveFormat.SampleRate);
+
+			// Fill the circular audio buffer.
+			for (int i = 0; i < (int)(kSampleRate / GameBoy.kFps); ++i)
+			{
+				int waveTableIndex = (int)_phase % _waveTable.Length;
+				float leftVolume = _leftVolume * (APU.Instance.LeftOutputVolume / 7.0f) * kMaxVolume;
+				_audioBuffer[_writePosition] = _waveTable[waveTableIndex] * leftVolume;
+				float rightVolume = _rightVolume * (APU.Instance.RightOutputVolume / 7.0f) * kMaxVolume;
+				_audioBuffer[_writePosition + 1] = _waveTable[waveTableIndex] * rightVolume;
+				float leftValue = _audioBuffer[_writePosition];
+				float rightValue = _audioBuffer[_writePosition + 1];
+
+				_phase += phaseStep;
+				while (_phase >= _waveTable.Length)
+				{
+					_phase -= _waveTable.Length;
+				}
+
+				_bytesPending += 2;
+				_writePosition += 2;
+				if (_writePosition >= _audioBuffer.Length)
+				{
+					_writePosition -= _writePosition;
+				}
+			}
 		}
 	}
 }
