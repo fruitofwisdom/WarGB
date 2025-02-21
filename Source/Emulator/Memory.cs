@@ -342,7 +342,7 @@
 				else if (address >= 0x4000 && address <= 0x7FFF)
 				{
 					// NOTE: Ignore?
-					//GameBoy.DebugOutput += "Writing to ROM!\n";
+					GameBoy.DebugOutput += "Writing to ROM!\n";
 					//MainForm.Pause();
 				}
 			}
@@ -352,7 +352,7 @@
 				if (address >= 0x0000 && address <= 0x7FFF)
 				{
 					// NOTE: Ignore?
-					//GameBoy.DebugOutput += "Writing to ROM!\n";
+					GameBoy.DebugOutput += "Writing to ROM!\n";
 					//MainForm.Pause();
 				}
 			}
@@ -371,7 +371,7 @@
 				else
 				{
 					// TODO: Is this a real problem?
-					//GameBoy.DebugOutput += "Writing to external RAM while RAM is disabled!\n";
+					GameBoy.DebugOutput += "Writing to external RAM while RAM is disabled!\n";
 					//MainForm.Pause();
 				}
 			}
@@ -399,8 +399,9 @@
 			}
 			else if (address >= 0xFEA0 && address <= 0xFEFF)
 			{
+				// NOTE: Ignore?
 				GameBoy.DebugOutput += $"Writing to unusable memory: 0x{address:X4}!\n";
-				MainForm.Pause();
+				//MainForm.Pause();
 			}
 			else if (address >= 0xFF00 && address <= 0xFF7F)
 			{
@@ -426,13 +427,21 @@
 				Controller.Instance.SelectButtons = Utilities.GetBitsFromByte(data, 5, 5) != 1;
 				Controller.Instance.SelectDpad = Utilities.GetBitsFromByte(data, 4, 4) != 1;
 			}
+			else if (address == 0xFF01)
+			{
+				// TODO: Implement the link cable?
+				GameBoy.DebugOutput += "Writing to serial transfer data register (0xFF01), but the link cable is unimplemented!\n";
+			}
+			else if (address == 0xFF02)
+			{
+				// TODO: Implement the link cable?
+				GameBoy.DebugOutput += "Writing to serial transfer control register (0xFF02), but the link cable is unimplemented!\n";
+			}
 			else if (address == 0xFF04)
 			{
 				// NOTE: Writing any value to DIV actually resets the internal divider.
 				CPU.Instance.Divider = 0;
 			}
-			// TODO: Implement the timer and interrupt.
-			/*
 			else if (address == 0xFF05)
 			{
 				CPU.Instance.TIMA = data;
@@ -444,8 +453,8 @@
 			else if (address == 0xFF07)
 			{
 				// TODO: Implement timer control.
+				GameBoy.DebugOutput += "Writing to timer control (0xFF07), but the timer is unimplemented!\n";
 			}
-			*/
 			else if (address == 0xFF0F)
 			{
 				CPU.Instance.IF = data;
@@ -678,6 +687,12 @@
 			else if (address == 0xFF4B)
 			{
 				PPU.Instance.WX = data;
+			}
+			else if (address >= 0xFF71 && address <= 0xFF7F)
+			{
+				// NOTE: Ignore?
+				GameBoy.DebugOutput += $"Writing to undocumented register: 0x{address:X4}!\n";
+				//MainForm.Pause();
 			}
 			// TODO: The other registers.
 			else

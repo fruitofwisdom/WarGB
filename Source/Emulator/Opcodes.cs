@@ -1435,6 +1435,16 @@
 					}
 					break;
 
+				case 0x89:      // ADC A, C
+					{
+						byte cAndCY = (byte)(C + (CY ? 0x01 : 0x00));
+						Add(ref A, cAndCY);
+						PrintOpcode(instruction, "ADC A, C");
+						PC++;
+						cycles++;
+					}
+					break;
+
 				case 0x8A:      // ADC A, D
 					{
 						byte dAndCY = (byte)(D + (CY ? 0x01 : 0x00));
