@@ -111,11 +111,11 @@ namespace GBSharp
 						// Calculate the shift to apply in Update.
 						if (SweepIncDec)
 						{
-							_sweepFrequencyShift += (_pulseWaveProvider._frequency + _sweepFrequencyShift) / (2 << SweepShiftNumber);
+							_sweepFrequencyShift -= (_pulseWaveProvider._frequency - _sweepFrequencyShift) / (2 << SweepShiftNumber);
 						}
 						else
 						{
-							_sweepFrequencyShift -= (_pulseWaveProvider._frequency - _sweepFrequencyShift) / (2 << SweepShiftNumber);
+							_sweepFrequencyShift += (_pulseWaveProvider._frequency + _sweepFrequencyShift) / (2 << SweepShiftNumber);
 						}
 						// Keep the frequency in bounds.
 						if (_pulseWaveProvider._frequency + _sweepFrequencyShift > 131072f)
@@ -130,8 +130,14 @@ namespace GBSharp
 						_currentSweepStep = 0;
 					}
 				}
+				else
+				{
+					_sweepFrequencyShift = 0.0f;
+				}
 			}
 		}
+
+		static uint lastFrequencyData = 0;
 
 		public override void Update()
 		{
@@ -169,11 +175,24 @@ namespace GBSharp
 
 				// Update the frequency.
 				uint frequencyData = LowOrderFrequencyData + (HighOrderFrequencyData << 8);
-				float periodValue = 2048 - frequencyData;
-				float newFrequency = (131072 / periodValue) + _sweepFrequencyShift;
-				newFrequency = Math.Max(0.0f, newFrequency);
-				_pulseWaveProvider._frequency = newFrequency;
+				if (_sweepEnabled && frequencyData != lastFrequencyData)
+				{
+					//GameBoy.DebugOutput += "Channel 0 changing frequency from " + lastFrequencyData + " to " + frequencyData + "\n";
+					lastFrequencyData = frequencyData;
+				}
+				if (frequencyData < 2047)
+				{
+					float periodValue = 2048 - frequencyData;
+					float newFrequency = (131072 / periodValue) + _sweepFrequencyShift;
+					newFrequency = Math.Max(0.0f, newFrequency);
+					_pulseWaveProvider._frequency = newFrequency;
+					float justFrequency = (131072 / periodValue);
+					//GameBoy.DebugOutput += $"Channel 0 frequency is {frequencyData}, so {justFrequency:F3} + {_sweepFrequencyShift:F3} = {newFrequency:F3},\n";
+				}
 			}
+
+			// Fill the audio buffer with the latest wave table data.
+			_pulseWaveProvider.FillAudioBuffer();
 		}
 
 		public void SetDefaultEnvelopeValue(uint defaultEnvelopeValue)

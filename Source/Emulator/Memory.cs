@@ -342,7 +342,7 @@
 				else if (address >= 0x4000 && address <= 0x7FFF)
 				{
 					// NOTE: Ignore?
-					GameBoy.DebugOutput += "Writing to ROM!\n";
+					//GameBoy.DebugOutput += "Writing to ROM!\n";
 					//MainForm.Pause();
 				}
 			}
@@ -352,7 +352,7 @@
 				if (address >= 0x0000 && address <= 0x7FFF)
 				{
 					// NOTE: Ignore?
-					GameBoy.DebugOutput += "Writing to ROM!\n";
+					//GameBoy.DebugOutput += "Writing to ROM!\n";
 					//MainForm.Pause();
 				}
 			}

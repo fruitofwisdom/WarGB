@@ -118,6 +118,9 @@ namespace GBSharp
 					_lfsrFrequency = 0;
 				}
 			}
+
+			// Fill the audio buffer with the latest wave table data.
+			_noiseGeneratorProvider.FillAudioBuffer();
 		}
 
 		public void SetDefaultEnvelopeValue(uint defaultEnvelopeValue)

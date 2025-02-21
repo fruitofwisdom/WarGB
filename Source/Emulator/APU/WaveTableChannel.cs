@@ -78,6 +78,9 @@ namespace GBSharp
 				float newFrequency = 65536 / periodValue;
 				_waveTableProvider._frequency = newFrequency;
 			}
+
+			// Fill the audio buffer with the latest wave table data.
+			_waveTableProvider.FillAudioBuffer();
 		}
 
 		public void SetOutputLevel(byte outputLevel)
