@@ -263,7 +263,8 @@ namespace GBSharp
 			// If we didn't read enough bytes, the audio is stalled.
 			if (read < count)
 			{
-				GameBoy.DebugOutput += "Audio buffer starved after " + read + " bytes. Wanted " + count + ".\n";
+				// TODO: Fix this somehow?
+				//GameBoy.DebugOutput += "Audio buffer starved after " + read + " bytes. Wanted " + count + ".\n";
 			}
 
 			return read;

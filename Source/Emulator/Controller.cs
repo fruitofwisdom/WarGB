@@ -41,6 +41,12 @@
 			Down = false;
 		}
 
+		public void TriggerJoypadInterrupt()
+		{
+			// Set the joypad interrupt flag.
+			CPU.Instance.IF |= 0x10;
+		}
+
 		// Return the inputs as the register FF00.
 		public byte ReadFromRegister()
 		{

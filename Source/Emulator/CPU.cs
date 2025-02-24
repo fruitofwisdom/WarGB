@@ -30,11 +30,10 @@
 		public ushort Divider;
 		public byte DIV;
 		private ushort _divApu;
-		// TODO: Implement the timer and interrupt.
 		public byte TIMA;
 		public byte TMA;
-		// TODO: Implement timer control.
-		//public byte TAC;
+		public bool TimerEnabled;
+		public byte TimerClockSelect;
 
 		private bool _halted;
 		private bool _was16BitOpcode;
@@ -57,6 +56,7 @@
 		// Reset the CPU's registers and flags.
 		public void Reset()
 		{
+			// Initial CPU state after the boot ROM.
 			A = 0x01;
 			Z = true;
 			N = false;
@@ -79,8 +79,8 @@
 			_divApu = 0;
 			TIMA = 0x00;
 			TMA = 0x00;
-			// TODO: Implement timer control.
-			//TAC = 0x00;
+			TimerEnabled = false;
+			TimerClockSelect = 0x00;
 
 			_halted = false;
 			_was16BitOpcode = false;
@@ -142,12 +142,45 @@
 					interruptHandled = true;
 					_halted = false;
 				}
-				// TODO: Handle other interrupt flags.
+				// Handle a timer interrupt.
+				else if ((byte)(IE & 0x04) == 0x04 && (byte)(IF & 0x04) == 0x04)
+				{
+					IME = false;
+					Utilities.SetBitsInByte(ref IF, 0, 2, 2);
+					byte pcHigher = (byte)((PC & 0xFF00) >> 8);
+					Memory.Instance.Write(SP - 1, pcHigher);
+					byte pcLower = (byte)(PC & 0x00FF);
+					Memory.Instance.Write(SP - 2, pcLower);
+					SP -= 2;
+					PC = 0x0050;
+					cycles = 5;
+					interruptHandled = true;
+					_halted = false;
+				}
+				else if ((byte)(IE & 0x08) == 0x08 && (byte)(IF & 0x08) == 0x08)
+				{
+					// TODO: Implement the link cable/serial interrupt?
+				}
+				else if ((byte)(IE & 0x10) == 0x10 && (byte)(IF & 0x10) == 0x10)
+				{
+					IME = false;
+					Utilities.SetBitsInByte(ref IF, 0, 4, 4);
+					byte pcHigher = (byte)((PC & 0xFF00) >> 8);
+					Memory.Instance.Write(SP - 1, pcHigher);
+					byte pcLower = (byte)(PC & 0x00FF);
+					Memory.Instance.Write(SP - 2, pcLower);
+					SP -= 2;
+					PC = 0x0060;
+					cycles = 5;
+					interruptHandled = true;
+					_halted = false;
+				}
 			}
 
 			return interruptHandled;
 		}
 
+		// Update the divider and timer every CPU cycle (M cycle).
 		public void UpdateDividerAndTimer()
 		{
 			byte previousDiv = DIV;
@@ -156,7 +189,37 @@
 			// DIV is the top 8 bits of the internal divider.
 			DIV = (byte)(Divider >> 8);
 
-            // TODO: Implement the timer and interrupt.
+			if (TimerEnabled)
+			{
+				ushort clockSelectCycles = 0;
+				switch (TimerClockSelect)
+				{
+					case 0x00:
+						clockSelectCycles = 256;
+						break;
+					case 0x01:
+						clockSelectCycles = 4;
+						break;
+					case 0x02:
+						clockSelectCycles = 16;
+						break;
+					case 0x03:
+						clockSelectCycles = 64;
+						break;
+				}
+				// Every certain number of M cycles, increment TIMA and check for a timer interrupt.
+				if ((Divider & clockSelectCycles) == clockSelectCycles)
+				{
+					TIMA++;
+					if (TIMA == 0x00)
+					{
+						TIMA = TMA;
+
+						// Set the timer IF flag.
+						IF |= 0x04;
+					}
+				}
+			}
 
 			// Update the APU's DIV-APU-based events.
             if ((previousDiv & 0x08) == 0x08 && (DIV & 0x08) == 0x00)

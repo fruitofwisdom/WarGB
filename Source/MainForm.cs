@@ -309,37 +309,53 @@ namespace GBSharp
 
 		private void lcdControl_KeyDown(object sender, KeyEventArgs e)
 		{
+			bool needJoypadInterrupt = false;
+
 			if (e.KeyCode == _keyMapping.Up1Key || e.KeyCode == _keyMapping.Up2Key)
 			{
 				Controller.Instance.Up = true;
+				needJoypadInterrupt = true;
 			}
 			if (e.KeyCode == _keyMapping.Left1Key || e.KeyCode == _keyMapping.Left2Key)
 			{
 				Controller.Instance.Left = true;
+				needJoypadInterrupt = true;
 			}
 			if (e.KeyCode == _keyMapping.Down1Key || e.KeyCode == _keyMapping.Down2Key)
 			{
 				Controller.Instance.Down = true;
+				needJoypadInterrupt = true;
 			}
 			if (e.KeyCode == _keyMapping.Right1Key || e.KeyCode == _keyMapping.Right2Key)
 			{
 				Controller.Instance.Right = true;
+				needJoypadInterrupt = true;
 			}
 			if (e.KeyCode == _keyMapping.A1Key || e.KeyCode == _keyMapping.A2Key)
 			{
 				Controller.Instance.A = true;
+				needJoypadInterrupt = true;
 			}
 			if (e.KeyCode == _keyMapping.B1Key || e.KeyCode == _keyMapping.B2Key)
 			{
 				Controller.Instance.B = true;
+				needJoypadInterrupt = true;
 			}
 			if (e.KeyCode == _keyMapping.Start1Key || e.KeyCode == _keyMapping.Start2Key)
 			{
 				Controller.Instance.Start = true;
+				needJoypadInterrupt = true;
 			}
 			if (e.KeyCode == _keyMapping.Select1Key || e.KeyCode == _keyMapping.Select2Key)
 			{
 				Controller.Instance.Select = true;
+				needJoypadInterrupt = true;
+			}
+
+			// A button was pressed, so trigger a joypad interrupt.
+			if (needJoypadInterrupt)
+			{
+				Controller.Instance.TriggerJoypadInterrupt();
 			}
 		}
 

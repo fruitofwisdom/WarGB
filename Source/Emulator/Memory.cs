@@ -110,15 +110,21 @@
 			{
 				if (ROM.Instance.Data is not null)
 				{
-					// TODO: Support the MBC1's advanced banking mode.
-					data = ROM.Instance.Data[address];
+					uint bankOffset = 0;
+					if (MBC1BankingMode)
+					{
+						// NOTE: MBC1's ROM banks are in sizes of 16 KB?
+						// TODO: Is this correct???
+						bankOffset = MBC1RAMBank * 0x4000;
+					}
+					data = ROM.Instance.Data[address + bankOffset];
 				}
 			}
 			else if (address >= 0x4000 && address <= 0x7FFF)
 			{
 				// NOTE: Bank 1 maps to 0x4000 to 0x7FFF, bank 2 to 0x8000 to 0xBFFF, etc.
 				uint bankOffset = (ROMBank - 1) * 0x4000;
-				data = ROM.Instance.Data[bankOffset + address];
+				data = ROM.Instance.Data[address + bankOffset];
 			}
 			else if (address >= 0x8000 && address <= 0x9FFF)
 			{
@@ -129,8 +135,13 @@
 			{
 				if (RAMEnabled)
 				{
-					// TODO: Support the MBC1's RAM bank switching.
-					data = ExternalRAM[address - 0xA000];
+					uint bankOffset = 0;
+					if (MBC1BankingMode)
+					{
+						// NOTE: MBC1's external RAM banks are in sizes of 8KB.
+						bankOffset = MBC1RAMBank * 0x2000;
+					}
+					data = ExternalRAM[(address + bankOffset) - 0xA000];
 				}
 				else
 				{
@@ -166,7 +177,7 @@
 			else if (address >= 0xFEA0 && address <= 0xFEFF)
 			{
 				GameBoy.DebugOutput += $"Reading from unusable memory: 0x{address:X4}!\n";
-				MainForm.Pause();
+				//MainForm.Pause();
 			}
 			else if (address >= 0xFF00 && address <= 0xFF7F)
 			{
@@ -194,12 +205,20 @@
 			{
 				data = Controller.Instance.ReadFromRegister();
 			}
+			else if (address == 0xFF01)
+			{
+				// TODO: Implement the link cable?
+				GameBoy.DebugOutput += "Reading from serial transfer data register (0xFF01), but the link cable is unimplemented!\n";
+			}
+			else if (address == 0xFF02)
+			{
+				// TODO: Implement the link cable?
+				GameBoy.DebugOutput += "Reading from serial transfer control register (0xFF02), but the link cable is unimplemented!\n";
+			}
 			else if (address == 0xFF04)
 			{
 				data = CPU.Instance.DIV;
 			}
-			// TODO: Implement the timer and interrupt.
-			/*
 			else if (address == 0xFF05)
 			{
 				data = CPU.Instance.TIMA;
@@ -210,16 +229,34 @@
 			}
 			else if (address == 0xFF07)
 			{
-				// TODO: Implement timer control.
+				byte timerEnabled = CPU.Instance.TimerEnabled ? (byte)0x04 : (byte)0x00;
+				byte timerClockSelect = CPU.Instance.TimerClockSelect;
+				data = (byte)(timerEnabled | timerClockSelect);
 			}
-			*/
 			else if (address == 0xFF0F)
 			{
 				data = CPU.Instance.IF;
 			}
+			else if (address == 0xFF24)
+			{
+				byte vinLeftOn = APU.Instance.VinLeftOn ? (byte)0x80 : (byte)0x00;
+				byte leftOutputVolume = (byte)APU.Instance.LeftOutputVolume;
+				byte vinRightOn = APU.Instance.VinRightOn ? (byte)0x08 : (byte)0x00;
+				byte rightOutputVolume = (byte)APU.Instance.RightOutputVolume;
+				data = (byte)(vinLeftOn | leftOutputVolume | vinRightOn | rightOutputVolume);
+			}
 			else if (address == 0xFF25)
 			{
 				data = APU.Instance.GetSoundOutputTerminals();
+			}
+			else if (address == 0xFF26)
+			{
+				byte allSoundOn = APU.Instance.IsOn() ? (byte)0x80 : (byte)0x00;
+				byte channel1On = APU.Instance.Channels[0].SoundOn ? (byte)0x01 : (byte)0x00;
+				byte channel2On = APU.Instance.Channels[1].SoundOn ? (byte)0x02 : (byte)0x00;
+				byte channel3On = APU.Instance.Channels[2].SoundOn ? (byte)0x04 : (byte)0x00;
+				byte channel4On = APU.Instance.Channels[3].SoundOn ? (byte)0x08 : (byte)0x00;
+				data = (byte)(allSoundOn | channel1On | channel2On | channel3On | channel4On);
 			}
 			else if (address == 0xFF40)
 			{
@@ -265,6 +302,18 @@
 			{
 				data = (byte)(PPU.Instance.WX);
 			}
+			else if (address == 0xFF53)
+			{
+				// TODO: CGB support.
+				GameBoy.DebugOutput += $"Reading from unimplemented CGB register: 0x{address:X4}!\n";
+				//MainForm.Pause();
+			}
+			else if (address >= 0xFF71 && address <= 0xFF7F)
+			{
+				// NOTE: Ignore?
+				GameBoy.DebugOutput += $"Reading from undocumented register: 0x{address:X4}!\n";
+				//MainForm.Pause();
+			}
 			// TODO: The other registers.
 			else
 			{
@@ -302,16 +351,17 @@
 					else
 					{
 						ROMBank = (uint)(data & 0x1F);
+						// Mask down to the correct number of ROM banks.
+						uint numROMBanks = ROM.Instance.ROMSize / 1024 / 16;
+						ROMBank &= (numROMBanks - 1);
 					}
 				}
 				else if (address >= 0x4000 && address <= 0x5FFF)
 				{
-					// TODO: Support the MBC1's RAM bank switching.
 					MBC1RAMBank = (uint)(data & 0x03);
 				}
 				else if (address >= 0x6000 && address <= 0x7FFF)
 				{
-					// TODO: Support the MBC1's advanced banking mode.
 					MBC1BankingMode = (data & 0x01) == 0x01;
 				}
 			}
@@ -452,8 +502,8 @@
 			}
 			else if (address == 0xFF07)
 			{
-				// TODO: Implement timer control.
-				GameBoy.DebugOutput += "Writing to timer control (0xFF07), but the timer is unimplemented!\n";
+				CPU.Instance.TimerEnabled = Utilities.GetBoolFromByte(data, 2);
+				CPU.Instance.TimerClockSelect = Utilities.GetBitsFromByte(data, 0, 1);
 			}
 			else if (address == 0xFF0F)
 			{
@@ -691,7 +741,7 @@
 			else if (address >= 0xFF71 && address <= 0xFF7F)
 			{
 				// NOTE: Ignore?
-				GameBoy.DebugOutput += $"Writing to undocumented register: 0x{address:X4}!\n";
+				//GameBoy.DebugOutput += $"Writing to undocumented register: 0x{address:X4}!\n";
 				//MainForm.Pause();
 			}
 			// TODO: The other registers.
