@@ -2832,6 +2832,20 @@
 					}
 					break;
 
+				case 0x07:      // RLC A
+					{
+						CY = (byte)(A & 0x80) == 0x80;
+						A = (byte)(A << 1);
+						A |= (byte)(CY ? 0x01 : 0x00);
+						Z = A == 0x00;
+						N = false;
+						H = false;
+						PrintOpcode(instruction, "RLC A");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
 				case 0x09:      // RRC C
 					{
 						CY = (byte)(C & 0x01) == 0x01;

@@ -35,6 +35,10 @@
 		public bool TimerEnabled;
 		public byte TimerClockSelect;
 
+		// TODO: Implement the link cable?
+		private const ushort kSerialTransferTime = 8;
+		private ushort _serialTransferTimeRemaining;
+
 		private bool _halted;
 		private bool _was16BitOpcode;
 
@@ -81,6 +85,8 @@
 			TMA = 0x00;
 			TimerEnabled = false;
 			TimerClockSelect = 0x00;
+
+			_serialTransferTimeRemaining = kSerialTransferTime;
 
 			_halted = false;
 			_was16BitOpcode = false;
@@ -159,7 +165,17 @@
 				}
 				else if ((byte)(IE & 0x08) == 0x08 && (byte)(IF & 0x08) == 0x08)
 				{
-					// TODO: Implement the link cable/serial interrupt?
+					IME = false;
+					Utilities.SetBitsInByte(ref IF, 0, 3, 3);
+					byte pcHigher = (byte)((PC & 0xFF00) >> 8);
+					Memory.Instance.Write(SP - 1, pcHigher);
+					byte pcLower = (byte)(PC & 0x00FF);
+					Memory.Instance.Write(SP - 2, pcLower);
+					SP -= 2;
+					PC = 0x0058;
+					cycles = 5;
+					interruptHandled = true;
+					_halted = false;
 				}
 				else if ((byte)(IE & 0x10) == 0x10 && (byte)(IF & 0x10) == 0x10)
 				{
@@ -213,16 +229,46 @@
 					TIMA++;
 					if (TIMA == 0x00)
 					{
-						TIMA = TMA;
+						if (GameBoy.ShouldLogOpcodes)
+						{
+							GameBoy.LogOutput += $"A timer interrupt occurred with TIMA={TIMA}.\n";
+						}
 
 						// Set the timer IF flag.
 						IF |= 0x04;
+
+						TIMA = TMA;
 					}
 				}
 			}
 
+			if (Memory.Instance.SerialTransferEnabled)
+			{
+				if (_serialTransferTimeRemaining > 0)
+				{
+					_serialTransferTimeRemaining--;
+				}
+
+				if (_serialTransferTimeRemaining == 0)
+				{
+					// TODO: Implement the link cable?
+					Memory.Instance.SerialData = 0xFF;
+
+					Memory.Instance.SerialTransferEnabled = false;
+					_serialTransferTimeRemaining = kSerialTransferTime;
+
+					if (GameBoy.ShouldLogOpcodes)
+					{
+						GameBoy.LogOutput += "A serial interrupt occurred.\n";
+					}
+
+					// Set the serial IF flag.
+					IF |= 0x08;
+				}
+			}
+
 			// Update the APU's DIV-APU-based events.
-            if ((previousDiv & 0x08) == 0x08 && (DIV & 0x08) == 0x00)
+			if ((previousDiv & 0x08) == 0x08 && (DIV & 0x08) == 0x00)
             {
 				_divApu++;
 				APU.Instance.UpdateDiv(_divApu);

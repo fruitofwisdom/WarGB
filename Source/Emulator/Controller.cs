@@ -43,6 +43,11 @@
 
 		public void TriggerJoypadInterrupt()
 		{
+			if (GameBoy.ShouldLogOpcodes)
+			{
+				GameBoy.LogOutput += "A joypad interrupt occurred.\n";
+			}
+
 			// Set the joypad interrupt flag.
 			CPU.Instance.IF |= 0x10;
 		}
@@ -50,11 +55,11 @@
 		// Return the inputs as the register FF00.
 		public byte ReadFromRegister()
 		{
-			byte data = 0x00;
+			byte data = 0xC0;
 
 			if (SelectButtons)
 			{
-				data |= 0x20;
+				data |= 0x10;
 				data |= (byte)(A ? 0x00 : 0x01);
 				data |= (byte)(B ? 0x00 : 0x02);
 				data |= (byte)(Select ? 0x00 : 0x04);
@@ -62,7 +67,7 @@
 			}
 			else if (SelectDpad)
 			{
-				data |= 0x10;
+				data |= 0x20;
 				data |= (byte)(Right ? 0x00 : 0x01);
 				data |= (byte)(Left ? 0x00 : 0x02);
 				data |= (byte)(Up ? 0x00 : 0x04);
@@ -71,7 +76,7 @@
 			else
 			{
 				// All buttons released.
-				data |= 0x0F;
+				data |= 0x3F;
 			}
 
 			return data;

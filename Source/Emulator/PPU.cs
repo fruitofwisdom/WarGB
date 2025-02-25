@@ -167,6 +167,11 @@
 				// A STAT interrupt has occurred.
 				if (_lastPPUMode != PPUMode && Mode0IntSelect)
 				{
+					if (GameBoy.ShouldLogOpcodes)
+					{
+						GameBoy.LogOutput += $"[{Dots}, {LY}] A STAT interrupt occurred with newLY={newLY}.\n";
+					}
+
 					CPU.Instance.IF |= 0x02;
 				}
 			}
@@ -182,6 +187,11 @@
 					// When done, copy the back buffer to the front buffer.
 					Array.Copy(LCDBackBuffer, LCDFrontBuffer, LCDBackBuffer.Length);
 					Array.Clear(LCDBackBuffer);
+
+					if (GameBoy.ShouldLogOpcodes)
+					{
+						GameBoy.LogOutput += $"[{Dots}, {LY}] A v-blank interrupt occurred.\n";
+					}
 
 					// Set the v-blank IF flag.
 					CPU.Instance.IF |= 0x01;

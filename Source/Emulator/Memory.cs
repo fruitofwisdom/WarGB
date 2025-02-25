@@ -14,6 +14,12 @@
 		// Working and stack RAM - OxFF80 to 0xFFFE
 		private readonly byte[] HRAM;            // high RAM
 
+		// TODO: Implement the link cable?
+		public byte SerialData;
+		public bool SerialTransferEnabled;
+		private bool _serialClockSpeed;
+		private bool _serialClockSelect;
+
 		private bool RAMEnabled;
 		public uint ROMBank { get; private set; }
 		private uint MBC1RAMBank = 0;
@@ -54,6 +60,12 @@
 			Array.Clear(WRAMBank1, 0, WRAMBank1.Length);
 			Array.Clear(OAM, 0, OAM.Length);
 			Array.Clear(HRAM, 0, HRAM.Length);
+
+			// TODO: Implement the link cable?
+			SerialData = 0x00;
+			SerialTransferEnabled = false;
+			_serialClockSpeed = true;
+			_serialClockSelect = true;
 
 			RAMEnabled = false;
 			// NOTE: By default, 0x4000 to 0x7FFF is mapped to bank 1.
@@ -207,13 +219,14 @@
 			}
 			else if (address == 0xFF01)
 			{
-				// TODO: Implement the link cable?
-				GameBoy.DebugOutput += "Reading from serial transfer data register (0xFF01), but the link cable is unimplemented!\n";
+				data = SerialData;
 			}
 			else if (address == 0xFF02)
 			{
-				// TODO: Implement the link cable?
-				GameBoy.DebugOutput += "Reading from serial transfer control register (0xFF02), but the link cable is unimplemented!\n";
+				byte serialTransferEnabled = SerialTransferEnabled ? (byte)0x80 : (byte)0x00;
+				byte serialClockSpeed = _serialClockSpeed ? (byte)0x02 : (byte)0x00;
+				byte serialClockSelect = _serialClockSelect ? (byte)0x01 : (byte)0x00;
+				data = (byte)(serialTransferEnabled | serialClockSpeed | serialClockSelect);
 			}
 			else if (address == 0xFF04)
 			{
@@ -474,18 +487,18 @@
 			if (address == 0xFF00)
 			{
 				// NOTE: Unexpectedly, inputs are considered 1 when not selected or pressed.
-				Controller.Instance.SelectButtons = Utilities.GetBitsFromByte(data, 5, 5) != 1;
-				Controller.Instance.SelectDpad = Utilities.GetBitsFromByte(data, 4, 4) != 1;
+				Controller.Instance.SelectButtons = !Utilities.GetBoolFromByte(data, 5);
+				Controller.Instance.SelectDpad = !Utilities.GetBoolFromByte(data, 4);
 			}
 			else if (address == 0xFF01)
 			{
-				// TODO: Implement the link cable?
-				GameBoy.DebugOutput += "Writing to serial transfer data register (0xFF01), but the link cable is unimplemented!\n";
+				SerialData = data;
 			}
 			else if (address == 0xFF02)
 			{
-				// TODO: Implement the link cable?
-				GameBoy.DebugOutput += "Writing to serial transfer control register (0xFF02), but the link cable is unimplemented!\n";
+				SerialTransferEnabled = Utilities.GetBoolFromByte(data, 7);
+				_serialClockSpeed = Utilities.GetBoolFromByte(data, 1);
+				_serialClockSelect = Utilities.GetBoolFromByte(data, 0);
 			}
 			else if (address == 0xFF04)
 			{
