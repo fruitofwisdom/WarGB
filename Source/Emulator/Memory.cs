@@ -145,22 +145,28 @@
 			}
 			else if (address >= 0xA000 && address <= 0xBFFF)
 			{
-				if (RAMEnabled)
+				uint bankOffset = 0;
+				if (MBC1BankingMode)
 				{
-					uint bankOffset = 0;
-					if (MBC1BankingMode)
-					{
-						// NOTE: MBC1's external RAM banks are in sizes of 8KB.
-						bankOffset = MBC1RAMBank * 0x2000;
-					}
-					data = ExternalRAM[(address + bankOffset) - 0xA000];
+					// NOTE: MBC1's external RAM banks are in sizes of 8KB.
+					bankOffset = MBC1RAMBank * 0x2000;
 				}
-				else
+				data = ExternalRAM[(address + bankOffset) - 0xA000];
+
+				if (ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1 ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1_RAM ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1_RAM_BATTERY ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2 ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2_BATTERY)
 				{
-					data = 0xFF;
-					// TODO: Is this a real problem?
-					//GameBoy.DebugOutput += $"Reading from external RAM while RAM is disabled!\n";
-					//MainForm.Pause();
+					if (!RAMEnabled)
+					{
+						data = 0xFF;
+
+						// TODO: Is this a real problem?
+						GameBoy.DebugOutput += $"Reading from external RAM while RAM is disabled!\n";
+						//MainForm.Pause();
+					}
 				}
 			}
 			else if (address >= 0xC000 && address <= 0xCFFF)
@@ -426,16 +432,24 @@
 			}
 			else if (address >= 0xA000 && address <= 0xBFFF)
 			{
-				if (RAMEnabled)
+				ExternalRAM[address - 0xA000] = data;
+
+				if (ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1 ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1_RAM ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1_RAM_BATTERY ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2 ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2_BATTERY)
 				{
-					ExternalRAM[address - 0xA000] = data;
-					SaveNeeded = true;
-				}
-				else
-				{
-					// TODO: Is this a real problem?
-					GameBoy.DebugOutput += "Writing to external RAM while RAM is disabled!\n";
-					//MainForm.Pause();
+					if (RAMEnabled)
+					{
+						SaveNeeded = true;
+					}
+					else
+					{
+						// TODO: Is this a real problem?
+						GameBoy.DebugOutput += "Writing to external RAM while RAM is disabled!\n";
+						//MainForm.Pause();
+					}
 				}
 			}
 			else if (address >= 0xC000 && address <= 0xCFFF)
@@ -463,7 +477,7 @@
 			else if (address >= 0xFEA0 && address <= 0xFEFF)
 			{
 				// NOTE: Ignore?
-				GameBoy.DebugOutput += $"Writing to unusable memory: 0x{address:X4}!\n";
+				//GameBoy.DebugOutput += $"Writing to unusable memory: 0x{address:X4}!\n";
 				//MainForm.Pause();
 			}
 			else if (address >= 0xFF00 && address <= 0xFF7F)
