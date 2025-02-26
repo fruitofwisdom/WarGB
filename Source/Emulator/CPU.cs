@@ -36,7 +36,8 @@
 		public byte TimerClockSelect;
 
 		// TODO: Implement the link cable?
-		private const ushort kSerialTransferTime = 8;
+		// TODO: CGB clock speed?
+		private const ushort kSerialTransferTime = 128;
 		private ushort _serialTransferTimeRemaining;
 
 		private bool _halted;
@@ -224,14 +225,14 @@
 						break;
 				}
 				// Every certain number of M cycles, increment TIMA and check for a timer interrupt.
-				if ((Divider & clockSelectCycles) == clockSelectCycles)
+				if ((Divider % clockSelectCycles) == 0)
 				{
 					TIMA++;
 					if (TIMA == 0x00)
 					{
 						if (GameBoy.ShouldLogOpcodes)
 						{
-							GameBoy.LogOutput += $"A timer interrupt occurred with TIMA={TIMA}.\n";
+							GameBoy.LogOutput += $"[{clockSelectCycles}] A timer interrupt occurred with TMA={TMA}.\n";
 						}
 
 						// Set the timer IF flag.
@@ -242,7 +243,8 @@
 				}
 			}
 
-			if (Memory.Instance.SerialTransferEnabled)
+			// If a transfer is requested and we are running the internal clock.
+			if (Memory.Instance.SerialTransferEnabled && Memory.Instance.SerialClockSelect)
 			{
 				if (_serialTransferTimeRemaining > 0)
 				{

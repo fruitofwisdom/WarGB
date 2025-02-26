@@ -14,16 +14,17 @@
 		// Working and stack RAM - OxFF80 to 0xFFFE
 		private readonly byte[] HRAM;            // high RAM
 
-		// TODO: Implement the link cable?
 		public byte SerialData;
 		public bool SerialTransferEnabled;
+		private byte _serialTransferControl;        // bits 2 through 6
+		// TODO: Implement the link cable?
 		private bool _serialClockSpeed;
-		private bool _serialClockSelect;
+		public bool SerialClockSelect;
 
 		private bool RAMEnabled;
 		public uint ROMBank { get; private set; }
-		private uint MBC1RAMBank = 0;
-		private bool MBC1BankingMode = false;
+		private uint MBC1RAMBank;
+		private bool MBC1BankingMode;
 
 		public bool SaveNeeded { get; private set; }
 
@@ -61,11 +62,12 @@
 			Array.Clear(OAM, 0, OAM.Length);
 			Array.Clear(HRAM, 0, HRAM.Length);
 
-			// TODO: Implement the link cable?
 			SerialData = 0x00;
 			SerialTransferEnabled = false;
+			_serialTransferControl = 0x7C;
+			// TODO: CGB clock speed?
 			_serialClockSpeed = true;
-			_serialClockSelect = true;
+			SerialClockSelect = false;
 
 			RAMEnabled = false;
 			// NOTE: By default, 0x4000 to 0x7FFF is mapped to bank 1.
@@ -153,8 +155,7 @@
 				}
 				data = ExternalRAM[(address + bankOffset) - 0xA000];
 
-				if (ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1 ||
-					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1_RAM ||
+				if (ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1_RAM ||
 					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1_RAM_BATTERY ||
 					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2 ||
 					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2_BATTERY)
@@ -194,7 +195,8 @@
 			}
 			else if (address >= 0xFEA0 && address <= 0xFEFF)
 			{
-				GameBoy.DebugOutput += $"Reading from unusable memory: 0x{address:X4}!\n";
+				// NOTE: Ignore?
+				//GameBoy.DebugOutput += $"Reading from unusable memory: 0x{address:X4}!\n";
 				//MainForm.Pause();
 			}
 			else if (address >= 0xFF00 && address <= 0xFF7F)
@@ -231,8 +233,8 @@
 			{
 				byte serialTransferEnabled = SerialTransferEnabled ? (byte)0x80 : (byte)0x00;
 				byte serialClockSpeed = _serialClockSpeed ? (byte)0x02 : (byte)0x00;
-				byte serialClockSelect = _serialClockSelect ? (byte)0x01 : (byte)0x00;
-				data = (byte)(serialTransferEnabled | serialClockSpeed | serialClockSelect);
+				byte serialClockSelect = SerialClockSelect ? (byte)0x01 : (byte)0x00;
+				data = (byte)(serialTransferEnabled | _serialTransferControl | serialClockSpeed | serialClockSelect);
 			}
 			else if (address == 0xFF04)
 			{
@@ -255,6 +257,10 @@
 			else if (address == 0xFF0F)
 			{
 				data = CPU.Instance.IF;
+			}
+			else if (address == 0xFF1A)
+			{
+				data = (byte)(((WaveTableChannel)APU.Instance.Channels[2]).SoundEnabled ? 0x80 : 0x00);
 			}
 			else if (address == 0xFF24)
 			{
@@ -330,14 +336,17 @@
 			else if (address >= 0xFF71 && address <= 0xFF7F)
 			{
 				// NOTE: Ignore?
-				GameBoy.DebugOutput += $"Reading from undocumented register: 0x{address:X4}!\n";
+				//GameBoy.DebugOutput += $"Reading from undocumented register: 0x{address:X4}!\n";
 				//MainForm.Pause();
 			}
 			// TODO: The other registers.
 			else
 			{
-				GameBoy.DebugOutput += $"Reading from unimplemented register: 0x{address:X4}!\n";
-				MainForm.Pause();
+				if (!GameBoy.ShouldLogOpcodes)
+				{
+					GameBoy.DebugOutput += $"Reading from unimplemented register: 0x{address:X4}!\n";
+					MainForm.Pause();
+				}
 			}
 
 			return data;
@@ -358,6 +367,7 @@
 			{
 				if (address >= 0x0000 && address <= 0x1FFF)
 				{
+					// TODO: Does this addressing apply to simple MBC1 carts?
 					RAMEnabled = data == 0x0A;
 				}
 				else if (address >= 0x2000 && address <= 0x3FFF)
@@ -434,8 +444,7 @@
 			{
 				ExternalRAM[address - 0xA000] = data;
 
-				if (ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1 ||
-					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1_RAM ||
+				if (ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1_RAM ||
 					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1_RAM_BATTERY ||
 					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2 ||
 					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2_BATTERY)
@@ -511,8 +520,9 @@
 			else if (address == 0xFF02)
 			{
 				SerialTransferEnabled = Utilities.GetBoolFromByte(data, 7);
-				_serialClockSpeed = Utilities.GetBoolFromByte(data, 1);
-				_serialClockSelect = Utilities.GetBoolFromByte(data, 0);
+				// TODO: CGB clock speed?
+				//_serialClockSpeed = Utilities.GetBoolFromByte(data, 1);
+				SerialClockSelect = Utilities.GetBoolFromByte(data, 0);
 			}
 			else if (address == 0xFF04)
 			{
