@@ -14,7 +14,7 @@
 			// Check for overflow.
 			if (setH)
 			{
-				H = (result & 0x0FFF) + (value & 0x0FFF) >= 0x1000;
+				H = (ushort)((result & 0x0FFF) + (value & 0x0FFF)) >= 0x1000;
 			}
 			if (setCY)
 			{
@@ -35,7 +35,7 @@
 			// Check for overflow.
 			if (setH)
 			{
-				H = (result & 0x000F) + (value & 0x000F) >= 0x0010;
+				H = (byte)((result & 0x0F) + (value & 0x0F)) >= 0x10;
 			}
 			if (setCY)
 			{
@@ -56,7 +56,7 @@
 			// Check for underflow.
 			if (setH)
 			{
-				H = (result & 0x0FFF) - (value & 0x0FFF) >= 0x1000;
+				H = (ushort)((result & 0x0FFF) - (value & 0x0FFF)) >= 0x1000;
 			}
 			if (setCY)
 			{
@@ -71,13 +71,13 @@
 			byte newResult = (byte)(result - value);
 			if (setZ)
 			{
-				Z = newResult == 0x0000;
+				Z = newResult == 0x00;
 			}
 			N = true;
 			// Check for underflow.
 			if (setH)
 			{
-				H = (result & 0x000F) - (value & 0x000F) >= 0x0010;
+				H = (byte)((result & 0x0F) - (value & 0x0F)) >= 0x10;
 			}
 			if (setCY)
 			{
