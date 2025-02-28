@@ -1428,7 +1428,13 @@
 				case 0x88:      // ADC A, B
 					{
 						byte bAndCY = (byte)(B + (CY ? 0x01 : 0x00));
+						bool didOverflow = bAndCY < B;
 						Add(ref A, bAndCY);
+						if (didOverflow)
+						{
+							H = true;
+							CY = true;
+						}
 						PrintOpcode(instruction, "ADC A, B");
 						PC++;
 						cycles++;
@@ -1438,7 +1444,13 @@
 				case 0x89:      // ADC A, C
 					{
 						byte cAndCY = (byte)(C + (CY ? 0x01 : 0x00));
+						bool didOverflow = cAndCY < C;
 						Add(ref A, cAndCY);
+						if (didOverflow)
+						{
+							H = true;
+							CY = true;
+						}
 						PrintOpcode(instruction, "ADC A, C");
 						PC++;
 						cycles++;
@@ -1448,7 +1460,13 @@
 				case 0x8A:      // ADC A, D
 					{
 						byte dAndCY = (byte)(D + (CY ? 0x01 : 0x00));
+						bool didOverflow = dAndCY < D;
 						Add(ref A, dAndCY);
+						if (didOverflow)
+						{
+							H = true;
+							CY = true;
+						}
 						PrintOpcode(instruction, "ADC A, D");
 						PC++;
 						cycles++;
@@ -1458,7 +1476,13 @@
 				case 0x8B:      // ADC A, E
 					{
 						byte eAndCY = (byte)(E + (CY ? 0x01 : 0x00));
+						bool didOverflow = eAndCY < E;
 						Add(ref A, eAndCY);
+						if (didOverflow)
+						{
+							H = true;
+							CY = true;
+						}
 						PrintOpcode(instruction, "ADC A, E");
 						PC++;
 						cycles++;
@@ -1469,7 +1493,13 @@
 					{
 						byte h = (byte)((HL & 0xFF00) >> 8);
 						byte hAndCY = (byte)(h + (CY ? 0x01 : 0x00));
+						bool didOverflow = hAndCY < h;
 						Add(ref A, hAndCY);
+						if (didOverflow)
+						{
+							H = true;
+							CY = true;
+						}
 						PrintOpcode(instruction, "ADC A, H");
 						PC++;
 						cycles++;
@@ -1480,7 +1510,13 @@
 					{
 						byte l = (byte)(HL & 0x00FF);
 						byte lAndCY = (byte)(l + (CY ? 0x01 : 0x00));
+						bool didOverflow = lAndCY < l;
 						Add(ref A, lAndCY);
+						if (didOverflow)
+						{
+							H = true;
+							CY = true;
+						}
 						PrintOpcode(instruction, "ADC A, L");
 						PC++;
 						cycles++;
@@ -1491,7 +1527,13 @@
 					{
 						byte d8 = Memory.Instance.Read(HL);
 						byte d8AndCY = (byte)(d8 + (CY ? 0x01 : 0x00));
+						bool didOverflow = d8AndCY < d8;
 						Add(ref A, d8AndCY);
+						if (didOverflow)
+						{
+							H = true;
+							CY = true;
+						}
 						PrintOpcode(instruction, "ADC A, (HL)");
 						PC++;
 						cycles += 2;
@@ -1501,7 +1543,13 @@
 				case 0x8F:      // ADC A, A
 					{
 						byte aAndCY = (byte)(A + (CY ? 0x01 : 0x00));
+						bool didOverflow = aAndCY < A;
 						Add(ref A, aAndCY);
+						if (didOverflow)
+						{
+							H = true;
+							CY = true;
+						}
 						PrintOpcode(instruction, "ADC A, A");
 						PC++;
 						cycles++;
@@ -1586,7 +1634,13 @@
 				case 0x98:      // SBC A, B
 					{
 						byte bAndCY = (byte)(B + (CY ? 0x01 : 0x00));
+						bool didOverflow = bAndCY < B;
 						Sub(ref A, bAndCY);
+						if (didOverflow)
+						{
+							H = true;
+							CY = true;
+						}
 						PrintOpcode(instruction, "SBC A, B");
 						PC++;
 						cycles++;
@@ -1596,7 +1650,13 @@
 				case 0x99:      // SBC A, C
 					{
 						byte cAndCY = (byte)(C + (CY ? 0x01 : 0x00));
+						bool didOverflow = cAndCY < C;
 						Sub(ref A, cAndCY);
+						if (didOverflow)
+						{
+							H = true;
+							CY = true;
+						}
 						PrintOpcode(instruction, "SBC A, C");
 						PC++;
 						cycles++;
@@ -1606,7 +1666,13 @@
 				case 0x9A:      // SBC A, D
 					{
 						byte dAndCY = (byte)(D + (CY ? 0x01 : 0x00));
+						bool didOverflow = dAndCY < D;
 						Sub(ref A, dAndCY);
+						if (didOverflow)
+						{
+							H = true;
+							CY = true;
+						}
 						PrintOpcode(instruction, "SBC A, D");
 						PC++;
 						cycles++;
@@ -1616,7 +1682,13 @@
 				case 0x9B:      // SBC A, E
 					{
 						byte eAndCY = (byte)(E + (CY ? 0x01 : 0x00));
+						bool didOverflow = eAndCY < E;
 						Sub(ref A, eAndCY);
+						if (didOverflow)
+						{
+							H = true;
+							CY = true;
+						}
 						PrintOpcode(instruction, "SBC A, E");
 						PC++;
 						cycles++;
@@ -1627,7 +1699,13 @@
 					{
 						byte h = (byte)((HL & 0xFF00) >> 8);
 						byte hAndCY = (byte)(h + (CY ? 0x01 : 0x00));
+						bool didOverflow = hAndCY < h;
 						Sub(ref A, hAndCY);
+						if (didOverflow)
+						{
+							H = true;
+							CY = true;
+						}
 						PrintOpcode(instruction, "SBC A, H");
 						PC++;
 						cycles++;
@@ -1638,7 +1716,13 @@
 					{
 						byte l = (byte)(HL & 0x00FF);
 						byte lAndCY = (byte)(l + (CY ? 0x01 : 0x00));
+						bool didOverflow = lAndCY < l;
 						Sub(ref A, lAndCY);
+						if (didOverflow)
+						{
+							H = true;
+							CY = true;
+						}
 						PrintOpcode(instruction, "SBC A, L");
 						PC++;
 						cycles++;
@@ -1649,7 +1733,13 @@
 					{
 						byte d8 = Memory.Instance.Read(HL);
 						byte d8AndCY = (byte)(d8 + (CY ? 0x01 : 0x00));
+						bool didOverflow = d8AndCY < d8;
 						Sub(ref A, d8AndCY);
+						if (didOverflow)
+						{
+							H = true;
+							CY = true;
+						}
 						PrintOpcode(instruction, "SBC A, (HL)");
 						PC++;
 						cycles += 2;
@@ -2269,8 +2359,14 @@
 				case 0xCE:      // ADC A, d8
 					{
 						byte d8 = Memory.Instance.Read(PC + 1);
-						d8 += (byte)(CY ? 0x01 : 0x00);
-						Add(ref A, d8);
+						byte d8AndCY = (byte)(d8 + (CY ? 0x01 : 0x00));
+						bool didOverflow = d8AndCY < d8;
+						Add(ref A, d8AndCY);
+						if (didOverflow)
+						{
+							H = true;
+							CY = true;
+						}
 						PrintOpcode(instruction, "ADC A, 0x{d8:X2}");
 						PC += 2;
 						cycles += 2;
@@ -2484,7 +2580,13 @@
 					{
 						byte d8 = Memory.Instance.Read(PC + 1);
 						byte d8AndCY = (byte)(d8 + (CY ? 0x01 : 0x00));
+						bool didOverflow = d8AndCY < d8;
 						Sub(ref A, d8AndCY);
+						if (didOverflow)
+						{
+							H = true;
+							CY = true;
+						}
 						PrintOpcode(instruction, $"SBC A, 0x{d8:X2}");
 						PC += 2;
 						cycles += 2;
@@ -4204,6 +4306,18 @@
 					}
 					break;
 
+				case 0x72:      // BIT 6, D
+					{
+						byte bit = Utilities.GetBitsFromByte(D, 6, 6);
+						Z = bit == 0x00;
+						N = false;
+						H = true;
+						PrintOpcode(instruction, "BIT 6, D");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
 				case 0x73:      // BIT 6, E
 					{
 						byte bit = Utilities.GetBitsFromByte(E, 6, 6);
@@ -4409,6 +4523,18 @@
 						Utilities.SetBitsInByte(ref h, 0x00, 0, 0);
 						HL = (ushort)((h << 8) + l);
 						PrintOpcode(instruction, "RES 0, H");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0x85:      // RES 0, L
+					{
+						byte h = (byte)((HL & 0xFF00) >> 8);
+						byte l = (byte)(HL & 0x00FF);
+						Utilities.SetBitsInByte(ref l, 0x00, 0, 0);
+						HL = (ushort)((h << 8) + l);
+						PrintOpcode(instruction, "RES 0, L");
 						PC += 2;
 						cycles += 2;
 					}
