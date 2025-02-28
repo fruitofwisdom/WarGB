@@ -258,6 +258,20 @@
 			{
 				data = CPU.Instance.IF;
 			}
+			else if (address == 0xFF12)
+			{
+				byte defaultEnvelopeValue = (byte)(((PulseWaveChannel)APU.Instance.Channels[0]).DefaultEnvelopeValue << 4);
+				byte envelopeUpDownByte = ((PulseWaveChannel)APU.Instance.Channels[0]).EnvelopeUpDown ? (byte)0x08 : (byte)0x00;
+				byte lengthOfEnvelopeSteps = (byte)((PulseWaveChannel)APU.Instance.Channels[0]).LengthOfEnvelopeSteps;
+				data = (byte)(defaultEnvelopeValue | envelopeUpDownByte | lengthOfEnvelopeSteps);
+			}
+			else if (address == 0xFF17)
+			{
+				byte defaultEnvelopeValue = (byte)(((PulseWaveChannel)APU.Instance.Channels[1]).DefaultEnvelopeValue << 4);
+				byte envelopeUpDownByte = ((PulseWaveChannel)APU.Instance.Channels[1]).EnvelopeUpDown ? (byte)0x08 : (byte)0x00;
+				byte lengthOfEnvelopeSteps = (byte)((PulseWaveChannel)APU.Instance.Channels[1]).LengthOfEnvelopeSteps;
+				data = (byte)(defaultEnvelopeValue | envelopeUpDownByte | lengthOfEnvelopeSteps);
+			}
 			else if (address == 0xFF1A)
 			{
 				data = (byte)(((WaveTableChannel)APU.Instance.Channels[2]).SoundEnabled ? 0x80 : 0x00);
@@ -326,6 +340,12 @@
 			else if (address == 0xFF4B)
 			{
 				data = (byte)(PPU.Instance.WX);
+			}
+			else if (address == 0xFF4F)
+			{
+				// TODO: CGB support.
+				GameBoy.DebugOutput += $"Reading from unimplemented CGB register: 0x{address:X4}!\n";
+				//MainForm.Pause();
 			}
 			else if (address == 0xFF53)
 			{
@@ -774,6 +794,12 @@
 			else if (address == 0xFF4B)
 			{
 				PPU.Instance.WX = data;
+			}
+			else if (address == 0xFF4F)
+			{
+				// TODO: CGB support.
+				GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
+				//MainForm.Pause();
 			}
 			else if (address >= 0xFF71 && address <= 0xFF7F)
 			{
