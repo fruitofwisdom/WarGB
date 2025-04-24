@@ -250,7 +250,7 @@
 			}
 			else if (address == 0xFF07)
 			{
-				byte timerEnabled = CPU.Instance.TimerEnabled ? (byte)0x04 : (byte)0x00;
+				byte timerEnabled = (byte)(CPU.Instance.TimerEnabled ? 0x04 : 0x00);
 				byte timerClockSelect = CPU.Instance.TimerClockSelect;
 				data = (byte)(timerEnabled | timerClockSelect);
 			}
@@ -261,20 +261,44 @@
 			else if (address == 0xFF12)
 			{
 				byte defaultEnvelopeValue = (byte)(((PulseWaveChannel)APU.Instance.Channels[0]).DefaultEnvelopeValue << 4);
-				byte envelopeUpDownByte = ((PulseWaveChannel)APU.Instance.Channels[0]).EnvelopeUpDown ? (byte)0x08 : (byte)0x00;
+				byte envelopeUpDownByte = (byte)(((PulseWaveChannel)APU.Instance.Channels[0]).EnvelopeUpDown ? 0x08 : 0x00);
 				byte lengthOfEnvelopeSteps = (byte)((PulseWaveChannel)APU.Instance.Channels[0]).LengthOfEnvelopeSteps;
 				data = (byte)(defaultEnvelopeValue | envelopeUpDownByte | lengthOfEnvelopeSteps);
+			}
+			else if (address == 0xFF14)
+			{
+				data = 0xBF;
+				byte counterContinuousSelection = (byte)(((PulseWaveChannel)APU.Instance.Channels[0]).CounterContinuousSelection ? 0x40 : 0x00);
+				data = (byte)(data | counterContinuousSelection);
 			}
 			else if (address == 0xFF17)
 			{
 				byte defaultEnvelopeValue = (byte)(((PulseWaveChannel)APU.Instance.Channels[1]).DefaultEnvelopeValue << 4);
-				byte envelopeUpDownByte = ((PulseWaveChannel)APU.Instance.Channels[1]).EnvelopeUpDown ? (byte)0x08 : (byte)0x00;
+				byte envelopeUpDownByte = (byte)(((PulseWaveChannel)APU.Instance.Channels[1]).EnvelopeUpDown ? 0x08 : 0x00);
 				byte lengthOfEnvelopeSteps = (byte)((PulseWaveChannel)APU.Instance.Channels[1]).LengthOfEnvelopeSteps;
 				data = (byte)(defaultEnvelopeValue | envelopeUpDownByte | lengthOfEnvelopeSteps);
+			}
+			else if (address == 0xFF19)
+			{
+				data = 0xBF;
+				byte counterContinuousSelection = (byte)(((PulseWaveChannel)APU.Instance.Channels[1]).CounterContinuousSelection ? 0x40 : 0x00);
+				data = (byte)(data | counterContinuousSelection);
 			}
 			else if (address == 0xFF1A)
 			{
 				data = (byte)(((WaveTableChannel)APU.Instance.Channels[2]).SoundEnabled ? 0x80 : 0x00);
+			}
+			else if (address == 0xFF1E)
+			{
+				data = 0xBF;
+				byte counterContinuousSelection = (byte)(((WaveTableChannel)APU.Instance.Channels[2]).CounterContinuousSelection ? 0x40 : 0x00);
+				data = (byte)(data | counterContinuousSelection);
+			}
+			else if (address == 0xFF23)
+			{
+				data = 0xBF;
+				byte counterContinuousSelection = (byte)(((NoiseGeneratorChannel)APU.Instance.Channels[3]).CounterContinuousSelection ? 0x40 : 0x00);
+				data = (byte)(data | counterContinuousSelection);
 			}
 			else if (address == 0xFF24)
 			{

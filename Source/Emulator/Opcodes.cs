@@ -3681,6 +3681,23 @@
 					}
 					break;
 
+				case 0x36:      // SWAP (HL)
+					{
+						byte d8 = Memory.Instance.Read(HL);
+						byte lower = (byte)(d8 & 0x0F);
+						byte higher = (byte)(d8 & 0xF0);
+						d8 = (byte)((higher >> 4) + (lower << 4));
+						Memory.Instance.Write(HL, d8);
+						Z = d8 == 0x00;
+						N = false;
+						H = false;
+						CY = false;
+						PrintOpcode(instruction, "SWAP (HL)");
+						PC += 2;
+						cycles += 4;
+					}
+					break;
+
 				case 0x37:      // SWAP A
 					{
 						byte lower = (byte)(A & 0x0F);
