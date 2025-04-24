@@ -55,6 +55,7 @@
 		// The window Y and X values (FF4A and FF4B)
 		public int WY;
 		public int WX;
+		private int _wly;		// the window's LY
 
 		private static PPU? _instance;
 		public static PPU Instance
@@ -110,12 +111,18 @@
 
 			WY = 0;
 			WX = 0;
+			_wly = 0;
 		}
 
 		// Update one dot of the PPU and return if rendering occurred.
 		public bool Update()
 		{
 			bool didRender = false;
+
+			if (!LCDEnabled)
+			{
+				return didRender;
+			}
 
 			Dots++;
 
@@ -181,6 +188,16 @@
 			if (newLY != LY)
 			{
 				LY = newLY;
+
+				// Update the window's LY when it's enabled.
+				if (WindowEnabled)
+				{
+					_wly++;
+				}
+				if (LY == 0)
+				{
+					_wly = 0;
+				}
 
 				if (LY == kVBlankLine)
 				{
@@ -344,6 +361,7 @@
 						// NOTE: The window has a 7 pixel x-offset.
 						int x = tileX * 8 + WX - 7;
 						int y = tileY * 8 + WY;
+						// TODO: Fix the implementation of _wly.
 						RenderTile(tileAddress, x, y, BGPaletteData);
 					}
 				}
@@ -386,6 +404,7 @@
 						tileAddress += tileNumber * 16;
 					}
 					byte attributes = Memory.Instance.Read(objAddress + 3);
+					// TODO: Also handle priority of opaque pixels by OAM location.
 					bool priority = Utilities.GetBoolFromByte(attributes, 7);
 					bool yFlip = Utilities.GetBoolFromByte(attributes, 6);
 					bool xFlip = Utilities.GetBoolFromByte(attributes, 5);

@@ -2405,7 +2405,7 @@
 							H = true;
 							CY = true;
 						}
-						PrintOpcode(instruction, "ADC A, 0x{d8:X2}");
+						PrintOpcode(instruction, $"ADC A, 0x{d8:X2}");
 						PC += 2;
 						cycles += 2;
 					}
@@ -2931,7 +2931,7 @@
 
 				default:
 					{
-						GameBoy.DebugOutput += $"[0x{PC:X4}] Unimplemented opcode: 0x{instruction:X2}!\n";
+						GameBoy.DebugOutput += $"[0x{PC:X4} {Memory.Instance.ROMBank}] Unimplemented opcode: 0x{instruction:X2}!\n";
 						MainForm.Pause();
 					}
 					break;
@@ -5445,7 +5445,7 @@
 
 				default:
 					{
-						GameBoy.DebugOutput += $"[0x{PC:X4}] Unimplemented opcode: 0xCB{instruction:X2}!\n";
+						GameBoy.DebugOutput += $"[0x{PC:X4} {Memory.Instance.ROMBank}] Unimplemented opcode: 0xCB{instruction:X2}!\n";
 						MainForm.Pause();
 					}
 					break;
