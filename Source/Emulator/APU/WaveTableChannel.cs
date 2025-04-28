@@ -41,7 +41,8 @@ namespace GBSharp
 		public bool SoundEnabled = false;
 
 		// The output level. (NR32, 0xFF1C)
-		private float _outputLevel = 0.0f;
+		private byte _outputLevel = 0;
+		private float _outputLevelAsFloat = 0.0f;
 
 		// The low-order frequency period. (NR33, 0xFF1D)
 		public uint LowOrderFrequencyData = 0;
@@ -69,8 +70,8 @@ namespace GBSharp
 			else
 			{
 				// Set volume levels.
-				_waveTableProvider._leftVolume = APU.Instance.Channel3LeftOn ? _outputLevel : 0.0f;
-				_waveTableProvider._rightVolume = APU.Instance.Channel3RightOn ? _outputLevel : 0.0f;
+				_waveTableProvider._leftVolume = APU.Instance.Channel3LeftOn ? _outputLevelAsFloat : 0.0f;
+				_waveTableProvider._rightVolume = APU.Instance.Channel3RightOn ? _outputLevelAsFloat : 0.0f;
 
 				// Update the frequency.
 				uint frequencyData = LowOrderFrequencyData + (HighOrderFrequencyData << 8);
@@ -83,24 +84,30 @@ namespace GBSharp
 			_waveTableProvider.FillAudioBuffer();
 		}
 
+		public byte GetOutputLevel()
+		{
+			return _outputLevel;
+		}
+
 		public void SetOutputLevel(byte outputLevel)
 		{
+			_outputLevel = outputLevel;
 			switch (outputLevel)
 			{
 				case 0x00:
-					_outputLevel = 0.0f;
+					_outputLevelAsFloat = 0.0f;
 					break;
 
 				case 0x01:
-					_outputLevel = 1.0f;
+					_outputLevelAsFloat = 1.0f;
 					break;
 
 				case 0x02:
-					_outputLevel = 0.5f;
+					_outputLevelAsFloat = 0.5f;
 					break;
 
 				case 0x03:
-					_outputLevel = 0.25f;
+					_outputLevelAsFloat = 0.25f;
 					break;
 
 				default:

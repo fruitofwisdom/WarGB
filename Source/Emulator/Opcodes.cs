@@ -1360,6 +1360,16 @@
 					}
 					break;
 
+				case 0x7F:      // LD A, A
+					{
+						// Nothing to do.
+						//A = A;
+						PrintOpcode(instruction, "LD A, A");
+						PC++;
+						cycles++;
+					}
+					break;
+
 				case 0x80:      // ADD A, B
 					{
 						Add(ref A, B);
@@ -3049,6 +3059,20 @@
 					}
 					break;
 
+				case 0x08:      // RRC B
+					{
+						CY = (byte)(B & 0x01) == 0x01;
+						B = (byte)(B >> 1);
+						B |= (byte)(CY ? 0x80 : 0x00);
+						Z = B == 0x00;
+						N = false;
+						H = false;
+						PrintOpcode(instruction, "RRC B");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
 				case 0x09:      // RRC C
 					{
 						CY = (byte)(C & 0x01) == 0x01;
@@ -4684,6 +4708,15 @@
 					{
 						Utilities.SetBitsInByte(ref C, 0x00, 1, 1);
 						PrintOpcode(instruction, "RES 1, C");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0x8B:      // RES 1, E
+					{
+						Utilities.SetBitsInByte(ref E, 0x00, 1, 1);
+						PrintOpcode(instruction, "RES 1, E");
 						PC += 2;
 						cycles += 2;
 					}

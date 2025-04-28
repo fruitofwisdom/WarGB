@@ -286,13 +286,28 @@
 			}
 			else if (address == 0xFF1A)
 			{
-				data = (byte)(((WaveTableChannel)APU.Instance.Channels[2]).SoundEnabled ? 0x80 : 0x00);
+				data = 0x7F;
+				byte soundEnabled = (byte)(((WaveTableChannel)APU.Instance.Channels[2]).SoundEnabled ? 0x80 : 0x00);
+				data = (byte)(data | soundEnabled);
+			}
+			else if (address == 0xFF1C)
+			{
+				data = 0x9F;
+				byte outputLevel = (byte)(((WaveTableChannel)APU.Instance.Channels[2]).GetOutputLevel() << 5);
+				data = (byte)(data | outputLevel);
 			}
 			else if (address == 0xFF1E)
 			{
 				data = 0xBF;
 				byte counterContinuousSelection = (byte)(((WaveTableChannel)APU.Instance.Channels[2]).CounterContinuousSelection ? 0x40 : 0x00);
 				data = (byte)(data | counterContinuousSelection);
+			}
+			else if (address == 0xFF21)
+			{
+				byte defaultEnvelopeValue = (byte)(((NoiseGeneratorChannel)APU.Instance.Channels[3]).DefaultEnvelopeValue << 4);
+				byte envelopeUpDownByte = (byte)(((NoiseGeneratorChannel)APU.Instance.Channels[3]).EnvelopeUpDown ? 0x08 : 0x00);
+				byte lengthOfEnvelopeSteps = (byte)((NoiseGeneratorChannel)APU.Instance.Channels[3]).LengthOfEnvelopeSteps;
+				data = (byte)(defaultEnvelopeValue | envelopeUpDownByte | lengthOfEnvelopeSteps);
 			}
 			else if (address == 0xFF23)
 			{
@@ -314,12 +329,13 @@
 			}
 			else if (address == 0xFF26)
 			{
+				data = 0x70;
 				byte allSoundOn = APU.Instance.IsOn() ? (byte)0x80 : (byte)0x00;
 				byte channel1On = APU.Instance.Channels[0].SoundOn ? (byte)0x01 : (byte)0x00;
 				byte channel2On = APU.Instance.Channels[1].SoundOn ? (byte)0x02 : (byte)0x00;
 				byte channel3On = APU.Instance.Channels[2].SoundOn ? (byte)0x04 : (byte)0x00;
 				byte channel4On = APU.Instance.Channels[3].SoundOn ? (byte)0x08 : (byte)0x00;
-				data = (byte)(allSoundOn | channel1On | channel2On | channel3On | channel4On);
+				data = (byte)(data | allSoundOn | channel1On | channel2On | channel3On | channel4On);
 			}
 			else if (address == 0xFF40)
 			{
@@ -818,6 +834,12 @@
 			else if (address == 0xFF4B)
 			{
 				PPU.Instance.WX = data;
+			}
+			else if (address == 0xFF4D)
+			{
+				// TODO: CGB support.
+				GameBoy.DebugOutput += "Double-speed is unimplemented!\n";
+				//MainForm.Pause();
 			}
 			else if (address == 0xFF4F)
 			{

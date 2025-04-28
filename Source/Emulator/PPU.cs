@@ -261,7 +261,7 @@
 
 		public byte GetSTAT()
 		{
-			byte stat = 0x00;
+			byte stat = 0x80;
 
 			stat |= (byte)(LYCIntSelect ? 0x40 : 0x00);
 			stat |= (byte)(Mode2IntSelect ? 0x20 : 0x00);
