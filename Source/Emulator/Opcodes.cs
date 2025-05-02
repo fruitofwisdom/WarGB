@@ -527,7 +527,7 @@
 						if (!N)
 						{
 							// The last operation was an ADD or ADC.
-							if (CY || A >= 0x99)
+							if (CY || A > 0x99)
 							{
 								A += 0x60;
 								CY = true;
