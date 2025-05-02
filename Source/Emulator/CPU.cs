@@ -224,6 +224,15 @@
 					_halted = false;
 				}
 			}
+			else
+			{
+				// NOTE: If interrupts are disabled, but an interrupt is triggered while the CPU
+				// is halted, unhalt the CPU, but don't handle the interrupt.
+				if (_halted && IF != 0x00)
+				{
+					_halted = false;
+				}
+			}
 
 			return interruptHandled;
 		}
