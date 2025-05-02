@@ -762,7 +762,8 @@
 
 				case 0x39:      // ADD HL, SP
 					{
-						Add(ref HL, SP);
+						Add(ref HL, SP, false);
+						N = false;
 						PrintOpcode(instruction, "ADD HL, SP");
 						PC++;
 						cycles += 2;
@@ -2742,6 +2743,28 @@
 					}
 					break;
 
+				case 0xE8:      // ADD SP, s8
+					{
+						sbyte s8 = (sbyte)Memory.Instance.Read(PC + 1);
+						ushort priorSP = SP;
+						SP = (ushort)(SP + s8);
+						Z = false;
+						N = false;
+						// NOTE: SP of 0x007F + 1 should set H, does.
+						// NOTE: SP of 0x0080 + 1 should not set H, but does.
+						// NOTE: SP of 0x00FF + 1 should set H and CY, but does not.
+						// NOTE: SP of 0x7FFF + 1 should set H and CY, but does not.
+						// NOTE: SP of 0xFFFF + 1 should set H and CY, but only sets C.
+						// TODO: Need to check each even and odd bit for overflow independently?
+						// NOTE: This is likely all true for LD HP, SP+s8 as well.
+						H = (byte)(((byte)priorSP & 0xFF) + (s8 & 0x0F)) >= 0x10;
+						CY = SP < priorSP;
+						PrintOpcode(instruction, $"ADD SP, 0x{s8:X2}");
+						PC += 2;
+						cycles += 4;
+					}
+					break;
+
 				case 0xE9:      // JP HL
 					{
 						PrintOpcode(instruction, $"JP HL");
@@ -2879,11 +2902,12 @@
 				case 0xF8:      // LD HL, SP+s8
 					{
 						sbyte s8 = (sbyte)Memory.Instance.Read(PC + 1);
-						HL = (ushort)(SP + s8);
+						ushort newSP = (ushort)(SP + s8);
+						HL = newSP;
 						Z = false;
 						N = false;
-						H = s8 < 0;
-						CY = s8 < 0;
+						H = (byte)(((byte)SP & 0xFF) + (s8 & 0x0F)) >= 0x10;
+						CY = newSP < SP;
 						PrintOpcode(instruction, $"LD HL, SP+0x{s8:X2}");
 						PC += 2;
 						cycles += 3;
