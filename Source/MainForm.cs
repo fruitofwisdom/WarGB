@@ -424,6 +424,16 @@ namespace GBSharp
 			nextOpcodeToolStripMenuItem.Enabled = !playing;
 			nextScanlineToolStripMenuItem.Enabled = !playing;
 		}
+
+		private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+		{
+			// Close and stop any current Game Boy thread.
+			if (_gameBoyThread != null)
+			{
+				_gameBoy.Stop();
+				_gameBoyThread.Join();
+			}
+		}
 	}
 
 	// A mapping of two sets of inputs (both are for player one).

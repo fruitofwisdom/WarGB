@@ -200,7 +200,7 @@ namespace GBSharp
 				if (CounterContinuousSelection)
 				{
 					_soundLengthTimer++;
-					if (_soundLengthTimer == kSoundLengthTime)
+					if (_soundLengthTimer >= kSoundLengthTime)
 					{
 						SoundOn = false;
 					}

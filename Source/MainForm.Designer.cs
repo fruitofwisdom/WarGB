@@ -78,7 +78,8 @@
 			menuStrip.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, optionsToolStripMenuItem, debugToolStripMenuItem, helpToolStripMenuItem });
 			menuStrip.Location = new Point(0, 0);
 			menuStrip.Name = "menuStrip";
-			menuStrip.Size = new Size(664, 24);
+			menuStrip.Padding = new Padding(8, 3, 0, 3);
+			menuStrip.Size = new Size(854, 25);
 			menuStrip.TabIndex = 0;
 			menuStrip.Text = "menuStrip";
 			// 
@@ -86,7 +87,7 @@
 			// 
 			fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { loadROMToolStripMenuItem, exitToolStripMenuItem });
 			fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-			fileToolStripMenuItem.Size = new Size(37, 20);
+			fileToolStripMenuItem.Size = new Size(37, 19);
 			fileToolStripMenuItem.Text = "File";
 			// 
 			// loadROMToolStripMenuItem
@@ -109,7 +110,7 @@
 			// 
 			optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { controlsToolStripMenuItem, lcdColorToolStripMenuItem, lcdSizeToolStripMenuItem, muteSoundToolStripMenuItem, soundChannelsToolStripMenuItem });
 			optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-			optionsToolStripMenuItem.Size = new Size(61, 20);
+			optionsToolStripMenuItem.Size = new Size(61, 19);
 			optionsToolStripMenuItem.Text = "Options";
 			// 
 			// controlsToolStripMenuItem
@@ -242,7 +243,7 @@
 			// 
 			debugToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { displayFrameTimeToolStripMenuItem, logOpcodesToolStripMenuItem, nextFrameToolStripMenuItem, nextOpcodeToolStripMenuItem, nextScanlineToolStripMenuItem, showDebugOutputToolStripMenuItem });
 			debugToolStripMenuItem.Name = "debugToolStripMenuItem";
-			debugToolStripMenuItem.Size = new Size(54, 20);
+			debugToolStripMenuItem.Size = new Size(54, 19);
 			debugToolStripMenuItem.Text = "Debug";
 			// 
 			// displayFrameTimeToolStripMenuItem
@@ -301,7 +302,7 @@
 			// 
 			helpToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { aboutGBSharpToolStripMenuItem });
 			helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-			helpToolStripMenuItem.Size = new Size(44, 20);
+			helpToolStripMenuItem.Size = new Size(44, 19);
 			helpToolStripMenuItem.Text = "Help";
 			// 
 			// aboutGBSharpToolStripMenuItem
@@ -315,9 +316,9 @@
 			// toolStrip
 			// 
 			toolStrip.Items.AddRange(new ToolStripItem[] { playButton, pauseButton, resetButton, nextFrameButton });
-			toolStrip.Location = new Point(0, 24);
+			toolStrip.Location = new Point(0, 25);
 			toolStrip.Name = "toolStrip";
-			toolStrip.Size = new Size(664, 25);
+			toolStrip.Size = new Size(854, 25);
 			toolStrip.TabIndex = 1;
 			toolStrip.Text = "toolStrip";
 			// 
@@ -367,9 +368,10 @@
 			// 
 			// lcdControl
 			// 
-			lcdControl.Location = new Point(12, 52);
+			lcdControl.Location = new Point(15, 73);
+			lcdControl.Margin = new Padding(5, 6, 5, 6);
 			lcdControl.Name = "lcdControl";
-			lcdControl.Size = new Size(640, 576);
+			lcdControl.Size = new Size(823, 806);
 			lcdControl.TabIndex = 2;
 			lcdControl.KeyDown += lcdControl_KeyDown;
 			lcdControl.KeyUp += lcdControl_KeyUp;
@@ -378,10 +380,11 @@
 			// debugRichTextBox
 			// 
 			debugRichTextBox.Font = new Font("Cascadia Code", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-			debugRichTextBox.Location = new Point(658, 52);
+			debugRichTextBox.Location = new Point(846, 73);
+			debugRichTextBox.Margin = new Padding(4, 4, 4, 4);
 			debugRichTextBox.Name = "debugRichTextBox";
 			debugRichTextBox.ReadOnly = true;
-			debugRichTextBox.Size = new Size(250, 576);
+			debugRichTextBox.Size = new Size(320, 805);
 			debugRichTextBox.TabIndex = 3;
 			debugRichTextBox.Text = "";
 			debugRichTextBox.Visible = false;
@@ -389,9 +392,10 @@
 			// statusStrip
 			// 
 			statusStrip.Items.AddRange(new ToolStripItem[] { debugToolStripStatusLabel });
-			statusStrip.Location = new Point(0, 640);
+			statusStrip.Location = new Point(0, 905);
 			statusStrip.Name = "statusStrip";
-			statusStrip.Size = new Size(664, 22);
+			statusStrip.Padding = new Padding(1, 0, 18, 0);
+			statusStrip.Size = new Size(854, 22);
 			statusStrip.TabIndex = 4;
 			statusStrip.Text = "statusStrip";
 			// 
@@ -402,9 +406,9 @@
 			// 
 			// MainForm
 			// 
-			AutoScaleDimensions = new SizeF(7F, 15F);
+			AutoScaleDimensions = new SizeF(9F, 21F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(664, 662);
+			ClientSize = new Size(854, 927);
 			Controls.Add(statusStrip);
 			Controls.Add(debugRichTextBox);
 			Controls.Add(lcdControl);
@@ -413,8 +417,10 @@
 			Icon = (Icon)resources.GetObject("$this.Icon");
 			KeyPreview = true;
 			MainMenuStrip = menuStrip;
+			Margin = new Padding(4, 4, 4, 4);
 			Name = "MainForm";
 			Text = "GB#";
+			FormClosing += MainForm_FormClosing;
 			menuStrip.ResumeLayout(false);
 			menuStrip.PerformLayout();
 			toolStrip.ResumeLayout(false);

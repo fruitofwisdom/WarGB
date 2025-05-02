@@ -67,15 +67,18 @@
 			Thread.CurrentThread.Name = "GB# Game Boy";
 			DebugOutput += "Ready to play " + ROM.Instance.Title + "!\n";
 
-			// TODO: Don't make a log file when !ShouldLogOpcodes?
-			string logPath = Environment.CurrentDirectory + "\\" + ROM.Instance.Filename + ".log";
-			_logFile = new StreamWriter(logPath);
-
 			uint clocksToNextCPUCycle = 0;
 
 			// One loop is one cycle of the master clock.
 			while (!_needToStop)
 			{
+				// Create a log file only if logging is requested.
+				if (ShouldLogOpcodes && _logFile == null)
+				{
+					string logPath = Environment.CurrentDirectory + "\\" + ROM.Instance.Filename + ".log";
+					_logFile = new StreamWriter(logPath);
+				}
+
 				// Do nothing if we're paused, unless a step was requested.
 				if (!Playing && !(_stepFrameRequested || _stepOpcodeRequested || _stepScanlineRequested))
 				{
@@ -83,7 +86,6 @@
 					continue;
 				}
 
-				// When ready for a new frame, wait so our timing is accurate.
 				// When a frame is done, wait until our timing is accurate.
 				if (_frameDone)
 				{
@@ -123,7 +125,8 @@
 					clocksToNextCPUCycle = CPU.Instance.Step();
 
 					// NOTE: The CPU runs at one quarter of the master clock.
-					clocksToNextCPUCycle *= 4;
+					uint cpuFrequency = (uint)(CPU.Instance.DoubleSpeed ? 2 : 4);
+					clocksToNextCPUCycle *= cpuFrequency;
 
 					// Potentially trigger an opcode step.
 					if (_stepOpcodeRequested)
@@ -147,15 +150,25 @@
 
 				_clocks++;
 
-				// Update the divider and timer every CPU cycle (M cycle).
-				if (_clocks % 4 == 0)
+				// Update the divider and timer every CPU cycle (M-cycle).
+				uint dividerAndTimerFrequency = (uint)(CPU.Instance.DoubleSpeed ? 2 : 4);
+				if (_clocks % dividerAndTimerFrequency == 0)
 				{
 					CPU.Instance.UpdateDividerAndTimer();
 				}
 
-				// Write log output.
-				_logFile.Write(LogOutput);
-				LogOutput = "";
+				// Write log output and close, if requested.
+				if (_logFile != null)
+				{
+					_logFile.Write(LogOutput);
+					LogOutput = "";
+
+					if (!ShouldLogOpcodes)
+					{
+						_logFile.Close();
+						_logFile = null;
+					}
+				}
 
 				// Trigger end-of-frame activities, like saving.
 				if (_clocks == kClocksPerFrame)
@@ -177,7 +190,11 @@
 				}
 			}
 
-			_logFile.Close();
+			if (_logFile != null)
+			{
+				_logFile.Close();
+				_logFile = null;
+			}
 		}
 
 		// Stop the emulator and the thread.

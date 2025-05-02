@@ -256,7 +256,8 @@
 			}
 			else if (address == 0xFF0F)
 			{
-				data = CPU.Instance.IF;
+				data = 0xE0;
+				data = (byte)(data | CPU.Instance.IF);
 			}
 			else if (address == 0xFF12)
 			{
@@ -381,17 +382,48 @@
 			{
 				data = (byte)(PPU.Instance.WX);
 			}
+			else if (address == 0xFF4D)
+			{
+				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				{
+					data = 0x7E;
+					byte doubleSpeed = (byte)(CPU.Instance.DoubleSpeed ? 0x80 : 0x00);
+					byte doubleSpeedArmed = (byte)(CPU.Instance.DoubleSpeedArmed ? 0x01 : 0x00);
+					data = (byte)(data | doubleSpeed | doubleSpeedArmed);
+				}
+				else
+				{
+					GameBoy.DebugOutput += $"Reading from CGB register in non-CGB game: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+			}
 			else if (address == 0xFF4F)
 			{
-				// TODO: CGB support.
-				GameBoy.DebugOutput += $"Reading from unimplemented CGB register: 0x{address:X4}!\n";
-				//MainForm.Pause();
+				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				{
+					// TODO: CGB support.
+					GameBoy.DebugOutput += $"Reading from unimplemented CGB register: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+				else
+				{
+					GameBoy.DebugOutput += $"Reading from CGB register in non-CGB game: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
 			}
 			else if (address == 0xFF53)
 			{
-				// TODO: CGB support.
-				GameBoy.DebugOutput += $"Reading from unimplemented CGB register: 0x{address:X4}!\n";
-				//MainForm.Pause();
+				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				{
+					// TODO: CGB support.
+					GameBoy.DebugOutput += $"Reading from unimplemented CGB register: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+				else
+				{
+					GameBoy.DebugOutput += $"Reading from CGB register in non-CGB game: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
 			}
 			else if (address >= 0xFF71 && address <= 0xFF7F)
 			{
@@ -797,8 +829,9 @@
 			}
 			else if (address == 0xFF44)
 			{
-				GameBoy.DebugOutput += "Register 0xFF44 is read-only!\n";
-				MainForm.Pause();
+				// NOTE: Ignore?
+				//GameBoy.DebugOutput += "Register 0xFF44 is read-only!\n";
+				//MainForm.Pause();
 			}
 			else if (address == 0xFF45)
 			{
@@ -837,15 +870,57 @@
 			}
 			else if (address == 0xFF4D)
 			{
-				// TODO: CGB support.
-				GameBoy.DebugOutput += "Double-speed is unimplemented!\n";
-				//MainForm.Pause();
+				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				{
+					CPU.Instance.DoubleSpeedArmed = true;
+				}
+				else
+				{
+					GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
 			}
 			else if (address == 0xFF4F)
 			{
-				// TODO: CGB support.
-				GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
-				//MainForm.Pause();
+				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				{
+					// TODO: CGB support.
+					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+				else
+				{
+					GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+			}
+			else if (address == 0xFF68)
+			{
+				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				{
+					// TODO: CGB support.
+					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+				else
+				{
+					GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+			}
+			else if (address == 0xFF69)
+			{
+				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				{
+					// TODO: CGB support.
+					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+				else
+				{
+					GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
 			}
 			else if (address >= 0xFF71 && address <= 0xFF7F)
 			{

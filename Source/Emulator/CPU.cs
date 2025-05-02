@@ -34,13 +34,21 @@
 		public byte TMA;
 		public bool TimerEnabled;
 		public byte TimerClockSelect;
+		private bool _timerOverflowPending;
 
 		// TODO: Implement the link cable?
-		// TODO: CGB clock speed?
 		private const ushort kSerialTransferTime = 128;
 		private ushort _serialTransferTimeRemaining;
 
-		private bool _halted;
+		// CGB double speed.
+		public bool DoubleSpeed { get; private set; }
+		public bool DoubleSpeedArmed;
+		private const ushort kDoubleSpeedArmedTime = 2050;      // M-cycles
+		private ushort _doubleSpeedArmedTimeRemaining;
+
+		// Other CPU states.
+		private bool _halted;		// from the HALT opcode
+		private bool _stopped;		// from the STOP opcode
 		private bool _was16BitOpcode;
 
 		private static CPU? _instance;
@@ -62,16 +70,16 @@
 		public void Reset()
 		{
 			// Initial CPU state after the boot ROM.
-			A = 0x01;
+			A = 0x11; //0x01;		// old no$gmb values
 			Z = true;
 			N = false;
-			H = true;
-			CY = true;
+			H = false; //true;
+			CY = false; //true;
 			B = 0x00;
-			C = 0x13;
-			D = 0x00;
-			E = 0xD8;
-			HL = 0x014D;
+			C = 0x00; //0x13;
+			D = 0xFF; //0x00;
+			E = 0x56; //0xD8;
+			HL = 0x000D; //0x014D;
 			PC = 0x0100;
 			SP = 0xFFFE;
 
@@ -86,17 +94,40 @@
 			TMA = 0x00;
 			TimerEnabled = false;
 			TimerClockSelect = 0x00;
+			_timerOverflowPending = false;
 
 			_serialTransferTimeRemaining = kSerialTransferTime;
 
+			DoubleSpeed = false;
+			DoubleSpeedArmed = false;
+			_doubleSpeedArmedTimeRemaining = kDoubleSpeedArmedTime;
+
 			_halted = false;
+			_stopped = false;
 			_was16BitOpcode = false;
 		}
 
 		// Step through one instruction and return the number of cycles elapsed.
 		public uint Step()
 		{
-			uint cycles;
+			uint cycles = 0;
+
+			if (DoubleSpeedArmed && _doubleSpeedArmedTimeRemaining > 0)
+			{
+				_doubleSpeedArmedTimeRemaining--;
+				if (_doubleSpeedArmedTimeRemaining == 0)
+				{
+					DoubleSpeed = !DoubleSpeed;
+					DoubleSpeedArmed = false;
+					_doubleSpeedArmedTimeRemaining = kDoubleSpeedArmedTime;
+					_stopped = false;
+				}
+			}
+
+			if (_stopped)
+			{
+				return cycles;
+			}
 
 			// If an interrupt was triggered, handle it as our next instruction.
 			bool interruptHandled = HandleInterrupt(out cycles);
@@ -197,7 +228,7 @@
 			return interruptHandled;
 		}
 
-		// Update the divider and timer every CPU cycle (M cycle).
+		// Update the divider and timer every CPU cycle (M-cycle).
 		public void UpdateDividerAndTimer()
 		{
 			byte previousDiv = DIV;
@@ -205,6 +236,18 @@
 			Divider++;
 			// DIV is the top 8 bits of the internal divider.
 			DIV = (byte)(Divider >> 8);
+
+			if (_timerOverflowPending)
+			{
+				if (GameBoy.ShouldLogOpcodes)
+				{
+					GameBoy.LogOutput += $"[0x{CPU.Instance.PC:X4} {Memory.Instance.ROMBank}] A timer interrupt occurred.\n";
+				}
+
+				// Set the timer IF flag.
+				IF |= 0x04;
+				_timerOverflowPending = false;
+			}
 
 			if (TimerEnabled)
 			{
@@ -224,19 +267,15 @@
 						clockSelectCycles = 64;
 						break;
 				}
-				// Every certain number of M cycles, increment TIMA and check for a timer interrupt.
+
+				// Every certain number of M-cycles, increment TIMA and check for a timer interrupt.
 				if ((Divider % clockSelectCycles) == 0)
 				{
 					TIMA++;
 					if (TIMA == 0x00)
 					{
-						if (GameBoy.ShouldLogOpcodes)
-						{
-							GameBoy.LogOutput += $"[{clockSelectCycles}] A timer interrupt occurred with TMA={TMA}.\n";
-						}
-
-						// Set the timer IF flag.
-						IF |= 0x04;
+						// NOTE: The timer interrupt flag isn't set until one M-cycle after this overflow.
+						_timerOverflowPending = true;
 
 						TIMA = TMA;
 					}

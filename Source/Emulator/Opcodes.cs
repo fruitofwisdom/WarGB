@@ -266,6 +266,15 @@
 					}
 					break;
 
+				case 0x10:      // STOP
+					{
+						_stopped = true;
+						PrintOpcode(instruction, "STOP");
+						PC += 2;
+						cycles++;
+					}
+					break;
+
 				case 0x11:      // LD DE, d16
 					{
 						E = Memory.Instance.Read(PC + 1);
@@ -3012,6 +3021,23 @@
 					}
 					break;
 
+				case 0x04:      // RLC H
+					{
+						byte h = (byte)((HL & 0xFF00) >> 8);
+						byte l = (byte)(HL & 0x00FF);
+						CY = (byte)(h & 0x80) == 0x80;
+						h = (byte)(h << 1);
+						h |= (byte)(CY ? 0x01 : 0x00);
+						HL = (ushort)((h << 8) + l);
+						Z = h == 0x00;
+						N = false;
+						H = false;
+						PrintOpcode(instruction, "RLC H");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
 				case 0x05:      // RLC L
 					{
 						byte h = (byte)((HL & 0xFF00) >> 8);
@@ -4374,6 +4400,19 @@
 						N = false;
 						H = true;
 						PrintOpcode(instruction, "BIT 5, E");
+						PC += 2;
+						cycles += 2;
+					}
+					break;
+
+				case 0x6C:      // BIT 5, H
+					{
+						byte h = (byte)((HL & 0xFF00) >> 8);
+						byte bit = Utilities.GetBitsFromByte(h, 5, 5);
+						Z = bit == 0x00;
+						N = false;
+						H = true;
+						PrintOpcode(instruction, "BIT 5, H");
 						PC += 2;
 						cycles += 2;
 					}
