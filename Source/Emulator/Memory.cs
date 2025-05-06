@@ -680,6 +680,12 @@
 				((PulseWaveChannel)APU.Instance.Channels[0]).CounterContinuousSelection = counterContinuousSelection;
 				((PulseWaveChannel)APU.Instance.Channels[0]).HighOrderFrequencyData = highOrderFrequencyData;
 			}
+			else if (address == 0xFF15)
+			{
+				// NOTE: Ignore?
+				//GameBoy.DebugOutput += $"Writing to undocumented register: 0x{address:X4}!\n";
+				//MainForm.Pause();
+			}
 			else if (address == 0xFF16)
 			{
 				uint waveformDuty = Utilities.GetBitsFromByte(data, 6, 7);
@@ -742,6 +748,12 @@
 				byte highOrderFrequencyData = Utilities.GetBitsFromByte(data, 0, 2);
 				((WaveTableChannel)APU.Instance.Channels[2]).CounterContinuousSelection = counterContinuousSelection;
 				((WaveTableChannel)APU.Instance.Channels[2]).HighOrderFrequencyData = highOrderFrequencyData;
+			}
+			else if (address == 0xFF1F)
+			{
+				// NOTE: Ignore?
+				//GameBoy.DebugOutput += $"Writing to undocumented register: 0x{address:X4}!\n";
+				//MainForm.Pause();
 			}
 			else if (address == 0xFF20)
 			{

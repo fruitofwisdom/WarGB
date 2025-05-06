@@ -11,15 +11,7 @@
 				Z = newResult == 0x0000;
 			}
 			N = false;
-			// Check for overflow.
-			if (setH)
-			{
-				H = (ushort)((result & 0x0FFF) + (value & 0x0FFF)) >= 0x1000;
-			}
-			if (setCY)
-			{
-				CY = newResult < result;
-			}
+			SetHAndCY(result, newResult, setH, setCY);
 			result = newResult;
 		}
 
@@ -32,15 +24,7 @@
 				Z = newResult == 0x00;
 			}
 			N = false;
-			// Check for overflow.
-			if (setH)
-			{
-				H = (byte)((result & 0x0F) + (value & 0x0F)) >= 0x10;
-			}
-			if (setCY)
-			{
-				CY = newResult < result;
-			}
+			SetHAndCY(result, newResult, setH, setCY);
 			result = newResult;
 		}
 
@@ -53,15 +37,7 @@
 				Z = newResult == 0x0000;
 			}
 			N = true;
-			// Check for underflow.
-			if (setH)
-			{
-				H = (ushort)((result & 0x0FFF) - (value & 0x0FFF)) >= 0x1000;
-			}
-			if (setCY)
-			{
-				CY = newResult > result;
-			}
+			SetHAndCY(result, newResult, setH, setCY);
 			result = newResult;
 		}
 
@@ -74,16 +50,80 @@
 				Z = newResult == 0x00;
 			}
 			N = true;
-			// Check for underflow.
-			if (setH)
-			{
-				H = (byte)((result & 0x0F) - (value & 0x0F)) >= 0x10;
-			}
-			if (setCY)
-			{
-				CY = newResult > result;
-			}
+			SetHAndCY(result, newResult, setH, setCY);
 			result = newResult;
+		}
+
+		// Set H and CY flags based on which bits overflowed between newValue and oldValue.
+		void SetHAndCY(ushort oldValue, ushort newValue, bool setH = true, bool setCY = true)
+		{
+			byte oldNibble1 = (byte)(oldValue & 0x000F);
+			byte oldNibble2 = (byte)((oldValue & 0x00F0) >> 4);
+			byte oldNibble3 = (byte)((oldValue & 0x0F00) >> 8);
+			byte oldNibble4 = (byte)((oldValue & 0xF000) >> 12);
+			byte newNibble1 = (byte)(newValue & 0x000F);
+			byte newNibble2 = (byte)((newValue & 0x00F0) >> 4);
+			byte newNibble3 = (byte)((newValue & 0x0F00) >> 8);
+			byte newNibble4 = (byte)((newValue & 0xF000) >> 12);
+
+			// Addition occurred last, check for overflow.
+			if (!N)
+			{
+				if (setH)
+				{
+					H = newNibble1 < oldNibble1 || newNibble3 < oldNibble3;
+
+				}
+				if (setCY)
+				{
+					CY = newNibble2 < oldNibble2 || newNibble4 < oldNibble4;
+				}
+			}
+			// Subtraction occurred last, check for underflow.
+			else
+			{
+				if (setH)
+				{
+					H = newNibble1 > oldNibble1 || newNibble3 > oldNibble3;
+				}
+				if (setCY)
+				{
+					CY = newNibble2 > oldNibble2 || newNibble4 > oldNibble4;
+				}
+			}
+		}
+
+		void SetHAndCY(byte oldValue, byte newValue, bool setH = true, bool setCY = true)
+		{
+			byte oldNibble1 = (byte)(oldValue & 0x000F);
+			byte oldNibble2 = (byte)((oldValue & 0x00F0) >> 4);
+			byte newNibble1 = (byte)(newValue & 0x000F);
+			byte newNibble2 = (byte)((newValue & 0x00F0) >> 4);
+
+			// Addition occurred last, check for overflow.
+			if (!N)
+			{
+				if (setH)
+				{
+					H = newNibble1 < oldNibble1;
+				}
+				if (setCY)
+				{
+					CY = newNibble2 < oldNibble2;
+				}
+			}
+			// Subtraction occurred last, check for underflow.
+			else
+			{
+				if (setH)
+				{
+					H = newNibble1 > oldNibble1;
+				}
+				if (setCY)
+				{
+					CY = newNibble2 > oldNibble2;
+				}
+			}
 		}
 
 		// Run an instruction and return how many cycles elapsed.
@@ -762,8 +802,30 @@
 
 				case 0x39:      // ADD HL, SP
 					{
-						Add(ref HL, SP, false);
+						ushort previousHL = HL;
+						bool didOverflow = HL + SP > 0xFFFF;
+						HL = (ushort)(HL + SP);
 						N = false;
+
+						// NOTE: H and CY are only set based on the addition of the higher byte.
+						byte spHigher = (byte)((SP & 0xFF00) >> 8);
+						byte previousHLHigher = (byte)((previousHL & 0xFF00) >> 8);
+						byte hlHigher = (byte)(previousHLHigher + spHigher);
+
+						// H is set when the third nibble overflows.
+						byte hlNibble3 = (byte)((HL & 0x0F00) >> 8);
+						byte spNibble3 = (byte)((SP & 0x0F00) >> 8);
+						byte previousHLNibble3 = (byte)((previousHL & 0x0F00) >> 8);
+						byte hlHigherNibble3 = (byte)(hlHigher & 0x0F);
+						H = hlNibble3 < spNibble3 || hlNibble3 < previousHLNibble3 || hlHigherNibble3 < spNibble3 || hlHigherNibble3 < previousHLNibble3;
+
+						// CY is set when the fourth nibble overflows.
+						byte hlNibble4 = (byte)((HL & 0xF000) >> 12);
+						byte spNibble4 = (byte)((SP & 0xF000) >> 12);
+						byte previousHLNibble4 = (byte)((previousHL & 0xF000) >> 12);
+						byte hlHigherNibble4 = (byte)((hlHigher & 0xF0) >> 4);
+						CY = hlNibble4 < spNibble4 || hlNibble4 < previousHLNibble4 || hlHigherNibble4 < spNibble4 || hlHigherNibble4 < previousHLNibble4 || didOverflow;
+
 						PrintOpcode(instruction, "ADD HL, SP");
 						PC++;
 						cycles += 2;
@@ -2750,15 +2812,17 @@
 						SP = (ushort)(SP + s8);
 						Z = false;
 						N = false;
-						// NOTE: SP of 0x007F + 1 should set H, does.
-						// NOTE: SP of 0x0080 + 1 should not set H, but does.
-						// NOTE: SP of 0x00FF + 1 should set H and CY, but does not.
-						// NOTE: SP of 0x7FFF + 1 should set H and CY, but does not.
-						// NOTE: SP of 0xFFFF + 1 should set H and CY, but only sets C.
-						// TODO: Need to check each even and odd bit for overflow independently?
-						// NOTE: This is likely all true for LD HP, SP+s8 as well.
-						H = (byte)(((byte)priorSP & 0xFF) + (s8 & 0x0F)) >= 0x10;
-						CY = SP < priorSP;
+						if (s8 >= 0)
+						{
+							SetHAndCY(priorSP, SP);
+						}
+						else
+						{
+							// Negative s8 is a strange, special case.
+							SetHAndCY(SP, priorSP);
+							H = !H;
+							CY = !CY;
+						}
 						PrintOpcode(instruction, $"ADD SP, 0x{s8:X2}");
 						PC += 2;
 						cycles += 4;
@@ -2906,8 +2970,17 @@
 						HL = newSP;
 						Z = false;
 						N = false;
-						H = (byte)(((byte)SP & 0xFF) + (s8 & 0x0F)) >= 0x10;
-						CY = newSP < SP;
+						if (s8 >= 0)
+						{
+							SetHAndCY(SP, HL);
+						}
+						else
+						{
+							// Negative s8 is a strange, special case.
+							SetHAndCY(HL, SP);
+							H = !H;
+							CY = !CY;
+						}
 						PrintOpcode(instruction, $"LD HL, SP+0x{s8:X2}");
 						PC += 2;
 						cycles += 3;
