@@ -69,59 +69,103 @@
 			// Addition occurred last, check for overflow.
 			if (!N)
 			{
+				/*
+				// Check for overflow.
 				if (setH)
 				{
-					H = newNibble1 < oldNibble1 || newNibble3 < oldNibble3;
-
+					H = (ushort)((newValue & 0x0FFF) + (oldValue & 0x0FFF)) > 0x0FFF;
 				}
 				if (setCY)
 				{
-					CY = newNibble2 < oldNibble2 || newNibble4 < oldNibble4;
+					CY = newValue < oldValue;
+				}
+				*/
+				if (setH)
+				{
+					H = newNibble1 < oldNibble1 || newNibble3 < oldNibble3;
+				}
+				if (setCY)
+				{
+					CY = newNibble2 < oldNibble2 || newNibble4 < oldNibble4 || newValue < oldValue;
 				}
 			}
 			// Subtraction occurred last, check for underflow.
 			else
 			{
+				/*
+				// Check for underflow.
+				if (setH)
+				{
+					H = (ushort)((newValue & 0x0FFF) - (oldValue & 0x0FFF)) > 0x0FFF;
+				}
+				if (setCY)
+				{
+					CY = newValue > oldValue;
+				}
+				*/
 				if (setH)
 				{
 					H = newNibble1 > oldNibble1 || newNibble3 > oldNibble3;
 				}
 				if (setCY)
 				{
-					CY = newNibble2 > oldNibble2 || newNibble4 > oldNibble4;
+					CY = newNibble2 > oldNibble2 || newNibble4 > oldNibble4 || newValue > oldValue;
 				}
 			}
 		}
 
+		// Set H and CY flags based on which bits overflowed between newValue and oldValue.
 		void SetHAndCY(byte oldValue, byte newValue, bool setH = true, bool setCY = true)
 		{
-			byte oldNibble1 = (byte)(oldValue & 0x000F);
-			byte oldNibble2 = (byte)((oldValue & 0x00F0) >> 4);
-			byte newNibble1 = (byte)(newValue & 0x000F);
-			byte newNibble2 = (byte)((newValue & 0x00F0) >> 4);
+			byte oldNibble1 = (byte)(oldValue & 0x0F);
+			byte oldNibble2 = (byte)((oldValue & 0xF0) >> 4);
+			byte newNibble1 = (byte)(newValue & 0x0F);
+			byte newNibble2 = (byte)((newValue & 0xF0) >> 4);
 
 			// Addition occurred last, check for overflow.
 			if (!N)
 			{
+				/*
+				// Check for overflow.
+				if (setH)
+				{
+					H = (byte)((newValue & 0x0F) + (oldValue & 0x0F)) > 0x0F;
+				}
+				if (setCY)
+				{
+					CY = newValue < oldValue;
+				}
+				*/
 				if (setH)
 				{
 					H = newNibble1 < oldNibble1;
 				}
 				if (setCY)
 				{
-					CY = newNibble2 < oldNibble2;
+					CY = newNibble2 < oldNibble2 || newValue < oldValue;
 				}
 			}
 			// Subtraction occurred last, check for underflow.
 			else
 			{
+				/*
+				// Check for underflow.
+				if (setH)
+				{
+					H = (byte)((newValue & 0x0F) - (oldValue & 0x0F)) > 0x0F;
+				}
+				if (setCY)
+				{
+					CY = newValue > oldValue;
+				}
+				*/
 				if (setH)
 				{
 					H = newNibble1 > oldNibble1;
 				}
 				if (setCY)
 				{
-					CY = newNibble2 > oldNibble2;
+					CY = newNibble2 > oldNibble2 || newValue > oldValue;
 				}
 			}
 		}
@@ -2479,14 +2523,20 @@
 				case 0xCE:      // ADC A, d8
 					{
 						byte d8 = Memory.Instance.Read(PC + 1);
-						byte d8AndCY = (byte)(d8 + (CY ? 0x01 : 0x00));
-						bool didOverflow = d8AndCY < d8;
-						Add(ref A, d8AndCY);
-						if (didOverflow)
-						{
-							H = true;
-							CY = true;
-						}
+						byte d8AndCY = d8;
+
+						// H and CY may be set the addition of d8 and CY.
+						Add(ref d8AndCY, (byte)(CY ? 0x01 : 0x00));
+						bool firstH = H;
+						bool firstCY = CY;
+
+						// H and CY may be set again by the addition with A.
+						byte previousA = A;
+						Add(ref A, d8AndCY, true, false, false);
+						SetHAndCY(previousA, A);
+						H |= firstH;
+						CY |= firstCY;
+
 						PrintOpcode(instruction, $"ADC A, 0x{d8:X2}");
 						PC += 2;
 						cycles += 2;
@@ -2699,14 +2749,20 @@
 				case 0xDE:      // SBC A, d8
 					{
 						byte d8 = Memory.Instance.Read(PC + 1);
-						byte d8AndCY = (byte)(d8 + (CY ? 0x01 : 0x00));
-						bool didOverflow = d8AndCY < d8;
-						Sub(ref A, d8AndCY);
-						if (didOverflow)
-						{
-							H = true;
-							CY = true;
-						}
+						byte d8AndCY = d8;
+
+						// H and CY may be set the addition of d8 and CY.
+						Add(ref d8AndCY, (byte)(CY ? 0x01 : 0x00));
+						bool firstH = H;
+						bool firstCY = CY;
+
+						// H and CY may be set again by the subtraction with A.
+						byte previousA = A;
+						Sub(ref A, d8AndCY, true, false, false);
+						SetHAndCY(previousA, A);
+						H |= firstH;
+						CY |= firstCY;
+
 						PrintOpcode(instruction, $"SBC A, 0x{d8:X2}");
 						PC += 2;
 						cycles += 2;
@@ -3020,11 +3076,10 @@
 				case 0xFE:      // CP d8
 					{
 						byte d8 = Memory.Instance.Read(PC + 1);
-						int cp = A - d8;
+						byte cp = (byte)(A - d8);
 						Z = cp == 0;
 						N = true;
-						H = cp < 0;
-						CY = cp < 0;
+						SetHAndCY(A, cp);						
 						PrintOpcode(instruction, $"CP 0x{d8:X2}");
 						PC += 2;
 						cycles += 2;
