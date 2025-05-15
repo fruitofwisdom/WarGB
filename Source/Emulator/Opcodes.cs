@@ -493,7 +493,7 @@
 
 				case 0x29:      // ADD HL, HL
 					{
-						Add(ref HL, HL, false, true, true);
+						Add(ref HL, HL, false);
 						PrintOpcode(instruction, "ADD HL, HL");
 						PC++;
 						cycles += 2;
@@ -850,6 +850,16 @@
 					}
 					break;
 
+				case 0x49:      // LD C, C
+					{
+						// Nothing to do.
+						//C = C;
+						PrintOpcode(instruction, "LD C, C");
+						PC++;
+						cycles++;
+					}
+					break;
+
 				case 0x4A:      // LD C, D
 					{
 						C = D;
@@ -919,6 +929,16 @@
 					{
 						D = C;
 						PrintOpcode(instruction, "LD D, C");
+						PC++;
+						cycles++;
+					}
+					break;
+
+				case 0x52:      // LD D, D
+					{
+						// Nothing to do.
+						//D = D;
+						PrintOpcode(instruction, "LD D, D");
 						PC++;
 						cycles++;
 					}
@@ -998,6 +1018,16 @@
 					}
 					break;
 
+				case 0x5B:      // LD E, E
+					{
+						// Nothing to do.
+						//E = E;
+						PrintOpcode(instruction, "LD E, E");
+						PC++;
+						cycles++;
+					}
+					break;
+
 				case 0x5C:      // LD E, H
 					{
 						byte h = (byte)((HL & 0xFF00) >> 8);
@@ -1064,6 +1094,27 @@
 						byte l = (byte)(HL & 0x00FF);
 						HL = (ushort)((h << 8) + l);
 						PrintOpcode(instruction, "LD H, D");
+						PC++;
+						cycles++;
+					}
+					break;
+
+				case 0x63:      // LD H, E
+					{
+						byte h = E;
+						byte l = (byte)(HL & 0x00FF);
+						HL = (ushort)((h << 8) + l);
+						PrintOpcode(instruction, "LD H, E");
+						PC++;
+						cycles++;
+					}
+					break;
+
+				case 0x64:      // LD H, H
+					{
+						// Nothing to do.
+						//H = H;
+						PrintOpcode(instruction, "LD H, H");
 						PC++;
 						cycles++;
 					}
@@ -1157,6 +1208,16 @@
 					}
 					break;
 
+				case 0x6D:      // LD L, L
+					{
+						// Nothing to do.
+						//L = L;
+						PrintOpcode(instruction, "LD L, L");
+						PC++;
+						cycles++;
+					}
+					break;
+
 				case 0x6E:      // LD L, (HL)
 					{
 						byte h = (byte)((HL & 0xFF00) >> 8);
@@ -1210,6 +1271,16 @@
 					{
 						Memory.Instance.Write(HL, E);
 						PrintOpcode(instruction, "LD (HL), E");
+						PC++;
+						cycles += 2;
+					}
+					break;
+
+				case 0x74:      // LD (HL), H
+					{
+						byte h = (byte)((HL & 0xFF00) >> 8);
+						Memory.Instance.Write(HL, h);
+						PrintOpcode(instruction, "LD (HL), H");
 						PC++;
 						cycles += 2;
 					}
@@ -2364,8 +2435,7 @@
 
 						// H and CY may be set again by the addition with A.
 						byte previousA = A;
-						Add(ref A, d8AndCY, true, false, false);
-						SetHAndCY(previousA, A);
+						Add(ref A, d8AndCY);
 						H |= firstH;
 						CY |= firstCY;
 
@@ -2697,17 +2767,50 @@
 					{
 						sbyte s8 = (sbyte)Memory.Instance.Read(PC + 1);
 						ushort priorSP = SP;
+						// TODO: Should this work for H and CY?
+						/*
+						if (s8 >= 0)
+						{
+							ushort s8Unsigned = (ushort)s8;
+							Add(ref SP, s8Unsigned, false, true, true);
+						}
+						else
+						{
+							ushort s8Unsigned = (ushort)(~s8 + 1);
+							Sub(ref SP, s8Unsigned, false, true, true);
+						}
+						*/
 						SP = (ushort)(SP + s8);
 						Z = false;
 						N = false;
 						if (s8 >= 0)
 						{
-							SetHAndCY(priorSP, SP);
+							//SetHAndCY(priorSP, SP);
+							byte oldNibble1 = (byte)(priorSP & 0x000F);
+							byte oldNibble2 = (byte)((priorSP & 0x00F0) >> 4);
+							byte oldNibble3 = (byte)((priorSP & 0x0F00) >> 8);
+							byte oldNibble4 = (byte)((priorSP & 0xF000) >> 12);
+							byte newNibble1 = (byte)(SP & 0x000F);
+							byte newNibble2 = (byte)((SP & 0x00F0) >> 4);
+							byte newNibble3 = (byte)((SP & 0x0F00) >> 8);
+							byte newNibble4 = (byte)((SP & 0xF000) >> 12);
+							H = newNibble1 < oldNibble1 || newNibble3 < oldNibble3;
+							CY = newNibble2 < oldNibble2 || newNibble4 < oldNibble4;
 						}
 						else
 						{
 							// Negative s8 is a strange, special case.
-							SetHAndCY(SP, priorSP);
+							//SetHAndCY(SP, priorSP);
+							byte oldNibble1 = (byte)(priorSP & 0x000F);
+							byte oldNibble2 = (byte)((priorSP & 0x00F0) >> 4);
+							byte oldNibble3 = (byte)((priorSP & 0x0F00) >> 8);
+							byte oldNibble4 = (byte)((priorSP & 0xF000) >> 12);
+							byte newNibble1 = (byte)(SP & 0x000F);
+							byte newNibble2 = (byte)((SP & 0x00F0) >> 4);
+							byte newNibble3 = (byte)((SP & 0x0F00) >> 8);
+							byte newNibble4 = (byte)((SP & 0xF000) >> 12);
+							H = newNibble1 > oldNibble1 || newNibble3 > oldNibble3;
+							CY = newNibble2 > oldNibble2 || newNibble4 > oldNibble4;
 							H = !H;
 							CY = !CY;
 						}
@@ -2860,12 +2963,32 @@
 						N = false;
 						if (s8 >= 0)
 						{
-							SetHAndCY(SP, HL);
+							//SetHAndCY(SP, HL);
+							byte oldNibble1 = (byte)(SP & 0x000F);
+							byte oldNibble2 = (byte)((SP & 0x00F0) >> 4);
+							byte oldNibble3 = (byte)((SP & 0x0F00) >> 8);
+							byte oldNibble4 = (byte)((SP & 0xF000) >> 12);
+							byte newNibble1 = (byte)(HL & 0x000F);
+							byte newNibble2 = (byte)((HL & 0x00F0) >> 4);
+							byte newNibble3 = (byte)((HL & 0x0F00) >> 8);
+							byte newNibble4 = (byte)((HL & 0xF000) >> 12);
+							H = newNibble1 < oldNibble1 || newNibble3 < oldNibble3;
+							CY = newNibble2 < oldNibble2 || newNibble4 < oldNibble4;
 						}
 						else
 						{
 							// Negative s8 is a strange, special case.
-							SetHAndCY(HL, SP);
+							//SetHAndCY(HL, SP);
+							byte oldNibble1 = (byte)(SP & 0x000F);
+							byte oldNibble2 = (byte)((SP & 0x00F0) >> 4);
+							byte oldNibble3 = (byte)((SP & 0x0F00) >> 8);
+							byte oldNibble4 = (byte)((SP & 0xF000) >> 12);
+							byte newNibble1 = (byte)(HL & 0x000F);
+							byte newNibble2 = (byte)((HL & 0x00F0) >> 4);
+							byte newNibble3 = (byte)((HL & 0x0F00) >> 8);
+							byte newNibble4 = (byte)((HL & 0xF000) >> 12);
+							H = newNibble1 > oldNibble1 || newNibble3 > oldNibble3;
+							CY = newNibble2 > oldNibble2 || newNibble4 > oldNibble4;
 							H = !H;
 							CY = !CY;
 						}
