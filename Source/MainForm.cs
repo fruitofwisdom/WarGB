@@ -101,6 +101,7 @@ namespace GBSharp
 				originalGreenToolStripMenuItem.Checked = true;
 				blackAndWhiteToolStripMenuItem.Checked = false;
 				lcdControl.UseOriginalGreen = true;
+				Settings.Default.LCDColorOriginalGreen = true;
 			}
 		}
 
@@ -111,10 +112,11 @@ namespace GBSharp
 				blackAndWhiteToolStripMenuItem.Checked = true;
 				originalGreenToolStripMenuItem.Checked = false;
 				lcdControl.UseOriginalGreen = false;
+				Settings.Default.LCDColorOriginalGreen = false;
 			}
 		}
 
-		private void OneXToolStripMenuItem_Click(object sender, EventArgs e)
+		private void OneXToolStripMenuItemClick(object sender, EventArgs e)
 		{
 			oneXToolStripMenuItem.Checked = true;
 			twoXToolStripMenuItem.Checked = false;
@@ -126,9 +128,10 @@ namespace GBSharp
 			Width = lcdControl.Width + (showDebugOutputToolStripMenuItem.Checked ? 295 : 40);
 			Height = lcdControl.Height + 125;
 			debugRichTextBox.Left = lcdControl.Right + 6;
+			Settings.Default.LCDSize = 1;
 		}
 
-		private void TwoXToolStripMenuItem_Click(object sender, EventArgs e)
+		private void TwoXToolStripMenuItemClick(object sender, EventArgs e)
 		{
 			oneXToolStripMenuItem.Checked = false;
 			twoXToolStripMenuItem.Checked = true;
@@ -140,9 +143,10 @@ namespace GBSharp
 			Width = lcdControl.Width + (showDebugOutputToolStripMenuItem.Checked ? 295 : 40);
 			Height = lcdControl.Height + 125;
 			debugRichTextBox.Left = lcdControl.Right + 6;
+			Settings.Default.LCDSize = 2;
 		}
 
-		private void ThreeXToolStripMenuItem_Click(object sender, EventArgs e)
+		private void ThreeXToolStripMenuItemClick(object sender, EventArgs e)
 		{
 			oneXToolStripMenuItem.Checked = false;
 			twoXToolStripMenuItem.Checked = false;
@@ -154,9 +158,10 @@ namespace GBSharp
 			Width = lcdControl.Width + (showDebugOutputToolStripMenuItem.Checked ? 295 : 40);
 			Height = lcdControl.Height + 125;
 			debugRichTextBox.Left = lcdControl.Right + 6;
+			Settings.Default.LCDSize = 3;
 		}
 
-		private void FourXToolStripMenuItem_Click(object sender, EventArgs e)
+		private void FourXToolStripMenuItemClick(object sender, EventArgs e)
 		{
 			oneXToolStripMenuItem.Checked = false;
 			twoXToolStripMenuItem.Checked = false;
@@ -168,9 +173,10 @@ namespace GBSharp
 			Width = lcdControl.Width + (showDebugOutputToolStripMenuItem.Checked ? 295 : 40);
 			Height = lcdControl.Height + 125;
 			debugRichTextBox.Left = lcdControl.Right + 6;
+			Settings.Default.LCDSize = 4;
 		}
 
-		private void FiveXToolStripMenuItem_Click(object sender, EventArgs e)
+		private void FiveXToolStripMenuItemClick(object sender, EventArgs e)
 		{
 			oneXToolStripMenuItem.Checked = false;
 			twoXToolStripMenuItem.Checked = false;
@@ -182,36 +188,42 @@ namespace GBSharp
 			Width = lcdControl.Width + (showDebugOutputToolStripMenuItem.Checked ? 295 : 40);
 			Height = lcdControl.Height + 125;
 			debugRichTextBox.Left = lcdControl.Right + 6;
+			Settings.Default.LCDSize = 5;
 		}
 
 		private void MuteSoundToolStripMenuClick(object sender, EventArgs e)
 		{
 			muteSoundToolStripMenuItem.Checked = !muteSoundToolStripMenuItem.Checked;
 			_gameBoy.Mute(muteSoundToolStripMenuItem.Checked);
+			Settings.Default.MuteSound = muteSoundToolStripMenuItem.Checked;
 		}
 
 		private void pulseWaveChannel1ToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			pulseWaveChannel1ToolStripMenuItem.Checked = !pulseWaveChannel1ToolStripMenuItem.Checked;
 			_gameBoy.MuteChannel(0, !pulseWaveChannel1ToolStripMenuItem.Checked);
+			Settings.Default.MuteChannel0 = !pulseWaveChannel1ToolStripMenuItem.Checked;
 		}
 
 		private void pulseWaveChannel2ToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			pulseWaveChannel2ToolStripMenuItem.Checked = !pulseWaveChannel2ToolStripMenuItem.Checked;
 			_gameBoy.MuteChannel(1, !pulseWaveChannel2ToolStripMenuItem.Checked);
+			Settings.Default.MuteChannel1 = !pulseWaveChannel2ToolStripMenuItem.Checked;
 		}
 
 		private void waveTableChannel3ToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			waveTableChannel3ToolStripMenuItem.Checked = !waveTableChannel3ToolStripMenuItem.Checked;
 			_gameBoy.MuteChannel(2, !waveTableChannel3ToolStripMenuItem.Checked);
+			Settings.Default.MuteChannel2 = !waveTableChannel3ToolStripMenuItem.Checked;
 		}
 
 		private void noiseGeneratorChannel4ToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			noiseGeneratorChannel4ToolStripMenuItem.Checked = !noiseGeneratorChannel4ToolStripMenuItem.Checked;
 			_gameBoy.MuteChannel(3, !noiseGeneratorChannel4ToolStripMenuItem.Checked);
+			Settings.Default.MuteChannel3 = !noiseGeneratorChannel4ToolStripMenuItem.Checked;
 		}
 
 		private void DisplayFrameTimeToolStripMenuClick(object sender, EventArgs e)
@@ -586,7 +598,57 @@ namespace GBSharp
 
 		private void MainForm_Load(object sender, EventArgs e)
 		{
+			// Apply user settings.
 			UpdateRecentROMs();
+			if (Settings.Default.LCDColorOriginalGreen)
+			{
+				OriginalGreenToolStripMenuClick(sender, e);
+			}
+			else
+			{
+				BlackAndWhiteToolStripMenuClick(sender, e);
+			}
+			switch (Settings.Default.LCDSize)
+			{
+				case 1:
+					OneXToolStripMenuItemClick(sender, e);
+					break;
+				case 2:
+					TwoXToolStripMenuItemClick(sender, e);
+					break;
+				case 3:
+					ThreeXToolStripMenuItemClick(sender, e);
+					break;
+				case 4:
+					FourXToolStripMenuItemClick(sender, e);
+					break;
+				case 5:
+					FiveXToolStripMenuItemClick(sender, e);
+					break;
+				default:
+					OneXToolStripMenuItemClick(sender, e);
+					break;
+			}
+			if (Settings.Default.MuteSound)
+			{
+				MuteSoundToolStripMenuClick(sender, e);
+			}
+			if (Settings.Default.MuteChannel0)
+			{
+				pulseWaveChannel1ToolStripMenuItem_Click(sender, e);
+			}
+			if (Settings.Default.MuteChannel1)
+			{
+				pulseWaveChannel2ToolStripMenuItem_Click(sender, e);
+			}
+			if (Settings.Default.MuteChannel2)
+			{
+				waveTableChannel3ToolStripMenuItem_Click(sender, e);
+			}
+			if (Settings.Default.MuteChannel3)
+			{
+				noiseGeneratorChannel4ToolStripMenuItem_Click(sender, e);
+			}
 		}
 	}
 
