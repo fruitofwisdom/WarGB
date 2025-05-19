@@ -32,6 +32,13 @@
 			menuStrip = new MenuStrip();
 			fileToolStripMenuItem = new ToolStripMenuItem();
 			loadROMToolStripMenuItem = new ToolStripMenuItem();
+			recentROMToolStripSeparator = new ToolStripSeparator();
+			recentROM1ToolStripMenuItem = new ToolStripMenuItem();
+			recentROM2ToolStripMenuItem = new ToolStripMenuItem();
+			recentROM3ToolStripMenuItem = new ToolStripMenuItem();
+			recentROM4ToolStripMenuItem = new ToolStripMenuItem();
+			recentROM5ToolStripMenuItem = new ToolStripMenuItem();
+			exitToolStripSeparator = new ToolStripSeparator();
 			exitToolStripMenuItem = new ToolStripMenuItem();
 			optionsToolStripMenuItem = new ToolStripMenuItem();
 			controlsToolStripMenuItem = new ToolStripMenuItem();
@@ -78,16 +85,15 @@
 			menuStrip.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, optionsToolStripMenuItem, debugToolStripMenuItem, helpToolStripMenuItem });
 			menuStrip.Location = new Point(0, 0);
 			menuStrip.Name = "menuStrip";
-			menuStrip.Padding = new Padding(8, 3, 0, 3);
-			menuStrip.Size = new Size(854, 25);
+			menuStrip.Size = new Size(664, 24);
 			menuStrip.TabIndex = 0;
 			menuStrip.Text = "menuStrip";
 			// 
 			// fileToolStripMenuItem
 			// 
-			fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { loadROMToolStripMenuItem, exitToolStripMenuItem });
+			fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { loadROMToolStripMenuItem, recentROMToolStripSeparator, recentROM1ToolStripMenuItem, recentROM2ToolStripMenuItem, recentROM3ToolStripMenuItem, recentROM4ToolStripMenuItem, recentROM5ToolStripMenuItem, exitToolStripSeparator, exitToolStripMenuItem });
 			fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-			fileToolStripMenuItem.Size = new Size(37, 19);
+			fileToolStripMenuItem.Size = new Size(37, 20);
 			fileToolStripMenuItem.Text = "File";
 			// 
 			// loadROMToolStripMenuItem
@@ -97,6 +103,51 @@
 			loadROMToolStripMenuItem.Size = new Size(182, 22);
 			loadROMToolStripMenuItem.Text = "Load ROM...";
 			loadROMToolStripMenuItem.Click += LoadROMToolStripMenuItemClick;
+			// 
+			// recentROMToolStripSeparator
+			// 
+			recentROMToolStripSeparator.Name = "recentROMToolStripSeparator";
+			recentROMToolStripSeparator.Size = new Size(179, 6);
+			// 
+			// recentROM1ToolStripMenuItem
+			// 
+			recentROM1ToolStripMenuItem.Name = "recentROM1ToolStripMenuItem";
+			recentROM1ToolStripMenuItem.Size = new Size(182, 22);
+			recentROM1ToolStripMenuItem.Text = "1";
+			recentROM1ToolStripMenuItem.Click += RecentROM1ToolStripMenuItemClick;
+			// 
+			// recentROM2ToolStripMenuItem
+			// 
+			recentROM2ToolStripMenuItem.Name = "recentROM2ToolStripMenuItem";
+			recentROM2ToolStripMenuItem.Size = new Size(182, 22);
+			recentROM2ToolStripMenuItem.Text = "2";
+			recentROM2ToolStripMenuItem.Click += RecentROM2ToolStripMenuItemClick;
+			// 
+			// recentROM3ToolStripMenuItem
+			// 
+			recentROM3ToolStripMenuItem.Name = "recentROM3ToolStripMenuItem";
+			recentROM3ToolStripMenuItem.Size = new Size(182, 22);
+			recentROM3ToolStripMenuItem.Text = "3";
+			recentROM3ToolStripMenuItem.Click += RecentROM3ToolStripMenuItemClick;
+			// 
+			// recentROM4ToolStripMenuItem
+			// 
+			recentROM4ToolStripMenuItem.Name = "recentROM4ToolStripMenuItem";
+			recentROM4ToolStripMenuItem.Size = new Size(182, 22);
+			recentROM4ToolStripMenuItem.Text = "4";
+			recentROM4ToolStripMenuItem.Click += RecentROM4ToolStripMenuItemClick;
+			// 
+			// recentROM5ToolStripMenuItem
+			// 
+			recentROM5ToolStripMenuItem.Name = "recentROM5ToolStripMenuItem";
+			recentROM5ToolStripMenuItem.Size = new Size(182, 22);
+			recentROM5ToolStripMenuItem.Text = "5";
+			recentROM5ToolStripMenuItem.Click += RecentROM5ToolStripMenuItemClick;
+			// 
+			// exitToolStripSeparator
+			// 
+			exitToolStripSeparator.Name = "exitToolStripSeparator";
+			exitToolStripSeparator.Size = new Size(179, 6);
 			// 
 			// exitToolStripMenuItem
 			// 
@@ -110,7 +161,7 @@
 			// 
 			optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { controlsToolStripMenuItem, lcdColorToolStripMenuItem, lcdSizeToolStripMenuItem, muteSoundToolStripMenuItem, soundChannelsToolStripMenuItem });
 			optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-			optionsToolStripMenuItem.Size = new Size(61, 19);
+			optionsToolStripMenuItem.Size = new Size(61, 20);
 			optionsToolStripMenuItem.Text = "Options";
 			// 
 			// controlsToolStripMenuItem
@@ -243,7 +294,7 @@
 			// 
 			debugToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { displayFrameTimeToolStripMenuItem, logOpcodesToolStripMenuItem, nextFrameToolStripMenuItem, nextOpcodeToolStripMenuItem, nextScanlineToolStripMenuItem, showDebugOutputToolStripMenuItem });
 			debugToolStripMenuItem.Name = "debugToolStripMenuItem";
-			debugToolStripMenuItem.Size = new Size(54, 19);
+			debugToolStripMenuItem.Size = new Size(54, 20);
 			debugToolStripMenuItem.Text = "Debug";
 			// 
 			// displayFrameTimeToolStripMenuItem
@@ -302,7 +353,7 @@
 			// 
 			helpToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { aboutGBSharpToolStripMenuItem });
 			helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-			helpToolStripMenuItem.Size = new Size(44, 19);
+			helpToolStripMenuItem.Size = new Size(44, 20);
 			helpToolStripMenuItem.Text = "Help";
 			// 
 			// aboutGBSharpToolStripMenuItem
@@ -316,9 +367,9 @@
 			// toolStrip
 			// 
 			toolStrip.Items.AddRange(new ToolStripItem[] { playButton, pauseButton, resetButton, nextFrameButton });
-			toolStrip.Location = new Point(0, 25);
+			toolStrip.Location = new Point(0, 24);
 			toolStrip.Name = "toolStrip";
-			toolStrip.Size = new Size(854, 25);
+			toolStrip.Size = new Size(664, 25);
 			toolStrip.TabIndex = 1;
 			toolStrip.Text = "toolStrip";
 			// 
@@ -368,10 +419,10 @@
 			// 
 			// lcdControl
 			// 
-			lcdControl.Location = new Point(15, 73);
-			lcdControl.Margin = new Padding(5, 6, 5, 6);
+			lcdControl.Location = new Point(12, 52);
+			lcdControl.Margin = new Padding(4);
 			lcdControl.Name = "lcdControl";
-			lcdControl.Size = new Size(823, 806);
+			lcdControl.Size = new Size(640, 576);
 			lcdControl.TabIndex = 2;
 			lcdControl.KeyDown += lcdControl_KeyDown;
 			lcdControl.KeyUp += lcdControl_KeyUp;
@@ -380,11 +431,10 @@
 			// debugRichTextBox
 			// 
 			debugRichTextBox.Font = new Font("Cascadia Code", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
-			debugRichTextBox.Location = new Point(846, 73);
-			debugRichTextBox.Margin = new Padding(4, 4, 4, 4);
+			debugRichTextBox.Location = new Point(658, 52);
 			debugRichTextBox.Name = "debugRichTextBox";
 			debugRichTextBox.ReadOnly = true;
-			debugRichTextBox.Size = new Size(320, 805);
+			debugRichTextBox.Size = new Size(250, 576);
 			debugRichTextBox.TabIndex = 3;
 			debugRichTextBox.Text = "";
 			debugRichTextBox.Visible = false;
@@ -392,10 +442,9 @@
 			// statusStrip
 			// 
 			statusStrip.Items.AddRange(new ToolStripItem[] { debugToolStripStatusLabel });
-			statusStrip.Location = new Point(0, 905);
+			statusStrip.Location = new Point(0, 640);
 			statusStrip.Name = "statusStrip";
-			statusStrip.Padding = new Padding(1, 0, 18, 0);
-			statusStrip.Size = new Size(854, 22);
+			statusStrip.Size = new Size(664, 22);
 			statusStrip.TabIndex = 4;
 			statusStrip.Text = "statusStrip";
 			// 
@@ -406,9 +455,9 @@
 			// 
 			// MainForm
 			// 
-			AutoScaleDimensions = new SizeF(9F, 21F);
+			AutoScaleDimensions = new SizeF(7F, 15F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(854, 927);
+			ClientSize = new Size(664, 662);
 			Controls.Add(statusStrip);
 			Controls.Add(debugRichTextBox);
 			Controls.Add(lcdControl);
@@ -417,10 +466,10 @@
 			Icon = (Icon)resources.GetObject("$this.Icon");
 			KeyPreview = true;
 			MainMenuStrip = menuStrip;
-			Margin = new Padding(4, 4, 4, 4);
 			Name = "MainForm";
 			Text = "GB#";
 			FormClosing += MainForm_FormClosing;
+			Load += MainForm_Load;
 			menuStrip.ResumeLayout(false);
 			menuStrip.PerformLayout();
 			toolStrip.ResumeLayout(false);
@@ -436,6 +485,13 @@
 		private MenuStrip menuStrip;
 		private ToolStripMenuItem fileToolStripMenuItem;
 		private ToolStripMenuItem loadROMToolStripMenuItem;
+		private ToolStripSeparator recentROMToolStripSeparator;
+		private ToolStripMenuItem recentROM1ToolStripMenuItem;
+		private ToolStripMenuItem recentROM2ToolStripMenuItem;
+		private ToolStripMenuItem recentROM3ToolStripMenuItem;
+		private ToolStripMenuItem recentROM4ToolStripMenuItem;
+		private ToolStripMenuItem recentROM5ToolStripMenuItem;
+		private ToolStripSeparator exitToolStripSeparator;
 		private ToolStripMenuItem exitToolStripMenuItem;
 		private ToolStripMenuItem optionsToolStripMenuItem;
 		private ToolStripMenuItem controlsToolStripMenuItem;

@@ -1,3 +1,5 @@
+using GBSharp.Properties;
+
 namespace GBSharp
 {
 	public partial class MainForm : Form
@@ -37,29 +39,47 @@ namespace GBSharp
 
 			if (openFileDialog.ShowDialog() == DialogResult.OK)
 			{
-				if (ROM.Instance.Load(openFileDialog.FileName))
-				{
-					// Close any previous threads and reset the Game Boy.
-					if (_gameBoyThread != null)
-					{
-						_gameBoy.Stop();
-						_gameBoyThread.Join();
-					}
-					_gameBoy.Reset();
+				LoadAndPlayROM(openFileDialog.FileName);
+			}
+		}
 
-					// Put the game name and ROM type in our title.
-					Text = "GB# - " + ROM.Instance.Title + " (" + ROM.Instance.CartridgeType.ToString().Replace("_", "+") + ")";
+		private void RecentROM1ToolStripMenuItemClick(object sender, EventArgs e)
+		{
+			if (Settings.Default.RecentROM1 != null)
+			{
+				LoadAndPlayROM(Settings.Default.RecentROM1);
+			}
+		}
 
-					// Start a new thread to run the Game Boy.
-					_gameBoyThread = new Thread(new ThreadStart(_gameBoy.Run));
-					_gameBoyThread.IsBackground = true;
-					_gameBoyThread.Start();
-					resetButton.Enabled = true;
-					UpdatePlayState();
+		private void RecentROM2ToolStripMenuItemClick(object sender, EventArgs e)
+		{
+			if (Settings.Default.RecentROM2 != null)
+			{
+				LoadAndPlayROM(Settings.Default.RecentROM2);
+			}
+		}
 
-					// Play automatically.
-					PlayButtonClick(this, new EventArgs());
-				}
+		private void RecentROM3ToolStripMenuItemClick(object sender, EventArgs e)
+		{
+			if (Settings.Default.RecentROM3 != null)
+			{
+				LoadAndPlayROM(Settings.Default.RecentROM3);
+			}
+		}
+
+		private void RecentROM4ToolStripMenuItemClick(object sender, EventArgs e)
+		{
+			if (Settings.Default.RecentROM4 != null)
+			{
+				LoadAndPlayROM(Settings.Default.RecentROM4);
+			}
+		}
+
+		private void RecentROM5ToolStripMenuItemClick(object sender, EventArgs e)
+		{
+			if (Settings.Default.RecentROM5 != null)
+			{
+				LoadAndPlayROM(Settings.Default.RecentROM5);
 			}
 		}
 
@@ -411,6 +431,37 @@ namespace GBSharp
 			}
 		}
 
+		// Load and play a ROM.
+		private void LoadAndPlayROM(string fileName)
+		{
+			if (ROM.Instance.Load(fileName))
+			{
+				// Add this ROM to the recent ROMs list.
+				AddROMToRecentROMs(fileName);
+
+				// Close any previous threads and reset the Game Boy.
+				if (_gameBoyThread != null)
+				{
+					_gameBoy.Stop();
+					_gameBoyThread.Join();
+				}
+				_gameBoy.Reset();
+
+				// Put the game name and ROM type in our title.
+				Text = "GB# - " + ROM.Instance.Title + " (" + ROM.Instance.CartridgeType.ToString().Replace("_", "+") + ")";
+
+				// Start a new thread to run the Game Boy.
+				_gameBoyThread = new Thread(new ThreadStart(_gameBoy.Run));
+				_gameBoyThread.IsBackground = true;
+				_gameBoyThread.Start();
+				resetButton.Enabled = true;
+				UpdatePlayState();
+
+				// Play automatically.
+				PlayButtonClick(this, new EventArgs());
+			}
+		}
+
 		// Update buttons and menu items based on whether the emulator is running.
 		private void UpdatePlayState()
 		{
@@ -425,6 +476,101 @@ namespace GBSharp
 			nextScanlineToolStripMenuItem.Enabled = !playing;
 		}
 
+		// Add a ROM to the list of recent ROMs.
+		private void AddROMToRecentROMs(string fileName)
+		{
+			// List all the recent ROMs.
+			List<string> recentROMs = new(
+			[
+				Settings.Default.RecentROM1,
+				Settings.Default.RecentROM2,
+				Settings.Default.RecentROM3,
+				Settings.Default.RecentROM4,
+				Settings.Default.RecentROM5
+			]);
+
+			// If this ROM is already in the list, remove it.
+			if (recentROMs.Contains(fileName))
+			{
+				recentROMs.RemoveAll(rom => rom == fileName);
+			}
+			// And add this ROM to the front of the list.
+			recentROMs.Insert(0, fileName);
+			// Lastly, add any empty strings, if necessary.
+			while (recentROMs.Count < 5)
+			{
+				recentROMs.Add("");
+			}
+
+			// Write the list back out.
+			Settings.Default.RecentROM1 = recentROMs[0];
+			Settings.Default.RecentROM2 = recentROMs[1];
+			Settings.Default.RecentROM3 = recentROMs[2];
+			Settings.Default.RecentROM4 = recentROMs[3];
+			Settings.Default.RecentROM5 = recentROMs[4];
+
+			UpdateRecentROMs();
+		}
+
+		// Update the UI elements for recent ROMs.
+		private void UpdateRecentROMs()
+		{
+			// Either hide the recent ROM menu item or display its filename.
+			if (Settings.Default.RecentROM1 == "")
+			{
+				recentROM1ToolStripMenuItem.Visible = false;
+			}
+			else
+			{
+				recentROM1ToolStripMenuItem.Visible = true;
+				recentROM1ToolStripMenuItem.Text = "1 " + Settings.Default.RecentROM1;
+			}
+			if (Settings.Default.RecentROM2 == "")
+			{
+				recentROM2ToolStripMenuItem.Visible = false;
+			}
+			else
+			{
+				recentROM2ToolStripMenuItem.Visible = true;
+				recentROM2ToolStripMenuItem.Text = "2 " + Settings.Default.RecentROM2;
+			}
+			if (Settings.Default.RecentROM3 == "")
+			{
+				recentROM3ToolStripMenuItem.Visible = false;
+			}
+			else
+			{
+				recentROM3ToolStripMenuItem.Visible = true;
+				recentROM3ToolStripMenuItem.Text = "3 " + Settings.Default.RecentROM3;
+			}
+			if (Settings.Default.RecentROM4 == "")
+			{
+				recentROM4ToolStripMenuItem.Visible = false;
+			}
+			else
+			{
+				recentROM4ToolStripMenuItem.Visible = true;
+				recentROM4ToolStripMenuItem.Text = "4 " + Settings.Default.RecentROM4;
+			}
+			if (Settings.Default.RecentROM5 == "")
+			{
+				recentROM5ToolStripMenuItem.Visible = false;
+			}
+			else
+			{
+				recentROM5ToolStripMenuItem.Visible = true;
+				recentROM5ToolStripMenuItem.Text = "5 " + Settings.Default.RecentROM5;
+			}
+
+			// If there were no recent ROMs, also hide the separator.
+			recentROMToolStripSeparator.Visible =
+				Settings.Default.RecentROM1 != "" ||
+				Settings.Default.RecentROM2 != "" ||
+				Settings.Default.RecentROM3 != "" ||
+				Settings.Default.RecentROM4 != "" ||
+				Settings.Default.RecentROM5 != "";
+		}
+
 		private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			// Close and stop any current Game Boy thread.
@@ -433,6 +579,14 @@ namespace GBSharp
 				_gameBoy.Stop();
 				_gameBoyThread.Join();
 			}
+
+			// Save the user's application settings.
+			Settings.Default.Save();
+		}
+
+		private void MainForm_Load(object sender, EventArgs e)
+		{
+			UpdateRecentROMs();
 		}
 	}
 
