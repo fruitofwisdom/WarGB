@@ -343,42 +343,42 @@ namespace GBSharp
 		{
 			bool needJoypadInterrupt = false;
 
-			if (e.KeyCode == _keyMapping.Up1Key || e.KeyCode == _keyMapping.Up2Key)
+			if (e.KeyCode == _keyMapping.Up1Key)
 			{
 				Controller.Instance.Up = true;
 				needJoypadInterrupt = true;
 			}
-			if (e.KeyCode == _keyMapping.Left1Key || e.KeyCode == _keyMapping.Left2Key)
+			if (e.KeyCode == _keyMapping.Left1Key)
 			{
 				Controller.Instance.Left = true;
 				needJoypadInterrupt = true;
 			}
-			if (e.KeyCode == _keyMapping.Down1Key || e.KeyCode == _keyMapping.Down2Key)
+			if (e.KeyCode == _keyMapping.Down1Key)
 			{
 				Controller.Instance.Down = true;
 				needJoypadInterrupt = true;
 			}
-			if (e.KeyCode == _keyMapping.Right1Key || e.KeyCode == _keyMapping.Right2Key)
+			if (e.KeyCode == _keyMapping.Right1Key)
 			{
 				Controller.Instance.Right = true;
 				needJoypadInterrupt = true;
 			}
-			if (e.KeyCode == _keyMapping.A1Key || e.KeyCode == _keyMapping.A2Key)
+			if (e.KeyCode == _keyMapping.A1Key)
 			{
 				Controller.Instance.A = true;
 				needJoypadInterrupt = true;
 			}
-			if (e.KeyCode == _keyMapping.B1Key || e.KeyCode == _keyMapping.B2Key)
+			if (e.KeyCode == _keyMapping.B1Key)
 			{
 				Controller.Instance.B = true;
 				needJoypadInterrupt = true;
 			}
-			if (e.KeyCode == _keyMapping.Start1Key || e.KeyCode == _keyMapping.Start2Key)
+			if (e.KeyCode == _keyMapping.Start1Key)
 			{
 				Controller.Instance.Start = true;
 				needJoypadInterrupt = true;
 			}
-			if (e.KeyCode == _keyMapping.Select1Key || e.KeyCode == _keyMapping.Select2Key)
+			if (e.KeyCode == _keyMapping.Select1Key)
 			{
 				Controller.Instance.Select = true;
 				needJoypadInterrupt = true;
@@ -393,35 +393,35 @@ namespace GBSharp
 
 		private void lcdControl_KeyUp(object sender, KeyEventArgs e)
 		{
-			if (e.KeyCode == _keyMapping.Up1Key || e.KeyCode == _keyMapping.Up2Key)
+			if (e.KeyCode == _keyMapping.Up1Key)
 			{
 				Controller.Instance.Up = false;
 			}
-			if (e.KeyCode == _keyMapping.Left1Key || e.KeyCode == _keyMapping.Left2Key)
+			if (e.KeyCode == _keyMapping.Left1Key)
 			{
 				Controller.Instance.Left = false;
 			}
-			if (e.KeyCode == _keyMapping.Down1Key || e.KeyCode == _keyMapping.Down2Key)
+			if (e.KeyCode == _keyMapping.Down1Key)
 			{
 				Controller.Instance.Down = false;
 			}
-			if (e.KeyCode == _keyMapping.Right1Key || e.KeyCode == _keyMapping.Right2Key)
+			if (e.KeyCode == _keyMapping.Right1Key)
 			{
 				Controller.Instance.Right = false;
 			}
-			if (e.KeyCode == _keyMapping.A1Key || e.KeyCode == _keyMapping.A2Key)
+			if (e.KeyCode == _keyMapping.A1Key)
 			{
 				Controller.Instance.A = false;
 			}
-			if (e.KeyCode == _keyMapping.B1Key || e.KeyCode == _keyMapping.B2Key)
+			if (e.KeyCode == _keyMapping.B1Key)
 			{
 				Controller.Instance.B = false;
 			}
-			if (e.KeyCode == _keyMapping.Start1Key || e.KeyCode == _keyMapping.Start2Key)
+			if (e.KeyCode == _keyMapping.Start1Key)
 			{
 				Controller.Instance.Start = false;
 			}
-			if (e.KeyCode == _keyMapping.Select1Key || e.KeyCode == _keyMapping.Select2Key)
+			if (e.KeyCode == _keyMapping.Select1Key)
 			{
 				Controller.Instance.Select = false;
 			}
@@ -652,17 +652,19 @@ namespace GBSharp
 		}
 	}
 
-	// A mapping of two sets of inputs (both are for player one).
+	// A mapping for keyboard input.
 	public class KeyMapping
 	{
-		public Keys Up1Key { get; set; } = Keys.W;
-		public Keys Left1Key { get; set; } = Keys.A;
-		public Keys Down1Key { get; set; } = Keys.S;
-		public Keys Right1Key { get; set; } = Keys.D;
-		public Keys A1Key { get; set; } = Keys.K;
-		public Keys B1Key { get; set; } = Keys.J;
-		public Keys Start1Key { get; set; } = Keys.Enter;
-		public Keys Select1Key { get; set; } = Keys.ShiftKey;
+		public Keys Up1Key { get; set; } = Enum.Parse<Keys>(Settings.Default.KeyboardUp);
+		public Keys Left1Key { get; set; } = Enum.Parse<Keys>(Settings.Default.KeyboardLeft);
+		public Keys Down1Key { get; set; } = Enum.Parse<Keys>(Settings.Default.KeyboardDown);
+		public Keys Right1Key { get; set; } = Enum.Parse<Keys>(Settings.Default.KeyboardRight);
+		public Keys A1Key { get; set; } = Enum.Parse<Keys>(Settings.Default.KeyboardA);
+		public Keys B1Key { get; set; } = Enum.Parse<Keys>(Settings.Default.KeyboardB);
+		public Keys Start1Key { get; set; } = Enum.Parse<Keys>(Settings.Default.KeyboardStart);
+		public Keys Select1Key { get; set; } = Enum.Parse<Keys>(Settings.Default.KeyboardSelect);
+		// TODO: Xbox controller mapping.
+		/*
 		public Keys Up2Key { get; set; } = Keys.Up;
 		public Keys Left2Key { get; set; } = Keys.Left;
 		public Keys Down2Key { get; set; } = Keys.Down;
@@ -671,5 +673,6 @@ namespace GBSharp
 		public Keys B2Key { get; set; } = Keys.NumPad4;
 		public Keys Start2Key { get; set; } = Keys.Enter;
 		public Keys Select2Key { get; set; } = Keys.Add;
+		*/
 	}
 }

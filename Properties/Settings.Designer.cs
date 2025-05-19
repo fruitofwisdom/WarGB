@@ -166,5 +166,101 @@ namespace GBSharp.Properties {
                 this["MuteChannel3"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("W")]
+        public string KeyboardUp {
+            get {
+                return ((string)(this["KeyboardUp"]));
+            }
+            set {
+                this["KeyboardUp"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("A")]
+        public string KeyboardLeft {
+            get {
+                return ((string)(this["KeyboardLeft"]));
+            }
+            set {
+                this["KeyboardLeft"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("S")]
+        public string KeyboardDown {
+            get {
+                return ((string)(this["KeyboardDown"]));
+            }
+            set {
+                this["KeyboardDown"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("D")]
+        public string KeyboardRight {
+            get {
+                return ((string)(this["KeyboardRight"]));
+            }
+            set {
+                this["KeyboardRight"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("K")]
+        public string KeyboardA {
+            get {
+                return ((string)(this["KeyboardA"]));
+            }
+            set {
+                this["KeyboardA"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("J")]
+        public string KeyboardB {
+            get {
+                return ((string)(this["KeyboardB"]));
+            }
+            set {
+                this["KeyboardB"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Enter")]
+        public string KeyboardStart {
+            get {
+                return ((string)(this["KeyboardStart"]));
+            }
+            set {
+                this["KeyboardStart"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("ShiftKey")]
+        public string KeyboardSelect {
+            get {
+                return ((string)(this["KeyboardSelect"]));
+            }
+            set {
+                this["KeyboardSelect"] = value;
+            }
+        }
     }
 }

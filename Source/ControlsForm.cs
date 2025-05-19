@@ -1,4 +1,6 @@
-﻿namespace GBSharp
+﻿using GBSharp.Properties;
+
+namespace GBSharp
 {
 	public partial class ControlsForm : Form
 	{
@@ -27,6 +29,8 @@
 			start1ComboBox.SelectedIndex = start1ComboBox.FindStringExact(_keyMapping.Start1Key.ToString());
 			select1ComboBox.Items.AddRange(keys);
 			select1ComboBox.SelectedIndex = select1ComboBox.FindStringExact(_keyMapping.Select1Key.ToString());
+			// TODO: Xbox controller mapping.
+			/*
 			up2ComboBox.Items.AddRange(keys);
 			up2ComboBox.SelectedIndex = up2ComboBox.FindStringExact(_keyMapping.Up2Key.ToString());
 			left2ComboBox.Items.AddRange(keys);
@@ -43,6 +47,7 @@
 			start2ComboBox.SelectedIndex = start2ComboBox.FindStringExact(_keyMapping.Start2Key.ToString());
 			select2ComboBox.Items.AddRange(keys);
 			select2ComboBox.SelectedIndex = select2ComboBox.FindStringExact(_keyMapping.Select2Key.ToString());
+			*/
 
 			// NOTE: Handle selection changes after the initial values have been assigned.
 			up1ComboBox.SelectedIndexChanged += ComboBoxSelectedIndexChanged;
@@ -84,6 +89,8 @@
 				_keyMapping.Start1Key = key;
 				_ = Keys.TryParse(select1ComboBox.SelectedItem as string, out key);
 				_keyMapping.Select1Key = key;
+				// TODO: Xbox controller mapping.
+				/*
 				_ = Keys.TryParse(up2ComboBox.SelectedItem as string, out key);
 				_keyMapping.Up2Key = key;
 				_ = Keys.TryParse(left2ComboBox.SelectedItem as string, out key);
@@ -100,6 +107,18 @@
 				_keyMapping.Start2Key = key;
 				_ = Keys.TryParse(select2ComboBox.SelectedItem as string, out key);
 				_keyMapping.Select2Key = key;
+				*/
+
+				// Save the mappings.
+				Settings.Default.KeyboardUp = _keyMapping.Up1Key.ToString();
+				Settings.Default.KeyboardLeft = _keyMapping.Left1Key.ToString();
+				Settings.Default.KeyboardDown = _keyMapping.Down1Key.ToString();
+				Settings.Default.KeyboardRight = _keyMapping.Right1Key.ToString();
+				Settings.Default.KeyboardA = _keyMapping.A1Key.ToString();
+				Settings.Default.KeyboardB = _keyMapping.B1Key.ToString();
+				Settings.Default.KeyboardStart = _keyMapping.Start1Key.ToString();
+				Settings.Default.KeyboardSelect = _keyMapping.Select1Key.ToString();
+				// TODO: Xbox controller mapping.
 			}
 		}
 	}
