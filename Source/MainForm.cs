@@ -1,4 +1,6 @@
 using GBSharp.Properties;
+using SharpDX.XInput;
+//using Windows.Gaming.Input;
 
 namespace GBSharp
 {
@@ -9,6 +11,14 @@ namespace GBSharp
 
 		// A timer used to poll and render the state of the Game Boy.
 		private readonly System.Windows.Forms.Timer _gameBoyTimer = new();
+
+		// A timer used to poll any inputs.
+		private readonly System.Windows.Forms.Timer _gamepadTimer = new();
+
+		// For XInput controllers.
+		private const int kThumbThreshold = 15000;
+		private int _lastPacketNumber = 0;
+		private readonly SharpDX.XInput.Controller _xInputController;
 
 		// The two customizable sets of controller assignments.
 		private readonly KeyMapping _keyMapping = new();
@@ -27,6 +37,13 @@ namespace GBSharp
 			_gameBoyTimer.Tick += new EventHandler(ProcessOutput);
 			_gameBoyTimer.Interval = 1000 / 60;
 			_gameBoyTimer.Start();
+
+			// Poll any gamepads as well.
+			_gamepadTimer.Tick += new EventHandler(ProcessInput);
+			_gamepadTimer.Interval = 1000 / 60;
+			_gamepadTimer.Start();
+
+			_xInputController = new SharpDX.XInput.Controller(UserIndex.One);
 		}
 
 		private void LoadROMToolStripMenuItemClick(object sender, EventArgs e)
@@ -339,6 +356,36 @@ namespace GBSharp
 			lcdControl.Refresh();
 		}
 
+		// Poll and process gamepad input.
+		private void ProcessInput(object? sender, EventArgs e)
+		{
+			bool needJoypadInterrupt = false;
+
+			// Check for XInput (Xbox) controllers.
+			if (_xInputController.IsConnected)
+			{
+				int packetNumber = _xInputController.GetState().PacketNumber;
+				if (packetNumber != _lastPacketNumber)
+				{
+					needJoypadInterrupt = HandleXInputController();
+					_lastPacketNumber = packetNumber;
+				}
+			}
+			// TODO: Check for other (non-Xbox) controllers.
+			/*
+			else if (RawGameController.RawGameControllers.Count > 0)
+			{
+				needJoypadInterrupt = HandleDirectInputController();
+			}
+			*/
+
+			// A button was pressed, so trigger a joypad interrupt.
+			if (needJoypadInterrupt)
+			{
+				Controller.Instance.TriggerJoypadInterrupt();
+			}
+		}
+
 		private void lcdControl_KeyDown(object sender, KeyEventArgs e)
 		{
 			bool needJoypadInterrupt = false;
@@ -442,6 +489,160 @@ namespace GBSharp
 					break;
 			}
 		}
+
+		// Poll and process XInput controllers.
+		private bool HandleXInputController()
+		{
+			bool needJoypadInterrupt = false;
+
+			State state = _xInputController.GetState();
+			if (state.Gamepad.Buttons.HasFlag(GamepadButtonFlags.B))
+			{
+				// NOTE: Game Boy and other controllers have A and B swapped.
+				Controller.Instance.A = true;
+				needJoypadInterrupt = true;
+			}
+			else
+			{
+				Controller.Instance.A = false;
+			}
+			if (state.Gamepad.Buttons.HasFlag(GamepadButtonFlags.A))
+			{
+				// NOTE: Game Boy and other controllers have A and B swapped.
+				Controller.Instance.B = true;
+				needJoypadInterrupt = true;
+			}
+			else
+			{
+				Controller.Instance.B = false;
+			}
+			if (state.Gamepad.Buttons.HasFlag(GamepadButtonFlags.Back))
+			{
+				Controller.Instance.Select = true;
+				needJoypadInterrupt = true;
+			}
+			else
+			{
+				Controller.Instance.Select = false;
+			}
+			if (state.Gamepad.Buttons.HasFlag(GamepadButtonFlags.Start))
+			{
+				Controller.Instance.Start = true;
+				needJoypadInterrupt = true;
+			}
+			else
+			{
+				Controller.Instance.Start = false;
+			}
+			if (state.Gamepad.LeftThumbX > kThumbThreshold || state.Gamepad.Buttons.HasFlag(GamepadButtonFlags.DPadRight))
+			{
+				Controller.Instance.Right = true;
+				needJoypadInterrupt = true;
+			}
+			else
+			{
+				Controller.Instance.Right = false;
+			}
+			if (state.Gamepad.LeftThumbX < -kThumbThreshold || state.Gamepad.Buttons.HasFlag(GamepadButtonFlags.DPadLeft))
+			{
+				Controller.Instance.Left = true;
+				needJoypadInterrupt = true;
+			}
+			else
+			{
+				Controller.Instance.Left = false;
+			}
+			if (state.Gamepad.LeftThumbY > kThumbThreshold || state.Gamepad.Buttons.HasFlag(GamepadButtonFlags.DPadUp))
+			{
+				Controller.Instance.Up = true;
+				needJoypadInterrupt = true;
+			}
+			else
+			{
+				Controller.Instance.Up = false;
+			}
+			if (state.Gamepad.LeftThumbY < -kThumbThreshold || state.Gamepad.Buttons.HasFlag(GamepadButtonFlags.DPadDown))
+			{
+				Controller.Instance.Down = true;
+				needJoypadInterrupt = true;
+			}
+			else
+			{
+				Controller.Instance.Down = false;
+			}
+
+			return needJoypadInterrupt;
+		}
+
+		// TODO: Poll and process DirectInput controllers.
+		/*
+		bool HandleDirectInputController()
+		{
+			bool needJoypadInterrupt = false;
+
+			// Get the first gamepad and its current reading.
+			RawGameController controller = RawGameController.RawGameControllers[0];
+			bool[] controllerButtonReading = new bool[controller.ButtonCount];
+			GameControllerSwitchPosition[] controllerSwitchReading = new GameControllerSwitchPosition[controller.SwitchCount];
+			double[] controllerAxisReading = new double[controller.AxisCount];
+			controller.GetCurrentReading(controllerButtonReading, controllerSwitchReading, controllerAxisReading);
+
+			for (int i = 0; i < controllerButtonReading.Length; i++)
+			{
+				GameControllerButtonLabel buttonLabel = controller.GetButtonLabel(i);
+				if (buttonLabel == GameControllerButtonLabel.Right)
+				{
+					if (controllerButtonReading[i])
+					{
+						Controller.Instance.Right = true;
+						needJoypadInterrupt = true;
+					}
+					else
+					{
+						Controller.Instance.Right = false;
+					}
+				}
+				else if (buttonLabel == GameControllerButtonLabel.Left)
+				{
+					if (controllerButtonReading[i])
+					{
+						Controller.Instance.Left = true;
+						needJoypadInterrupt = true;
+					}
+					else
+					{
+						Controller.Instance.Left = false;
+					}
+				}
+				else if (buttonLabel == GameControllerButtonLabel.Up)
+				{
+					if (controllerButtonReading[i])
+					{
+						Controller.Instance.Up = true;
+						needJoypadInterrupt = true;
+					}
+					else
+					{
+						Controller.Instance.Up = false;
+					}
+				}
+				else if (buttonLabel == GameControllerButtonLabel.Down)
+				{
+					if (controllerButtonReading[i])
+					{
+						Controller.Instance.Down = true;
+						needJoypadInterrupt = true;
+					}
+					else
+					{
+						Controller.Instance.Down = false;
+					}
+				}
+			}
+
+			return needJoypadInterrupt;
+		}
+		*/
 
 		// Load and play a ROM.
 		private void LoadAndPlayROM(string fileName)
