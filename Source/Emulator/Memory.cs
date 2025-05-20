@@ -259,6 +259,20 @@
 				data = 0xE0;
 				data = (byte)(data | CPU.Instance.IF);
 			}
+			else if (address == 0xFF10)
+			{
+				data = 0x80;
+				byte sweepTime = (byte)(((PulseWaveChannel)APU.Instance.Channels[0]).SweepTime << 4);
+				byte sweepIncDec = (byte)(((PulseWaveChannel)APU.Instance.Channels[0]).SweepIncDec ? 0x08 : 0x00);
+				byte sweepShiftNumber = (byte)(((PulseWaveChannel)APU.Instance.Channels[0]).SweepShiftNumber);
+				data = (byte)(data | sweepTime | sweepIncDec | sweepShiftNumber);
+			}
+			else if (address == 0xFF11)
+			{
+				data = 0x3F;
+				byte waveformDuty = (byte)(((PulseWaveChannel)APU.Instance.Channels[0]).WaveformDuty << 6);
+				data = (byte)(data | waveformDuty);
+			}
 			else if (address == 0xFF12)
 			{
 				byte defaultEnvelopeValue = (byte)(((PulseWaveChannel)APU.Instance.Channels[0]).DefaultEnvelopeValue << 4);
@@ -266,11 +280,28 @@
 				byte lengthOfEnvelopeSteps = (byte)((PulseWaveChannel)APU.Instance.Channels[0]).LengthOfEnvelopeSteps;
 				data = (byte)(defaultEnvelopeValue | envelopeUpDownByte | lengthOfEnvelopeSteps);
 			}
+			else if (address == 0xFF13)
+			{
+				data = 0xFF;
+			}
 			else if (address == 0xFF14)
 			{
 				data = 0xBF;
 				byte counterContinuousSelection = (byte)(((PulseWaveChannel)APU.Instance.Channels[0]).CounterContinuousSelection ? 0x40 : 0x00);
 				data = (byte)(data | counterContinuousSelection);
+			}
+			else if (address == 0xFF15)
+			{
+				data = 0xFF;
+				// NOTE: Ignore?
+				//GameBoy.DebugOutput += $"Reading from undocumented register: 0x{address:X4}!\n";
+				//MainForm.Pause();
+			}
+			else if (address == 0xFF16)
+			{
+				data = 0x3F;
+				byte waveformDuty = (byte)(((PulseWaveChannel)APU.Instance.Channels[1]).WaveformDuty << 6);
+				data = (byte)(data | waveformDuty);
 			}
 			else if (address == 0xFF17)
 			{
@@ -278,6 +309,10 @@
 				byte envelopeUpDownByte = (byte)(((PulseWaveChannel)APU.Instance.Channels[1]).EnvelopeUpDown ? 0x08 : 0x00);
 				byte lengthOfEnvelopeSteps = (byte)((PulseWaveChannel)APU.Instance.Channels[1]).LengthOfEnvelopeSteps;
 				data = (byte)(defaultEnvelopeValue | envelopeUpDownByte | lengthOfEnvelopeSteps);
+			}
+			else if (address == 0xFF18)
+			{
+				data = 0xFF;
 			}
 			else if (address == 0xFF19)
 			{
@@ -291,11 +326,19 @@
 				byte soundEnabled = (byte)(((WaveTableChannel)APU.Instance.Channels[2]).SoundEnabled ? 0x80 : 0x00);
 				data = (byte)(data | soundEnabled);
 			}
+			else if (address == 0xFF1B)
+			{
+				data = 0xFF;
+			}
 			else if (address == 0xFF1C)
 			{
 				data = 0x9F;
 				byte outputLevel = (byte)(((WaveTableChannel)APU.Instance.Channels[2]).GetOutputLevel() << 5);
 				data = (byte)(data | outputLevel);
+			}
+			else if (address == 0xFF1D)
+			{
+				data = 0xFF;
 			}
 			else if (address == 0xFF1E)
 			{
@@ -303,12 +346,30 @@
 				byte counterContinuousSelection = (byte)(((WaveTableChannel)APU.Instance.Channels[2]).CounterContinuousSelection ? 0x40 : 0x00);
 				data = (byte)(data | counterContinuousSelection);
 			}
+			else if (address == 0xFF1F)
+			{
+				data = 0xFF;
+				// NOTE: Ignore?
+				//GameBoy.DebugOutput += $"Reading from undocumented register: 0x{address:X4}!\n";
+				//MainForm.Pause();
+			}
+			else if (address == 0xFF20)
+			{
+				data = 0xFF;
+			}
 			else if (address == 0xFF21)
 			{
 				byte defaultEnvelopeValue = (byte)(((NoiseGeneratorChannel)APU.Instance.Channels[3]).DefaultEnvelopeValue << 4);
 				byte envelopeUpDownByte = (byte)(((NoiseGeneratorChannel)APU.Instance.Channels[3]).EnvelopeUpDown ? 0x08 : 0x00);
 				byte lengthOfEnvelopeSteps = (byte)((NoiseGeneratorChannel)APU.Instance.Channels[3]).LengthOfEnvelopeSteps;
 				data = (byte)(defaultEnvelopeValue | envelopeUpDownByte | lengthOfEnvelopeSteps);
+			}
+			else if (address == 0xFF22)
+			{
+				byte shiftClockFrequency = (byte)(((NoiseGeneratorChannel)APU.Instance.Channels[3]).ShiftClockFrequency << 4);
+				byte counterSteps = (byte)(((NoiseGeneratorChannel)APU.Instance.Channels[3]).CounterSteps ? 0x08 : 0x00);
+				byte divisionRatioFrequency = (byte)(((NoiseGeneratorChannel)APU.Instance.Channels[3]).DivisionRatioFrequency);
+				data = (byte)(shiftClockFrequency | counterSteps | divisionRatioFrequency);
 			}
 			else if (address == 0xFF23)
 			{
@@ -319,9 +380,9 @@
 			else if (address == 0xFF24)
 			{
 				byte vinLeftOn = APU.Instance.VinLeftOn ? (byte)0x80 : (byte)0x00;
-				byte leftOutputVolume = (byte)APU.Instance.LeftOutputVolume;
+				byte leftOutputVolume = (byte)((APU.Instance.LeftOutputVolume << 4) & 0x70);
 				byte vinRightOn = APU.Instance.VinRightOn ? (byte)0x08 : (byte)0x00;
-				byte rightOutputVolume = (byte)APU.Instance.RightOutputVolume;
+				byte rightOutputVolume = (byte)(APU.Instance.RightOutputVolume & 0x07);
 				data = (byte)(vinLeftOn | leftOutputVolume | vinRightOn | rightOutputVolume);
 			}
 			else if (address == 0xFF25)
@@ -337,6 +398,17 @@
 				byte channel3On = APU.Instance.Channels[2].SoundOn ? (byte)0x04 : (byte)0x00;
 				byte channel4On = APU.Instance.Channels[3].SoundOn ? (byte)0x08 : (byte)0x00;
 				data = (byte)(data | allSoundOn | channel1On | channel2On | channel3On | channel4On);
+			}
+			else if (address >= 0xFF27 && address <= 0xFF2F)
+			{
+				data = 0xFF;
+				// NOTE: Ignore?
+				//GameBoy.DebugOutput += $"Reading from undocumented register: 0x{address:X4}!\n";
+				//MainForm.Pause();
+			}
+			else if (address >= 0xFF30 && address <= 0xFF3F)
+			{
+				data = ((WaveTableChannel)APU.Instance.Channels[2]).GetWaveformRAM(address - 0xFF30);
 			}
 			else if (address == 0xFF40)
 			{
@@ -640,45 +712,60 @@
 			}
 			else if (address == 0xFF10)
 			{
-				uint sweepTime = Utilities.GetBitsFromByte(data, 4, 6);
-				((PulseWaveChannel)APU.Instance.Channels[0]).SweepTime = sweepTime;
-				bool sweepIncDec = Utilities.GetBoolFromByte(data, 3);
-				((PulseWaveChannel)APU.Instance.Channels[0]).SweepIncDec = sweepIncDec;
-				int sweepShiftNumber = Utilities.GetBitsFromByte(data, 0, 2);
-				((PulseWaveChannel)APU.Instance.Channels[0]).SweepShiftNumber = sweepShiftNumber;
+				if (APU.Instance.IsOn())
+				{
+					uint sweepTime = Utilities.GetBitsFromByte(data, 4, 6);
+					((PulseWaveChannel)APU.Instance.Channels[0]).SweepTime = sweepTime;
+					bool sweepIncDec = Utilities.GetBoolFromByte(data, 3);
+					((PulseWaveChannel)APU.Instance.Channels[0]).SweepIncDec = sweepIncDec;
+					int sweepShiftNumber = Utilities.GetBitsFromByte(data, 0, 2);
+					((PulseWaveChannel)APU.Instance.Channels[0]).SweepShiftNumber = sweepShiftNumber;
+				}
 			}
 			else if (address == 0xFF11)
 			{
-				uint waveformDuty = Utilities.GetBitsFromByte(data, 6, 7);
-				((PulseWaveChannel)APU.Instance.Channels[0]).WaveformDuty = waveformDuty;
-				uint soundLength = Utilities.GetBitsFromByte(data, 0, 5);
-				APU.Instance.Channels[0].SetSoundLength(soundLength);
+				if (APU.Instance.IsOn())
+				{
+					uint waveformDuty = Utilities.GetBitsFromByte(data, 6, 7);
+					((PulseWaveChannel)APU.Instance.Channels[0]).WaveformDuty = waveformDuty;
+					uint soundLength = Utilities.GetBitsFromByte(data, 0, 5);
+					APU.Instance.Channels[0].SetSoundLength(soundLength);
+				}
 			}
 			else if (address == 0xFF12)
 			{
-				uint defaultEnvelopeValue = Utilities.GetBitsFromByte(data, 4, 7);
-				((PulseWaveChannel)APU.Instance.Channels[0]).SetDefaultEnvelopeValue(defaultEnvelopeValue);
-				bool envelopeUpDown = Utilities.GetBoolFromByte(data, 3);
-				((PulseWaveChannel)APU.Instance.Channels[0]).EnvelopeUpDown = envelopeUpDown;
-				uint lengthOfEnvelopeSteps = Utilities.GetBitsFromByte(data, 0, 2);
-				((PulseWaveChannel)APU.Instance.Channels[0]).SetLengthOfEnvelopeSteps(lengthOfEnvelopeSteps);
+				if (APU.Instance.IsOn())
+				{
+					uint defaultEnvelopeValue = Utilities.GetBitsFromByte(data, 4, 7);
+					((PulseWaveChannel)APU.Instance.Channels[0]).SetDefaultEnvelopeValue(defaultEnvelopeValue);
+					bool envelopeUpDown = Utilities.GetBoolFromByte(data, 3);
+					((PulseWaveChannel)APU.Instance.Channels[0]).EnvelopeUpDown = envelopeUpDown;
+					uint lengthOfEnvelopeSteps = Utilities.GetBitsFromByte(data, 0, 2);
+					((PulseWaveChannel)APU.Instance.Channels[0]).SetLengthOfEnvelopeSteps(lengthOfEnvelopeSteps);
+				}
 			}
 			else if (address == 0xFF13)
 			{
-				uint lowOrderFrequencyData = data;
-				((PulseWaveChannel)APU.Instance.Channels[0]).LowOrderFrequencyData = lowOrderFrequencyData;
+				if (APU.Instance.IsOn())
+				{
+					uint lowOrderFrequencyData = data;
+					((PulseWaveChannel)APU.Instance.Channels[0]).LowOrderFrequencyData = lowOrderFrequencyData;
+				}
 			}
 			else if (address == 0xFF14)
 			{
-				bool initialize = Utilities.GetBoolFromByte(data, 7);
-				if (initialize)
+				if (APU.Instance.IsOn())
 				{
-					APU.Instance.Channels[0].Initialize();
+					bool initialize = Utilities.GetBoolFromByte(data, 7);
+					if (initialize)
+					{
+						APU.Instance.Channels[0].Initialize();
+					}
+					bool counterContinuousSelection = Utilities.GetBoolFromByte(data, 6);
+					((PulseWaveChannel)APU.Instance.Channels[0]).CounterContinuousSelection = counterContinuousSelection;
+					uint highOrderFrequencyData = Utilities.GetBitsFromByte(data, 0, 2);
+					((PulseWaveChannel)APU.Instance.Channels[0]).HighOrderFrequencyData = highOrderFrequencyData;
 				}
-				bool counterContinuousSelection = Utilities.GetBoolFromByte(data, 6);
-				uint highOrderFrequencyData = Utilities.GetBitsFromByte(data, 0, 2);
-				((PulseWaveChannel)APU.Instance.Channels[0]).CounterContinuousSelection = counterContinuousSelection;
-				((PulseWaveChannel)APU.Instance.Channels[0]).HighOrderFrequencyData = highOrderFrequencyData;
 			}
 			else if (address == 0xFF15)
 			{
@@ -688,66 +775,93 @@
 			}
 			else if (address == 0xFF16)
 			{
-				uint waveformDuty = Utilities.GetBitsFromByte(data, 6, 7);
-				((PulseWaveChannel)APU.Instance.Channels[1]).WaveformDuty = waveformDuty;
-				uint soundLength = Utilities.GetBitsFromByte(data, 0, 5);
-				APU.Instance.Channels[1].SetSoundLength(soundLength);
+				if (APU.Instance.IsOn())
+				{
+					uint waveformDuty = Utilities.GetBitsFromByte(data, 6, 7);
+					((PulseWaveChannel)APU.Instance.Channels[1]).WaveformDuty = waveformDuty;
+					uint soundLength = Utilities.GetBitsFromByte(data, 0, 5);
+					APU.Instance.Channels[1].SetSoundLength(soundLength);
+				}
 			}
 			else if (address == 0xFF17)
 			{
-				uint defaultEnvelopeValue = Utilities.GetBitsFromByte(data, 4, 7);
-				((PulseWaveChannel)APU.Instance.Channels[1]).SetDefaultEnvelopeValue(defaultEnvelopeValue);
-				bool envelopeUpDown = Utilities.GetBoolFromByte(data, 3);
-				((PulseWaveChannel)APU.Instance.Channels[1]).EnvelopeUpDown = envelopeUpDown;
-				uint lengthOfEnvelopeSteps = Utilities.GetBitsFromByte(data, 0, 2);
-				((PulseWaveChannel)APU.Instance.Channels[1]).SetLengthOfEnvelopeSteps(lengthOfEnvelopeSteps);
+				if (APU.Instance.IsOn())
+				{
+					uint defaultEnvelopeValue = Utilities.GetBitsFromByte(data, 4, 7);
+					((PulseWaveChannel)APU.Instance.Channels[1]).SetDefaultEnvelopeValue(defaultEnvelopeValue);
+					bool envelopeUpDown = Utilities.GetBoolFromByte(data, 3);
+					((PulseWaveChannel)APU.Instance.Channels[1]).EnvelopeUpDown = envelopeUpDown;
+					uint lengthOfEnvelopeSteps = Utilities.GetBitsFromByte(data, 0, 2);
+					((PulseWaveChannel)APU.Instance.Channels[1]).SetLengthOfEnvelopeSteps(lengthOfEnvelopeSteps);
+				}
 			}
 			else if (address == 0xFF18)
 			{
-				uint lowOrderFrequencyData = data;
-				((PulseWaveChannel)APU.Instance.Channels[1]).LowOrderFrequencyData = lowOrderFrequencyData;
+				if (APU.Instance.IsOn())
+				{
+					uint lowOrderFrequencyData = data;
+					((PulseWaveChannel)APU.Instance.Channels[1]).LowOrderFrequencyData = lowOrderFrequencyData;
+				}
 			}
 			else if (address == 0xFF19)
 			{
-				bool initialize = Utilities.GetBoolFromByte(data, 7);
-				if (initialize)
+				if (APU.Instance.IsOn())
 				{
-					APU.Instance.Channels[1].Initialize();
+					bool initialize = Utilities.GetBoolFromByte(data, 7);
+					if (initialize)
+					{
+						APU.Instance.Channels[1].Initialize();
+					}
+					bool counterContinuousSelection = Utilities.GetBoolFromByte(data, 6);
+					((PulseWaveChannel)APU.Instance.Channels[1]).CounterContinuousSelection = counterContinuousSelection;
+					uint highOrderFrequencyData = Utilities.GetBitsFromByte(data, 0, 5);
+					((PulseWaveChannel)APU.Instance.Channels[1]).HighOrderFrequencyData = highOrderFrequencyData;
 				}
-				bool counterContinuousSelection = Utilities.GetBoolFromByte(data, 6);
-				uint highOrderFrequencyData = Utilities.GetBitsFromByte(data, 0, 5);
-				((PulseWaveChannel)APU.Instance.Channels[1]).CounterContinuousSelection = counterContinuousSelection;
-				((PulseWaveChannel)APU.Instance.Channels[1]).HighOrderFrequencyData = highOrderFrequencyData;
 			}
 			else if (address == 0xFF1A)
 			{
-				((WaveTableChannel)APU.Instance.Channels[2]).SoundEnabled = data == 0x80;
+				if (APU.Instance.IsOn())
+				{
+					((WaveTableChannel)APU.Instance.Channels[2]).SoundEnabled = Utilities.GetBoolFromByte(data, 7);
+				}
 			}
 			else if (address == 0xFF1B)
 			{
-				APU.Instance.Channels[2].SetSoundLength(data);
+				if (APU.Instance.IsOn())
+				{
+					APU.Instance.Channels[2].SetSoundLength(data);
+				}
 			}
 			else if (address == 0xFF1C)
 			{
-				byte outputLevel = Utilities.GetBitsFromByte(data, 5, 6);
-				((WaveTableChannel)APU.Instance.Channels[2]).SetOutputLevel(outputLevel);
+				if (APU.Instance.IsOn())
+				{
+					byte outputLevel = Utilities.GetBitsFromByte(data, 5, 6);
+					((WaveTableChannel)APU.Instance.Channels[2]).SetOutputLevel(outputLevel);
+				}
 			}
 			else if (address == 0xFF1D)
 			{
-				byte lowOrderFrequencyData = data;
-				((WaveTableChannel)APU.Instance.Channels[2]).LowOrderFrequencyData = lowOrderFrequencyData;
+				if (APU.Instance.IsOn())
+				{
+					byte lowOrderFrequencyData = data;
+					((WaveTableChannel)APU.Instance.Channels[2]).LowOrderFrequencyData = lowOrderFrequencyData;
+				}
 			}
 			else if (address == 0xFF1E)
 			{
-				bool initialize = Utilities.GetBoolFromByte(data, 7);
-				if (initialize)
+				if (APU.Instance.IsOn())
 				{
-					APU.Instance.Channels[2].Initialize();
+					bool initialize = Utilities.GetBoolFromByte(data, 7);
+					if (initialize)
+					{
+						APU.Instance.Channels[2].Initialize();
+					}
+					bool counterContinuousSelection = Utilities.GetBoolFromByte(data, 6);
+					((WaveTableChannel)APU.Instance.Channels[2]).CounterContinuousSelection = counterContinuousSelection;
+					byte highOrderFrequencyData = Utilities.GetBitsFromByte(data, 0, 2);
+					((WaveTableChannel)APU.Instance.Channels[2]).HighOrderFrequencyData = highOrderFrequencyData;
 				}
-				bool counterContinuousSelection = Utilities.GetBoolFromByte(data, 6);
-				byte highOrderFrequencyData = Utilities.GetBitsFromByte(data, 0, 2);
-				((WaveTableChannel)APU.Instance.Channels[2]).CounterContinuousSelection = counterContinuousSelection;
-				((WaveTableChannel)APU.Instance.Channels[2]).HighOrderFrequencyData = highOrderFrequencyData;
 			}
 			else if (address == 0xFF1F)
 			{
@@ -757,51 +871,69 @@
 			}
 			else if (address == 0xFF20)
 			{
-				byte soundLength = Utilities.GetBitsFromByte(data, 0, 5);
-				APU.Instance.Channels[3].SetSoundLength(soundLength);
+				if (APU.Instance.IsOn())
+				{
+					uint soundLength = Utilities.GetBitsFromByte(data, 0, 5);
+					APU.Instance.Channels[3].SetSoundLength(soundLength);
+				}
 			}
 			else if (address == 0xFF21)
 			{
-				uint defaultEnvelopeValue = Utilities.GetBitsFromByte(data, 4, 7);
-				((NoiseGeneratorChannel)APU.Instance.Channels[3]).SetDefaultEnvelopeValue(defaultEnvelopeValue);
-				bool envelopeUpDown = Utilities.GetBoolFromByte(data, 3);
-				((NoiseGeneratorChannel)APU.Instance.Channels[3]).EnvelopeUpDown = envelopeUpDown;
-				uint lengthOfEnvelopeSteps = Utilities.GetBitsFromByte(data, 0, 2);
-				((NoiseGeneratorChannel)APU.Instance.Channels[3]).SetLengthOfEnvelopeSteps(lengthOfEnvelopeSteps);
+				if (APU.Instance.IsOn())
+				{
+					uint defaultEnvelopeValue = Utilities.GetBitsFromByte(data, 4, 7);
+					((NoiseGeneratorChannel)APU.Instance.Channels[3]).SetDefaultEnvelopeValue(defaultEnvelopeValue);
+					bool envelopeUpDown = Utilities.GetBoolFromByte(data, 3);
+					((NoiseGeneratorChannel)APU.Instance.Channels[3]).EnvelopeUpDown = envelopeUpDown;
+					uint lengthOfEnvelopeSteps = Utilities.GetBitsFromByte(data, 0, 2);
+					((NoiseGeneratorChannel)APU.Instance.Channels[3]).SetLengthOfEnvelopeSteps(lengthOfEnvelopeSteps);
+				}
 			}
 			else if (address == 0xFF22)
 			{
-				int shiftClockFrequency = Utilities.GetBitsFromByte(data, 4, 7);
-				bool counterSteps = Utilities.GetBoolFromByte(data, 3);
-				uint divisionRatioFrequency = Utilities.GetBitsFromByte(data, 0, 2);
-				((NoiseGeneratorChannel)APU.Instance.Channels[3]).ShiftClockFrequency = shiftClockFrequency;
-				((NoiseGeneratorChannel)APU.Instance.Channels[3]).CounterSteps = counterSteps;
-				((NoiseGeneratorChannel)APU.Instance.Channels[3]).DivisionRatioFrequency = divisionRatioFrequency;
+				if (APU.Instance.IsOn())
+				{
+					int shiftClockFrequency = Utilities.GetBitsFromByte(data, 4, 7);
+					((NoiseGeneratorChannel)APU.Instance.Channels[3]).ShiftClockFrequency = shiftClockFrequency;
+					bool counterSteps = Utilities.GetBoolFromByte(data, 3);
+					((NoiseGeneratorChannel)APU.Instance.Channels[3]).CounterSteps = counterSteps;
+					uint divisionRatioFrequency = Utilities.GetBitsFromByte(data, 0, 2);
+					((NoiseGeneratorChannel)APU.Instance.Channels[3]).DivisionRatioFrequency = divisionRatioFrequency;
+				}
 			}
 			else if (address == 0xFF23)
 			{
-				bool initialize = Utilities.GetBoolFromByte(data, 7);
-				if (initialize)
+				if (APU.Instance.IsOn())
 				{
-					APU.Instance.Channels[3].Initialize();
+					bool initialize = Utilities.GetBoolFromByte(data, 7);
+					if (initialize)
+					{
+						APU.Instance.Channels[3].Initialize();
+					}
+					bool counterContinuousSelection = Utilities.GetBoolFromByte(data, 6);
+					((NoiseGeneratorChannel)APU.Instance.Channels[3]).CounterContinuousSelection = counterContinuousSelection;
 				}
-				bool counterContinuousSelection = Utilities.GetBoolFromByte(data, 6);
-				((NoiseGeneratorChannel)APU.Instance.Channels[3]).CounterContinuousSelection = counterContinuousSelection;
 			}
 			else if (address == 0xFF24)
 			{
-				bool vinLeftOn = Utilities.GetBoolFromByte(data, 7);
-				uint leftOutputVolume = Utilities.GetBitsFromByte(data, 4, 6);
-				bool vinRightOn = Utilities.GetBoolFromByte(data, 3);
-				uint rightOutputVolume = Utilities.GetBitsFromByte(data, 0, 2);
-				APU.Instance.VinLeftOn = vinLeftOn;
-				APU.Instance.LeftOutputVolume = leftOutputVolume;
-				APU.Instance.VinRightOn = vinRightOn;
-				APU.Instance.RightOutputVolume = rightOutputVolume;
+				if (APU.Instance.IsOn())
+				{
+					bool vinLeftOn = Utilities.GetBoolFromByte(data, 7);
+					uint leftOutputVolume = Utilities.GetBitsFromByte(data, 4, 6);
+					bool vinRightOn = Utilities.GetBoolFromByte(data, 3);
+					uint rightOutputVolume = Utilities.GetBitsFromByte(data, 0, 2);
+					APU.Instance.VinLeftOn = vinLeftOn;
+					APU.Instance.LeftOutputVolume = leftOutputVolume;
+					APU.Instance.VinRightOn = vinRightOn;
+					APU.Instance.RightOutputVolume = rightOutputVolume;
+				}
 			}
 			else if (address == 0xFF25)
 			{
-				APU.Instance.SetSoundOutputTerminals(data);
+				if (APU.Instance.IsOn())
+				{
+					APU.Instance.SetSoundOutputTerminals(data);
+				}
 			}
 			else if (address == 0xFF26)
 			{
@@ -814,10 +946,12 @@
 				{
 					APU.Instance.Off();
 				}
-				APU.Instance.Channels[0].SoundOn = Utilities.GetBoolFromByte(data, 0);
-				APU.Instance.Channels[1].SoundOn = Utilities.GetBoolFromByte(data, 1);
-				APU.Instance.Channels[2].SoundOn = Utilities.GetBoolFromByte(data, 2);
-				APU.Instance.Channels[3].SoundOn = Utilities.GetBoolFromByte(data, 3);
+			}
+			else if (address >= 0xFF27 && address <= 0xFF2F)
+			{
+				// NOTE: Ignore?
+				//GameBoy.DebugOutput += $"Writing to undocumented register: 0x{address:X4}!\n";
+				//MainForm.Pause();
 			}
 			else if (address >= 0xFF30 && address <= 0xFF3F)
 			{

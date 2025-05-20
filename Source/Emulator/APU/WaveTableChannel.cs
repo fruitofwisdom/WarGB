@@ -121,5 +121,20 @@ namespace GBSharp
 			_waveformRAM[address] = waveformRAM;
 			_waveTableProvider.BuildWaveform(_waveformRAM);
 		}
+
+		public void SetWaveformRAM(byte[] waveformRAM)
+		{
+			_waveformRAM = waveformRAM;
+		}
+
+		public byte GetWaveformRAM(int address)
+		{
+			return _waveformRAM[address];
+		}
+
+		public byte[] GetWaveformRAM()
+		{
+			return _waveformRAM;
+		}
 	}
 }

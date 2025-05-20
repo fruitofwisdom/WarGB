@@ -45,8 +45,15 @@ namespace GBSharp
 			Reset();
 		}
 
-		public void Reset()
+		public void Reset(bool resetWaveformRAM = true)
 		{
+			// NOTE: Turning off the APU doesn't reset waveform RAM.
+			byte[] waveformRAM = new byte[16];
+			if (!resetWaveformRAM)
+			{
+				waveformRAM = ((WaveTableChannel)Channels[2]).GetWaveformRAM();
+			}
+
 			// Retain emulator options.
 			//Mute = false;
 			//MuteChannels = { false, false, false, false };
@@ -73,6 +80,11 @@ namespace GBSharp
 			Channels[3] = new NoiseGeneratorChannel();
 
 			Stop();
+
+			if (!resetWaveformRAM)
+			{
+				((WaveTableChannel)Channels[2]).SetWaveformRAM(waveformRAM);
+			}
 		}
 
 		public void Play()
@@ -114,7 +126,8 @@ namespace GBSharp
 
 		public void Off()
 		{
-			Reset();
+			// NOTE: Turning off the APU doesn't reset waveform RAM.
+			Reset(false);
 		}
 
 		public bool IsOn()
