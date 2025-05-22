@@ -75,9 +75,13 @@ namespace GBSharp
 			_allSoundOn = false;
 
 			Channels[0] = new PulseWaveChannel(true);
+			Channels[0].SetChannelNumber(1);
 			Channels[1] = new PulseWaveChannel();
+			Channels[1].SetChannelNumber(2);
 			Channels[2] = new WaveTableChannel();
+			Channels[2].SetChannelNumber(3);
 			Channels[3] = new NoiseGeneratorChannel();
+			Channels[3].SetChannelNumber(4);
 
 			Stop();
 
@@ -169,9 +173,12 @@ namespace GBSharp
 	{
 		public bool SoundOn = false;
 
+		// NOTE: The DAC can be disabled independently of a channel, requiring extra handling.
+		public bool DACEnabled = true;
+
 		// Current sound length, initialized from the channels' sound length registers. (NR11, 0xFF11; NR21, 0xFF21; NR31, 0xFF1B; NR41, 0xFF20)
-		protected uint _soundLengthTimer = 0;
-		private const uint kSoundLengthTime = 0;
+		protected uint _soundLength = 0;
+		private uint _soundLengthTime;
 
 		// Other settings. (NR14, 0xFF14; NR24, 0xFF24; NR34, 0xFF1E; NR44, 0xFF23)
 		public bool CounterContinuousSelection = false;
@@ -179,19 +186,39 @@ namespace GBSharp
 		// The actual sound output device.
 		protected WaveOutEvent _waveOut = new();
 
+		private int _channelNumber = 0;
+
+		public Channel(uint soundLengthTime = 64)
+		{
+			_soundLengthTime = soundLengthTime;
+		}
+
 		~Channel()
 		{
 			_waveOut.Dispose();
 		}
 
+		public void SetChannelNumber(int channelNumber)
+		{
+			_channelNumber = channelNumber;
+		}
+
 		public void Initialize()
 		{
-			SoundOn = true;
+			if (DACEnabled)
+			{
+				SoundOn = true;
+			}
+			if (_soundLength >= _soundLengthTime)
+			{
+				_soundLength = 0;
+			}
+			// TODO: Reset other values per channel?
 		}
 
 		public void SetSoundLength(uint soundLength)
 		{
-			_soundLengthTimer = soundLength;
+			_soundLength = soundLength;
 		}
 
 		public void Play()
@@ -212,8 +239,8 @@ namespace GBSharp
 				// Update length timer.
 				if (CounterContinuousSelection)
 				{
-					_soundLengthTimer++;
-					if (_soundLengthTimer >= kSoundLengthTime)
+					_soundLength++;
+					if (_soundLength >= _soundLengthTime)
 					{
 						SoundOn = false;
 					}

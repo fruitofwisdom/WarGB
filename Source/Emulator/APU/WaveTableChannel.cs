@@ -37,9 +37,6 @@ namespace GBSharp
 		// TODO: Use the correct wave generator.
 		private readonly WaveTableProvider _waveTableProvider = new();
 
-		// Is sound output enabled? (NR30, 0xFF1A)
-		public bool SoundEnabled = false;
-
 		// The output level. (NR32, 0xFF1C)
 		private byte _outputLevel = 0;
 		private float _outputLevelAsFloat = 0.0f;
@@ -53,7 +50,7 @@ namespace GBSharp
 		// The composition of the waveform. (0xFF30 through 0xFF3F)
 		private byte[] _waveformRAM;
 
-		public WaveTableChannel()
+		public WaveTableChannel() : base(256)
 		{
 			_waveformRAM = new byte[16];
 			_waveOut.Init(new SampleToWaveProvider(_waveTableProvider));
@@ -62,7 +59,7 @@ namespace GBSharp
 		public override void Update()
 		{
 			// Are we muted?
-			if (APU.Instance.Mute || APU.Instance.MuteChannels[2] || !APU.Instance.IsOn() || !SoundOn || !SoundEnabled)
+			if (APU.Instance.Mute || APU.Instance.MuteChannels[2] || !APU.Instance.IsOn() || !SoundOn)
 			{
 				_waveTableProvider._leftVolume = 0.0f;
 				_waveTableProvider._rightVolume = 0.0f;

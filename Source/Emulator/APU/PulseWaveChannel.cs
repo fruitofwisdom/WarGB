@@ -66,7 +66,7 @@ namespace GBSharp
 		// The high-order frequency period. (NR14 and NR24, 0xFF14 and 0xFF24)
 		public uint HighOrderFrequencyData = 0;
 
-		public PulseWaveChannel(bool sweepEnabled = false)
+		public PulseWaveChannel(bool sweepEnabled = false) : base(64)
 		{
 			_sweepEnabled = sweepEnabled;
 			_waveOut.Init(new SampleToWaveProvider(_pulseWaveProvider));
@@ -76,6 +76,11 @@ namespace GBSharp
 		{
 			// Update length timer.
 			base.UpdateDiv(divApu);
+
+			if (!SoundOn)
+			{
+				return;
+			}
 
 			// DIV-APU runs at 512Hz, envelope sweep at 64Hz
 			if (divApu % 8 == 0)

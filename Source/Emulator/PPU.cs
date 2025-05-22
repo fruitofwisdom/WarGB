@@ -75,7 +75,6 @@
 		public void Reset()
 		{
 			// Retain emulator options.
-			//Accurate = true;
 			_objectsRendered = 0;
 
 			Clear();

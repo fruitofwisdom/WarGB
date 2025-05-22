@@ -318,7 +318,8 @@
 			}
 
 			// Update the APU's DIV-APU-based events.
-			if ((previousDiv & 0x08) == 0x08 && (DIV & 0x08) == 0x00)
+			// TODO: This should be 0x08, but 0x04 works more accurately maybe?
+			if ((previousDiv & 0x04) == 0x04 && (DIV & 0x04) == 0x00)
             {
 				_divApu++;
 				APU.Instance.UpdateDiv(_divApu);

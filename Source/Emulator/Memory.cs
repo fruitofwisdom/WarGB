@@ -323,7 +323,7 @@
 			else if (address == 0xFF1A)
 			{
 				data = 0x7F;
-				byte soundEnabled = (byte)(((WaveTableChannel)APU.Instance.Channels[2]).SoundEnabled ? 0x80 : 0x00);
+				byte soundEnabled = (byte)(((WaveTableChannel)APU.Instance.Channels[2]).SoundOn ? 0x80 : 0x00);
 				data = (byte)(data | soundEnabled);
 			}
 			else if (address == 0xFF1B)
@@ -742,6 +742,17 @@
 					((PulseWaveChannel)APU.Instance.Channels[0]).EnvelopeUpDown = envelopeUpDown;
 					uint lengthOfEnvelopeSteps = Utilities.GetBitsFromByte(data, 0, 2);
 					((PulseWaveChannel)APU.Instance.Channels[0]).SetLengthOfEnvelopeSteps(lengthOfEnvelopeSteps);
+
+					// NOTE: These values turn off the channel immediately.
+					if (defaultEnvelopeValue == 0 && !envelopeUpDown)
+					{
+						((PulseWaveChannel)APU.Instance.Channels[0]).SoundOn = false;
+						((PulseWaveChannel)APU.Instance.Channels[0]).DACEnabled = false;
+					}
+					if (defaultEnvelopeValue > 0 && !((PulseWaveChannel)APU.Instance.Channels[0]).DACEnabled)
+					{
+						((PulseWaveChannel)APU.Instance.Channels[0]).DACEnabled = true;
+					}
 				}
 			}
 			else if (address == 0xFF13)
@@ -793,6 +804,17 @@
 					((PulseWaveChannel)APU.Instance.Channels[1]).EnvelopeUpDown = envelopeUpDown;
 					uint lengthOfEnvelopeSteps = Utilities.GetBitsFromByte(data, 0, 2);
 					((PulseWaveChannel)APU.Instance.Channels[1]).SetLengthOfEnvelopeSteps(lengthOfEnvelopeSteps);
+
+					// NOTE: These values turn off the channel immediately.
+					if (defaultEnvelopeValue == 0 && !envelopeUpDown)
+					{
+						((PulseWaveChannel)APU.Instance.Channels[1]).SoundOn = false;
+						((PulseWaveChannel)APU.Instance.Channels[1]).DACEnabled = false;
+					}
+					if (defaultEnvelopeValue > 0 && !((PulseWaveChannel)APU.Instance.Channels[1]).DACEnabled)
+					{
+						((PulseWaveChannel)APU.Instance.Channels[1]).DACEnabled = true;
+					}
 				}
 			}
 			else if (address == 0xFF18)
@@ -822,7 +844,18 @@
 			{
 				if (APU.Instance.IsOn())
 				{
-					((WaveTableChannel)APU.Instance.Channels[2]).SoundEnabled = Utilities.GetBoolFromByte(data, 7);
+					bool soundEnabled = Utilities.GetBoolFromByte(data, 7);
+
+					// This turns off the channel and DAC.
+					if (!soundEnabled)
+					{
+						((WaveTableChannel)APU.Instance.Channels[2]).SoundOn = false;
+						((WaveTableChannel)APU.Instance.Channels[2]).DACEnabled = false;
+					}
+					else
+					{
+						((WaveTableChannel)APU.Instance.Channels[2]).DACEnabled = true;
+					}
 				}
 			}
 			else if (address == 0xFF1B)
@@ -887,6 +920,17 @@
 					((NoiseGeneratorChannel)APU.Instance.Channels[3]).EnvelopeUpDown = envelopeUpDown;
 					uint lengthOfEnvelopeSteps = Utilities.GetBitsFromByte(data, 0, 2);
 					((NoiseGeneratorChannel)APU.Instance.Channels[3]).SetLengthOfEnvelopeSteps(lengthOfEnvelopeSteps);
+
+					// NOTE: These values turn off the channel immediately.
+					if (defaultEnvelopeValue == 0 && !envelopeUpDown)
+					{
+						((NoiseGeneratorChannel)APU.Instance.Channels[3]).SoundOn = false;
+						((NoiseGeneratorChannel)APU.Instance.Channels[3]).DACEnabled = false;
+					}
+					if (defaultEnvelopeValue > 0 && !((NoiseGeneratorChannel)APU.Instance.Channels[3]).DACEnabled)
+					{
+						((NoiseGeneratorChannel)APU.Instance.Channels[3]).DACEnabled = true;
+					}
 				}
 			}
 			else if (address == 0xFF22)

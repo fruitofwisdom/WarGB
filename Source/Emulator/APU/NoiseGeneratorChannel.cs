@@ -42,7 +42,7 @@ namespace GBSharp
 		private ushort _lfsr = 0xABCD;		// A random value.
 		private uint _lfsrFrequency = 0;
 
-		public NoiseGeneratorChannel()
+		public NoiseGeneratorChannel() : base(64)
 		{
 			_waveOut.Init(new SampleToWaveProvider(_noiseGeneratorProvider));
 		}
@@ -51,6 +51,11 @@ namespace GBSharp
 		{
 			// Update length timer.
 			base.UpdateDiv(divApu);
+
+			if (!SoundOn)
+			{
+				return;
+			}
 
 			// DIV-APU runs at 512Hz, envelope sweep at 64Hz
 			if (divApu % 8 == 0)
