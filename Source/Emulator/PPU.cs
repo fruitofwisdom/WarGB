@@ -256,6 +256,13 @@
 			OBJSize = Utilities.GetBoolFromByte(lcdc, 2);
 			OBJEnabled = Utilities.GetBoolFromByte(lcdc, 1);
 			BGWindowEnable = Utilities.GetBoolFromByte(lcdc, 0);
+
+			// LY is reset when LCD is disabled.
+			if (!LCDEnabled)
+			{
+				Dots = 0;
+				LY = 0x00;
+			}
 		}
 
 		public byte GetSTAT()
