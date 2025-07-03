@@ -186,6 +186,7 @@ namespace GBSharp
 		// The actual sound output device.
 		protected WaveOutEvent _waveOut = new();
 
+		// NOTE: For debug purposes.
 		private int _channelNumber = 0;
 
 		public Channel(uint soundLengthTime = 64)
@@ -205,14 +206,30 @@ namespace GBSharp
 
 		public void Initialize()
 		{
+			bool _wasSoundOn = SoundOn;
+
+			// Start if this channel's DAC is enabled.
 			if (DACEnabled)
 			{
 				SoundOn = true;
 			}
+
+			// If length has expired, reset.
 			if (_soundLength >= _soundLengthTime)
 			{
 				_soundLength = 0;
 			}
+
+			// TODO: Is this correct? Handle obscure behavior better.
+			if (!_wasSoundOn && SoundOn && _soundLength > 0)
+			{
+				_soundLength++;
+				if (_soundLength >= _soundLengthTime)
+				{
+					SoundOn = false;
+				}
+			}
+
 			// TODO: Reset other values per channel?
 		}
 
