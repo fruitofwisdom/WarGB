@@ -25,6 +25,7 @@
 		public uint ROMBank { get; private set; }
 		private uint MBC1RAMBank;
 		private bool MBC1BankingMode;
+		private bool MBC3RAMOrTimerMode;		// true is RAM mode, false is timer
 
 		public bool SaveNeeded { get; private set; }
 
@@ -74,6 +75,7 @@
 			ROMBank = 1;
 			MBC1RAMBank = 0;
 			MBC1BankingMode = false;
+			MBC3RAMOrTimerMode = true;
 
 			SaveNeeded = false;
 			if (ROM.Instance.HasBattery)
@@ -147,25 +149,53 @@
 			}
 			else if (address >= 0xA000 && address <= 0xBFFF)
 			{
-				uint bankOffset = 0;
-				if (MBC1BankingMode)
-				{
-					// NOTE: MBC1's external RAM banks are in sizes of 8KB.
-					bankOffset = MBC1RAMBank * 0x2000;
-				}
-				data = ExternalRAM[(address + bankOffset) - 0xA000];
-
 				if (ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1_RAM ||
 					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1_RAM_BATTERY ||
 					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2 ||
-					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2_BATTERY)
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2_BATTERY ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_RAM ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_RAM_BATTERY)
 				{
+					uint bankOffset = 0;
+					if (MBC1BankingMode)
+					{
+						// NOTE: MBC1's external RAM banks are in sizes of 8KB?
+						// TODO: Is this correct???
+						bankOffset = MBC1RAMBank * 0x2000;
+					}
+					data = ExternalRAM[(address + bankOffset) - 0xA000];
+
 					if (!RAMEnabled)
 					{
 						data = 0xFF;
 
 						// TODO: Is this a real problem?
-						GameBoy.DebugOutput += $"Reading from external RAM while RAM is disabled!\n";
+						//GameBoy.DebugOutput += $"Reading from external RAM while RAM is disabled!\n";
+						//MainForm.Pause();
+					}
+				}
+				else if (ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_TIMER_BATTERY ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_TIMER_RAM_BATTERY)
+				{
+					if (MBC3RAMOrTimerMode)
+					{
+						data = ExternalRAM[address - 0xA000];
+
+						if (!RAMEnabled)
+						{
+							data = 0xFF;
+
+							// TODO: Is this a real problem?
+							//GameBoy.DebugOutput += $"Reading from external RAM while RAM is disabled!\n";
+							//MainForm.Pause();
+						}
+					}
+					else
+					{
+						data = 0xFF;
+
+						// TODO: The RTC register.
+						GameBoy.DebugOutput += $"Writing to unimplemented RTC register: 0x{address:X4}!\n";
 						//MainForm.Pause();
 					}
 				}
@@ -531,7 +561,6 @@
 			{
 				if (address >= 0x0000 && address <= 0x1FFF)
 				{
-					// TODO: Does this addressing apply to simple MBC1 carts?
 					RAMEnabled = data == 0x0A;
 				}
 				else if (address >= 0x2000 && address <= 0x3FFF)
@@ -589,6 +618,44 @@
 					//MainForm.Pause();
 				}
 			}
+			else if (ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3 ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_RAM ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_RAM_BATTERY ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_TIMER_BATTERY ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_TIMER_RAM_BATTERY)
+			{
+				if (address >= 0x0000 && address <= 0x1FFF)
+				{
+					RAMEnabled = data == 0x0A;
+				}
+				else if (address >= 0x2000 && address <= 0x3FFF)
+				{
+					// NOTE: 0x00 is a special case.
+					if (data == 0x00)
+					{
+						ROMBank = 1;
+					}
+					else
+					{
+						uint previousROMBank = ROMBank;
+						ROMBank = (uint)(data & 0x7F);
+						// Mask down to the correct number of ROM banks.
+						uint numROMBanks = ROM.Instance.ROMSize / 1024 / 16;
+						ROMBank &= (numROMBanks - 1);
+					}
+				}
+				else if (address >= 0x4000 && address <= 0x5FFF)
+				{
+					// Select which is mapped between 0xA000 and 0xBFFF, RAM or a timer.
+					MBC3RAMOrTimerMode = data <= 0x07;
+				}
+				else if (address >= 0x6000 && address <= 0x7FFF)
+				{
+					// TODO: Latch clock data?
+					GameBoy.DebugOutput += $"Writing to unimplemented RTC register: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+			}
 			// TODO: Support other MBCs.
 			else
 			{
@@ -611,7 +678,9 @@
 				if (ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1_RAM ||
 					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1_RAM_BATTERY ||
 					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2 ||
-					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2_BATTERY)
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2_BATTERY ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_RAM ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_RAM_BATTERY)
 				{
 					if (RAMEnabled)
 					{
@@ -620,7 +689,30 @@
 					else
 					{
 						// TODO: Is this a real problem?
-						GameBoy.DebugOutput += "Writing to external RAM while RAM is disabled!\n";
+						//GameBoy.DebugOutput += "Writing to external RAM while RAM is disabled!\n";
+						//MainForm.Pause();
+					}
+				}
+				else if (ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_TIMER_BATTERY ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_TIMER_RAM_BATTERY)
+				{
+					if (MBC3RAMOrTimerMode)
+					{
+						if (RAMEnabled)
+						{
+							SaveNeeded = true;
+						}
+						else
+						{
+							// TODO: Is this a real problem?
+							//GameBoy.DebugOutput += "Writing to external RAM while RAM is disabled!\n";
+							//MainForm.Pause();
+						}
+					}
+					else
+					{
+						// TODO: The RTC register.
+						GameBoy.DebugOutput += $"Writing to unimplemented RTC register: 0x{address:X4}!\n";
 						//MainForm.Pause();
 					}
 				}
