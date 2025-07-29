@@ -5,7 +5,7 @@
 		// Character data, BG display data, etc. - 0x8000 to 0x9FFF
 		private readonly byte[] VRAM;
 		// External expansion working RAM - 0xA000 to 0xBFFF
-		private readonly byte[] ExternalRAM;
+		private byte[] ExternalRAM;
 		// Unit working RAM - 0xC000 to 0xDFFF
 		private readonly byte[] WRAMBank0;
 		// TODO: Support bank switching for CGB.
@@ -21,11 +21,12 @@
 		private bool _serialClockSpeed;
 		public bool SerialClockSelect;
 
-		private bool RAMEnabled;
 		public uint ROMBank { get; private set; }
-		private uint MBC1RAMBank;
-		private bool MBC1BankingMode;
-		private bool MBC3RAMOrTimerMode;		// true is RAM mode, false is timer
+		private bool RAMEnabled;
+		private uint RAMBank;
+		private bool MBC1BankingMode;		// true is simple mode, false is advanced
+		private uint MBC1ROMBank;
+		private uint MBC3RAMOrTimer;		// selects the RAM bank or timer register
 
 		public bool SaveNeeded { get; private set; }
 
@@ -56,6 +57,12 @@
 		// Reset the memory and state.
 		public void Reset()
 		{
+			// External RAM size depends on the cart.
+			if (ROM.Instance.RAMSize > 0)
+			{
+				ExternalRAM = new byte[ROM.Instance.RAMSize];
+			}
+
 			Array.Clear(VRAM, 0, VRAM.Length);
 			Array.Clear(ExternalRAM, 0, ExternalRAM.Length);
 			Array.Clear(WRAMBank0, 0, WRAMBank0.Length);
@@ -70,12 +77,12 @@
 			_serialClockSpeed = true;
 			SerialClockSelect = false;
 
-			RAMEnabled = false;
-			// NOTE: By default, 0x4000 to 0x7FFF is mapped to bank 1.
 			ROMBank = 1;
-			MBC1RAMBank = 0;
-			MBC1BankingMode = false;
-			MBC3RAMOrTimerMode = true;
+			RAMEnabled = false;
+			RAMBank = 0;
+			MBC1BankingMode = false;        // simple or advanced
+			MBC1ROMBank = 0;
+			MBC3RAMOrTimer = 0;
 
 			SaveNeeded = false;
 			if (ROM.Instance.HasBattery)
@@ -127,18 +134,17 @@
 				if (ROM.Instance.Data is not null)
 				{
 					uint bankOffset = 0;
-					if (MBC1BankingMode)
+					if (MBC1BankingMode)		// advanced
 					{
 						// NOTE: MBC1's ROM banks are in sizes of 16 KB?
 						// TODO: Is this correct???
-						bankOffset = MBC1RAMBank * 0x4000;
+						bankOffset = MBC1ROMBank * 0x4000;
 					}
 					data = ROM.Instance.Data[address + bankOffset];
 				}
 			}
 			else if (address >= 0x4000 && address <= 0x7FFF)
 			{
-				// NOTE: Bank 1 maps to 0x4000 to 0x7FFF, bank 2 to 0x8000 to 0xBFFF, etc.
 				uint bankOffset = (ROMBank - 1) * 0x4000;
 				data = ROM.Instance.Data[address + bankOffset];
 			}
@@ -149,51 +155,35 @@
 			}
 			else if (address >= 0xA000 && address <= 0xBFFF)
 			{
+				data = 0xFF;
+
 				if (ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1_RAM ||
 					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1_RAM_BATTERY ||
 					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2 ||
 					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2_BATTERY ||
 					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_RAM ||
-					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_RAM_BATTERY)
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_RAM_BATTERY ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC5_RAM ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC5_RAM_BATTERY ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC5_RUMBLE_RAM ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC5_RUMBLE_RAM_BATTERY)
 				{
-					uint bankOffset = 0;
-					if (MBC1BankingMode)
+					if (RAMEnabled)
 					{
-						// NOTE: MBC1's external RAM banks are in sizes of 8KB?
-						// TODO: Is this correct???
-						bankOffset = MBC1RAMBank * 0x2000;
-					}
-					data = ExternalRAM[(address + bankOffset) - 0xA000];
-
-					if (!RAMEnabled)
-					{
-						data = 0xFF;
-
-						// TODO: Is this a real problem?
-						//GameBoy.DebugOutput += $"Reading from external RAM while RAM is disabled!\n";
-						//MainForm.Pause();
+						uint bankOffset = RAMBank * 0x2000;
+						data = ExternalRAM[(address + bankOffset) - 0xA000];
 					}
 				}
 				else if (ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_TIMER_BATTERY ||
 					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_TIMER_RAM_BATTERY)
 				{
-					if (MBC3RAMOrTimerMode)
+					if (RAMEnabled && MBC3RAMOrTimer <= 0x07)
 					{
-						data = ExternalRAM[address - 0xA000];
-
-						if (!RAMEnabled)
-						{
-							data = 0xFF;
-
-							// TODO: Is this a real problem?
-							//GameBoy.DebugOutput += $"Reading from external RAM while RAM is disabled!\n";
-							//MainForm.Pause();
-						}
+						uint bankOffset = RAMBank * 0x2000;
+						data = ExternalRAM[(address + bankOffset) - 0xA000];
 					}
 					else
 					{
-						data = 0xFF;
-
 						// TODO: The RTC register.
 						GameBoy.DebugOutput += $"Writing to unimplemented RTC register: 0x{address:X4}!\n";
 						//MainForm.Pause();
@@ -580,7 +570,15 @@
 				}
 				else if (address >= 0x4000 && address <= 0x5FFF)
 				{
-					MBC1RAMBank = (uint)(data & 0x03);
+					if (MBC1BankingMode)        // advanced
+					{
+						// Sets the upper 2 bits of the ROM bank.
+						MBC1ROMBank = (uint)(data & 0x03);
+					}
+					else
+					{
+						RAMBank = (uint)(data & 0x03);
+					}
 				}
 				else if (address >= 0x6000 && address <= 0x7FFF)
 				{
@@ -619,10 +617,10 @@
 				}
 			}
 			else if (ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3 ||
-					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_RAM ||
-					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_RAM_BATTERY ||
-					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_TIMER_BATTERY ||
-					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_TIMER_RAM_BATTERY)
+				ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_RAM ||
+				ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_RAM_BATTERY ||
+				ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_TIMER_BATTERY ||
+				ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_TIMER_RAM_BATTERY)
 			{
 				if (address >= 0x0000 && address <= 0x1FFF)
 				{
@@ -637,7 +635,6 @@
 					}
 					else
 					{
-						uint previousROMBank = ROMBank;
 						ROMBank = (uint)(data & 0x7F);
 						// Mask down to the correct number of ROM banks.
 						uint numROMBanks = ROM.Instance.ROMSize / 1024 / 16;
@@ -647,13 +644,54 @@
 				else if (address >= 0x4000 && address <= 0x5FFF)
 				{
 					// Select which is mapped between 0xA000 and 0xBFFF, RAM or a timer.
-					MBC3RAMOrTimerMode = data <= 0x07;
+					MBC3RAMOrTimer = data;
+					// TODO: Make this cleaner?
+					if (MBC3RAMOrTimer <= 0x07)
+					{
+						RAMBank = (uint)(data & 0x07);
+					}
 				}
 				else if (address >= 0x6000 && address <= 0x7FFF)
 				{
 					// TODO: Latch clock data?
 					GameBoy.DebugOutput += $"Writing to unimplemented RTC register: 0x{address:X4}!\n";
 					//MainForm.Pause();
+				}
+			}
+			else if (ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC5 ||
+				ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC5_RAM ||
+				ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC5_RAM_BATTERY ||
+				ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC5_RUMBLE ||
+				ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC5_RUMBLE_RAM ||
+				ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC5_RUMBLE_RAM_BATTERY)
+			{
+				if (address >= 0x0000 && address <= 0x1FFF)
+				{
+					RAMEnabled = (data & 0x0A) == 0x0A;
+				}
+				else if (address >= 0x2000 && address <= 0x2FFF)
+				{
+					// NOTE: 0x00 is OK in this case.
+					uint romBank = (uint)(data & 0x7F);
+					// Mask down to the correct number of ROM banks.
+					uint numROMBanks = ROM.Instance.ROMSize / 1024 / 16;
+					romBank &= (numROMBanks - 1);
+
+					// Set only the lower 8 bits of the ROM bank.
+					ROMBank = ROMBank & 0x0100;
+					ROMBank |= romBank;
+				}
+				else if (address >= 0x3000 && address <= 0x3FFF)
+				{
+					// Set or reset the 9th bit of the ROM bank.
+					ROMBank = ROMBank & 0x00FF;
+					ROMBank |= (uint)((data & 0x01) << 8);
+				}
+				else if (address >= 0x4000 && address <= 0x5FFF)
+				{
+					RAMBank = (uint)(data & 0x0F);
+
+					// TODO: Handle the rumble bit somehow?
 				}
 			}
 			// TODO: Support other MBCs.
@@ -673,17 +711,21 @@
 			}
 			else if (address >= 0xA000 && address <= 0xBFFF)
 			{
-				ExternalRAM[address - 0xA000] = data;
-
 				if (ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1_RAM ||
 					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC1_RAM_BATTERY ||
 					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2 ||
 					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC2_BATTERY ||
 					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_RAM ||
-					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_RAM_BATTERY)
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_RAM_BATTERY ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC5_RAM ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC5_RAM_BATTERY ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC5_RUMBLE_RAM ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC5_RUMBLE_RAM_BATTERY)
 				{
 					if (RAMEnabled)
 					{
+						uint bankoffset = RAMBank * 0x2000;
+						ExternalRAM[(address + bankoffset) - 0xA000] = data;
 						SaveNeeded = true;
 					}
 					else
@@ -696,10 +738,12 @@
 				else if (ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_TIMER_BATTERY ||
 					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC3_TIMER_RAM_BATTERY)
 				{
-					if (MBC3RAMOrTimerMode)
+					if (MBC3RAMOrTimer <= 0x07)
 					{
 						if (RAMEnabled)
 						{
+							uint bankoffset = RAMBank * 0x2000;
+							ExternalRAM[(address + bankoffset) - 0xA000] = data;
 							SaveNeeded = true;
 						}
 						else
@@ -1176,6 +1220,76 @@
 					//MainForm.Pause();
 				}
 			}
+			else if (address == 0xFF51)
+			{
+				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				{
+					// TODO: CGB support.
+					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+				else
+				{
+					GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+			}
+			else if (address == 0xFF52)
+			{
+				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				{
+					// TODO: CGB support.
+					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+				else
+				{
+					GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+			}
+			else if (address == 0xFF53)
+			{
+				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				{
+					// TODO: CGB support.
+					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+				else
+				{
+					GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+			}
+			else if (address == 0xFF54)
+			{
+				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				{
+					// TODO: CGB support.
+					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+				else
+				{
+					GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+			}
+			else if (address == 0xFF55)
+			{
+				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				{
+					// TODO: CGB support.
+					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+				else
+				{
+					GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+			}
 			else if (address == 0xFF68)
 			{
 				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
@@ -1191,6 +1305,34 @@
 				}
 			}
 			else if (address == 0xFF69)
+			{
+				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				{
+					// TODO: CGB support.
+					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+				else
+				{
+					GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+			}
+			else if (address == 0xFF6A)
+			{
+				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				{
+					// TODO: CGB support.
+					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+				else
+				{
+					GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+			}
+			else if (address == 0xFF6B)
 			{
 				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
 				{
