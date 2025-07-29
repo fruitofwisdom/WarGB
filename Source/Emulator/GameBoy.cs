@@ -248,5 +248,23 @@
 		{
 			APU.Instance.MuteChannels[channel] = mute;
 		}
+
+		// Should the background be rendered?
+		public void ShouldRenderBackground(bool shouldRender)
+		{
+			PPU.Instance.ShouldRenderBackground = shouldRender;
+		}
+
+		// Should the window be rendered?
+		public void ShouldRenderWindow(bool shouldRender)
+		{
+			PPU.Instance.ShouldRenderWindow = shouldRender;
+		}
+
+		// Should the objects be rendered?
+		public void ShouldRenderObjects(bool shouldRender)
+		{
+			PPU.Instance.ShouldRenderObjects = shouldRender;
+		}
 	}
 }

@@ -208,11 +208,25 @@ namespace GBSharp
 			Settings.Default.LCDSize = 5;
 		}
 
-		private void MuteSoundToolStripMenuClick(object sender, EventArgs e)
+		private void backgroundToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			muteSoundToolStripMenuItem.Checked = !muteSoundToolStripMenuItem.Checked;
-			_gameBoy.Mute(muteSoundToolStripMenuItem.Checked);
-			Settings.Default.MuteSound = muteSoundToolStripMenuItem.Checked;
+			backgroundToolStripMenuItem.Checked = !backgroundToolStripMenuItem.Checked;
+			_gameBoy.ShouldRenderBackground(backgroundToolStripMenuItem.Checked);
+			Settings.Default.ShouldRenderBackground = backgroundToolStripMenuItem.Checked;
+		}
+
+		private void windowToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			windowToolStripMenuItem.Checked = !windowToolStripMenuItem.Checked;
+			_gameBoy.ShouldRenderWindow(windowToolStripMenuItem.Checked);
+			Settings.Default.ShouldRenderWindow = windowToolStripMenuItem.Checked;
+		}
+
+		private void objectsToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			objectsToolStripMenuItem.Checked = !objectsToolStripMenuItem.Checked;
+			_gameBoy.ShouldRenderObjects(objectsToolStripMenuItem.Checked);
+			Settings.Default.ShouldRenderObjects = objectsToolStripMenuItem.Checked;
 		}
 
 		private void pulseWaveChannel1ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -241,6 +255,13 @@ namespace GBSharp
 			noiseGeneratorChannel4ToolStripMenuItem.Checked = !noiseGeneratorChannel4ToolStripMenuItem.Checked;
 			_gameBoy.MuteChannel(3, !noiseGeneratorChannel4ToolStripMenuItem.Checked);
 			Settings.Default.MuteChannel3 = !noiseGeneratorChannel4ToolStripMenuItem.Checked;
+		}
+
+		private void SoundOnToolStripMenuClick(object sender, EventArgs e)
+		{
+			soundOnToolStripMenuItem.Checked = !soundOnToolStripMenuItem.Checked;
+			_gameBoy.Mute(!soundOnToolStripMenuItem.Checked);
+			Settings.Default.MuteSound = !soundOnToolStripMenuItem.Checked;
 		}
 
 		private void DisplayFrameTimeToolStripMenuClick(object sender, EventArgs e)
@@ -830,9 +851,17 @@ namespace GBSharp
 					OneXToolStripMenuItemClick(sender, e);
 					break;
 			}
-			if (Settings.Default.MuteSound)
+			if (!Settings.Default.ShouldRenderBackground)
 			{
-				MuteSoundToolStripMenuClick(sender, e);
+				backgroundToolStripMenuItem_Click(sender, e);
+			}
+			if (!Settings.Default.ShouldRenderWindow)
+			{
+				windowToolStripMenuItem_Click(sender, e);
+			}
+			if (!Settings.Default.ShouldRenderObjects)
+			{
+				objectsToolStripMenuItem_Click(sender, e);
 			}
 			if (Settings.Default.MuteChannel0)
 			{
@@ -849,6 +878,10 @@ namespace GBSharp
 			if (Settings.Default.MuteChannel3)
 			{
 				noiseGeneratorChannel4ToolStripMenuItem_Click(sender, e);
+			}
+			if (Settings.Default.MuteSound)
+			{
+				SoundOnToolStripMenuClick(sender, e);
 			}
 		}
 	}

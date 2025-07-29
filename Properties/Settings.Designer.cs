@@ -262,5 +262,41 @@ namespace GBSharp.Properties {
                 this["KeyboardSelect"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShouldRenderBackground {
+            get {
+                return ((bool)(this["ShouldRenderBackground"]));
+            }
+            set {
+                this["ShouldRenderBackground"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShouldRenderWindow {
+            get {
+                return ((bool)(this["ShouldRenderWindow"]));
+            }
+            set {
+                this["ShouldRenderWindow"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShouldRenderObjects {
+            get {
+                return ((bool)(this["ShouldRenderObjects"]));
+            }
+            set {
+                this["ShouldRenderObjects"] = value;
+            }
+        }
     }
 }

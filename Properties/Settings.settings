@@ -62,5 +62,14 @@
     <Setting Name="KeyboardSelect" Type="System.String" Scope="User">
       <Value Profile="(Default)">ShiftKey</Value>
     </Setting>
+    <Setting Name="ShouldRenderBackground" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="ShouldRenderWindow" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="ShouldRenderObjects" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

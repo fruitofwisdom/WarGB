@@ -8,6 +8,11 @@
 		public int[,] LCDBackBuffer = new int[kWidth, kHeight];
 		public int[,] LCDFrontBuffer = new int[kWidth, kHeight];
 
+		// Emulator rendering options.
+		public bool ShouldRenderBackground = true;
+		public bool ShouldRenderWindow = true;
+		public bool ShouldRenderObjects = true;
+
 		// Every 456 dots, we increment LY, possibly trigger v-blank, etc.
 		public const uint kDotsPerLine = 456;
 		private const uint kVBlankLine = 144;
@@ -303,7 +308,7 @@
 			}
 
 			// Draw the background by iterating over each of its tiles.
-			if (BGWindowEnable)
+			if (ShouldRenderBackground && BGWindowEnable)
 			{
 				for (int tileY = 0; tileY < 32; ++tileY)
 				{
@@ -342,7 +347,7 @@
 			}
 
 			// Draw the window as well.
-			if (WindowEnabled && BGWindowEnable)
+			if (ShouldRenderWindow && WindowEnabled && BGWindowEnable)
 			{
 				for (int tileY = 0; tileY < 32; ++tileY)
 				{
@@ -373,9 +378,9 @@
 				}
 			}
 
-			if (OBJEnabled)
+			// Draw the objects by iterating over each of their tiles.
+			if (ShouldRenderObjects && OBJEnabled)
 			{
-				// Draw the objects by iterating over each of their tiles.
 				// TODO: Handle variable dot rendering speeds?
 				_objectsRendered = 0;
 				for (int objAddress = 0xFE00; objAddress <= 0xFE9C; objAddress += 0x04)
@@ -446,7 +451,7 @@
 			bool rendered = false;
 
 			// Exit early if we wouldn't render on this particular scanline.
-			if (y <= LY - 8 || y > LY)
+			if (LY < y || LY > y + 7)
 			{
 				return rendered;
 			}

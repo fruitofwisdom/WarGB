@@ -4,7 +4,7 @@ namespace GBSharp
 {
 	internal class APU
 	{
-		// An emulator option.
+		// Emulator sound options.
 		public bool Mute = false;
 		public bool[] MuteChannels = { false, false, false, false };
 
