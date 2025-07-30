@@ -112,6 +112,7 @@
 		{
 			uint cycles = 0;
 
+			// It takes some time before double speed mode actually begins.
 			if (DoubleSpeedArmed && _doubleSpeedArmedTimeRemaining > 0)
 			{
 				_doubleSpeedArmedTimeRemaining--;
@@ -129,24 +130,23 @@
 				return cycles;
 			}
 
-			// If an interrupt was triggered, handle it as our next instruction.
-			bool interruptHandled = HandleInterrupt(out cycles);
-
-			// Handle the next opcode, unless we just handled an interrupt or are halted.
-			if (!interruptHandled && !_halted)
+			// Handle the opcode.
+			if (!_halted)
 			{
 				byte instruction = Memory.Instance.Read(PC);
 				HandleOpcode(instruction, out cycles);
 			}
 
+			// Then handle any interrupts. NOTE: This order is important.
+			cycles += HandleInterrupt();
+
 			return cycles;
 		}
 
 		// Returns if an interrupt was triggered and handled and how many cycles elapsed.
-		private bool HandleInterrupt(out uint cycles)
+		private uint HandleInterrupt()
 		{
-			bool interruptHandled = false;
-			cycles = 0;
+			uint cycles = 0;
 
 			if (IME)
 			{
@@ -162,7 +162,6 @@
 					SP -= 2;
 					PC = 0x0040;
 					cycles = 5;
-					interruptHandled = true;
 					_halted = false;
 				}
 				// Handle an LCD interrupt.
@@ -177,7 +176,6 @@
 					SP -= 2;
 					PC = 0x0048;
 					cycles = 5;
-					interruptHandled = true;
 					_halted = false;
 				}
 				// Handle a timer interrupt.
@@ -192,7 +190,6 @@
 					SP -= 2;
 					PC = 0x0050;
 					cycles = 5;
-					interruptHandled = true;
 					_halted = false;
 				}
 				else if ((byte)(IE & 0x08) == 0x08 && (byte)(IF & 0x08) == 0x08)
@@ -206,7 +203,6 @@
 					SP -= 2;
 					PC = 0x0058;
 					cycles = 5;
-					interruptHandled = true;
 					_halted = false;
 				}
 				else if ((byte)(IE & 0x10) == 0x10 && (byte)(IF & 0x10) == 0x10)
@@ -220,7 +216,6 @@
 					SP -= 2;
 					PC = 0x0060;
 					cycles = 5;
-					interruptHandled = true;
 					_halted = false;
 				}
 			}
@@ -234,7 +229,7 @@
 				}
 			}
 
-			return interruptHandled;
+			return cycles;
 		}
 
 		// Update the divider and timer every CPU cycle (M-cycle).
