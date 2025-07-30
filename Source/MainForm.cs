@@ -33,9 +33,9 @@ namespace GBSharp
 
 			s_pauseCallbackInternal = PauseInternal;
 
-			// Poll the Game Boy emulator at 60fps.
+			// Poll the Game Boy emulator.
 			_gameBoyTimer.Tick += new EventHandler(ProcessOutput);
-			_gameBoyTimer.Interval = 1000 / 60;
+			_gameBoyTimer.Interval = 1000 / 120;
 			_gameBoyTimer.Start();
 
 			// Poll any gamepads as well.
@@ -116,9 +116,26 @@ namespace GBSharp
 			if (!originalGreenToolStripMenuItem.Checked)
 			{
 				originalGreenToolStripMenuItem.Checked = true;
+				originalGreenWithGhostingToolStripMenuItem.Checked = false;
 				blackAndWhiteToolStripMenuItem.Checked = false;
 				lcdControl.UseOriginalGreen = true;
+				lcdControl.WithGhosting = false;
 				Settings.Default.LCDColorOriginalGreen = true;
+				Settings.Default.LCDGhosting = false;
+			}
+		}
+
+		private void OriginalGreenWithGhostingToolStripMenuClick(object sender, EventArgs e)
+		{
+			if (!originalGreenWithGhostingToolStripMenuItem.Checked)
+			{
+				originalGreenWithGhostingToolStripMenuItem.Checked = true;
+				originalGreenToolStripMenuItem.Checked = false;
+				blackAndWhiteToolStripMenuItem.Checked = false;
+				lcdControl.UseOriginalGreen = true;
+				lcdControl.WithGhosting = true;
+				Settings.Default.LCDColorOriginalGreen = true;
+				Settings.Default.LCDGhosting = true;
 			}
 		}
 
@@ -128,8 +145,11 @@ namespace GBSharp
 			{
 				blackAndWhiteToolStripMenuItem.Checked = true;
 				originalGreenToolStripMenuItem.Checked = false;
+				originalGreenWithGhostingToolStripMenuItem.Checked = false;
 				lcdControl.UseOriginalGreen = false;
+				lcdControl.WithGhosting = false;
 				Settings.Default.LCDColorOriginalGreen = false;
+				Settings.Default.LCDGhosting = false;
 			}
 		}
 
@@ -668,17 +688,18 @@ namespace GBSharp
 		// Load and play a ROM.
 		private void LoadAndPlayROM(string fileName)
 		{
+			// Stop any current threads.
+			if (_gameBoyThread != null)
+			{
+				_gameBoy.Stop();
+				_gameBoyThread.Join();
+			}
+
 			if (ROM.Instance.Load(fileName))
 			{
 				// Add this ROM to the recent ROMs list.
 				AddROMToRecentROMs(fileName);
 
-				// Close any previous threads and reset the Game Boy.
-				if (_gameBoyThread != null)
-				{
-					_gameBoy.Stop();
-					_gameBoyThread.Join();
-				}
 				_gameBoy.Reset();
 
 				// Put the game name and ROM type in our title.
@@ -822,9 +843,13 @@ namespace GBSharp
 		{
 			// Apply user settings.
 			UpdateRecentROMs();
-			if (Settings.Default.LCDColorOriginalGreen)
+			if (Settings.Default.LCDColorOriginalGreen && !Settings.Default.LCDGhosting)
 			{
 				OriginalGreenToolStripMenuClick(sender, e);
+			}
+			else if (Settings.Default.LCDColorOriginalGreen && Settings.Default.LCDGhosting)
+			{
+				OriginalGreenWithGhostingToolStripMenuClick(sender, e);
 			}
 			else
 			{

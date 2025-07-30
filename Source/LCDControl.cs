@@ -3,11 +3,15 @@
 	public partial class LCDControl : UserControl
 	{
 		public bool UseOriginalGreen = true;
+		public bool WithGhosting = false;
 
 		// The four shades of green we'll use for the Game Boy's LCD.
 		private readonly SolidBrush[] _originalGreenBrushes;
 		// The four shades we'll use for a black and white Game Boy.
 		private readonly SolidBrush[] _blackAndWhiteBrushes;
+
+		// Used for ghosting.
+		private int[,] _lastColor = new int[PPU.kWidth, PPU.kHeight];
 
 		public LCDControl()
 		{
@@ -30,6 +34,8 @@
 				new(Color.Gray),
 				new(Color.Black),
 			];
+
+			Array.Clear(_lastColor);
 		}
 
 		private void LCDControl_Paint(object sender, PaintEventArgs e)
@@ -44,12 +50,24 @@
 				for (int y = 0; y < PPU.kHeight; ++y)
 				{
 					int brushIndex = PPU.Instance.LCDFrontBuffer[x, y].color;
+
+					// When ghosting is enabled, ramp down the color.
+					if (WithGhosting)
+					{
+						if (brushIndex < _lastColor[x, y])
+						{
+							brushIndex = _lastColor[x, y] - 1;
+						}
+					}
+
 					// Don't bother rendering the clear color again.
 					if (brushIndex != 0)
 					{
 						Brush brush = UseOriginalGreen ? _originalGreenBrushes[brushIndex] : _blackAndWhiteBrushes[brushIndex];
 						e.Graphics.FillRectangle(brush, x * scale, y * scale, scale, scale);
 					}
+
+					_lastColor[x, y] = brushIndex;
 				}
 			}
 		}

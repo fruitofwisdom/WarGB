@@ -298,5 +298,17 @@ namespace GBSharp.Properties {
                 this["ShouldRenderObjects"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool LCDGhosting {
+            get {
+                return ((bool)(this["LCDGhosting"]));
+            }
+            set {
+                this["LCDGhosting"] = value;
+            }
+        }
     }
 }

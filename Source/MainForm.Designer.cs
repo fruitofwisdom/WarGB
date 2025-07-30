@@ -44,6 +44,7 @@
 			controlsToolStripMenuItem = new ToolStripMenuItem();
 			lcdColorToolStripMenuItem = new ToolStripMenuItem();
 			originalGreenToolStripMenuItem = new ToolStripMenuItem();
+			originalGreenWithGhostingToolStripMenuItem = new ToolStripMenuItem();
 			blackAndWhiteToolStripMenuItem = new ToolStripMenuItem();
 			lcdSizeToolStripMenuItem = new ToolStripMenuItem();
 			oneXToolStripMenuItem = new ToolStripMenuItem();
@@ -178,7 +179,7 @@
 			// 
 			// lcdColorToolStripMenuItem
 			// 
-			lcdColorToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { originalGreenToolStripMenuItem, blackAndWhiteToolStripMenuItem });
+			lcdColorToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { originalGreenToolStripMenuItem, originalGreenWithGhostingToolStripMenuItem, blackAndWhiteToolStripMenuItem });
 			lcdColorToolStripMenuItem.Name = "lcdColorToolStripMenuItem";
 			lcdColorToolStripMenuItem.Size = new Size(180, 22);
 			lcdColorToolStripMenuItem.Text = "LCD Color";
@@ -188,14 +189,21 @@
 			originalGreenToolStripMenuItem.Checked = true;
 			originalGreenToolStripMenuItem.CheckState = CheckState.Checked;
 			originalGreenToolStripMenuItem.Name = "originalGreenToolStripMenuItem";
-			originalGreenToolStripMenuItem.Size = new Size(159, 22);
+			originalGreenToolStripMenuItem.Size = new Size(227, 22);
 			originalGreenToolStripMenuItem.Text = "Original Green";
 			originalGreenToolStripMenuItem.Click += OriginalGreenToolStripMenuClick;
+			// 
+			// originalGreenWithGhostingToolStripMenuItem
+			// 
+			originalGreenWithGhostingToolStripMenuItem.Name = "originalGreenWithGhostingToolStripMenuItem";
+			originalGreenWithGhostingToolStripMenuItem.Size = new Size(227, 22);
+			originalGreenWithGhostingToolStripMenuItem.Text = "Original Green with Ghosting";
+			originalGreenWithGhostingToolStripMenuItem.Click += OriginalGreenWithGhostingToolStripMenuClick;
 			// 
 			// blackAndWhiteToolStripMenuItem
 			// 
 			blackAndWhiteToolStripMenuItem.Name = "blackAndWhiteToolStripMenuItem";
-			blackAndWhiteToolStripMenuItem.Size = new Size(159, 22);
+			blackAndWhiteToolStripMenuItem.Size = new Size(227, 22);
 			blackAndWhiteToolStripMenuItem.Text = "Black and White";
 			blackAndWhiteToolStripMenuItem.Click += BlackAndWhiteToolStripMenuClick;
 			// 
@@ -255,7 +263,7 @@
 			backgroundToolStripMenuItem.Checked = true;
 			backgroundToolStripMenuItem.CheckState = CheckState.Checked;
 			backgroundToolStripMenuItem.Name = "backgroundToolStripMenuItem";
-			backgroundToolStripMenuItem.Size = new Size(180, 22);
+			backgroundToolStripMenuItem.Size = new Size(138, 22);
 			backgroundToolStripMenuItem.Text = "Background";
 			backgroundToolStripMenuItem.Click += backgroundToolStripMenuItem_Click;
 			// 
@@ -264,7 +272,7 @@
 			windowToolStripMenuItem.Checked = true;
 			windowToolStripMenuItem.CheckState = CheckState.Checked;
 			windowToolStripMenuItem.Name = "windowToolStripMenuItem";
-			windowToolStripMenuItem.Size = new Size(180, 22);
+			windowToolStripMenuItem.Size = new Size(138, 22);
 			windowToolStripMenuItem.Text = "Window";
 			windowToolStripMenuItem.Click += windowToolStripMenuItem_Click;
 			// 
@@ -273,7 +281,7 @@
 			objectsToolStripMenuItem.Checked = true;
 			objectsToolStripMenuItem.CheckState = CheckState.Checked;
 			objectsToolStripMenuItem.Name = "objectsToolStripMenuItem";
-			objectsToolStripMenuItem.Size = new Size(180, 22);
+			objectsToolStripMenuItem.Size = new Size(138, 22);
 			objectsToolStripMenuItem.Text = "Objects";
 			objectsToolStripMenuItem.Click += objectsToolStripMenuItem_Click;
 			// 
@@ -537,6 +545,7 @@
 		private ToolStripMenuItem controlsToolStripMenuItem;
 		private ToolStripMenuItem lcdColorToolStripMenuItem;
 		private ToolStripMenuItem originalGreenToolStripMenuItem;
+		private ToolStripMenuItem originalGreenWithGhostingToolStripMenuItem;
 		private ToolStripMenuItem blackAndWhiteToolStripMenuItem;
 		private ToolStripMenuItem lcdSizeToolStripMenuItem;
 		private ToolStripMenuItem oneXToolStripMenuItem;
