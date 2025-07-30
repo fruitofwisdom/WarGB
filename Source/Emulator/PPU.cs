@@ -2,11 +2,21 @@
 {
 	internal class PPU
 	{
+		internal struct Pixel
+		{
+			public int color = 0;
+			// These two are needed for priority handling.
+			public int x = 0;
+			public int objAddress = 0x0000;
+
+			public Pixel() { }
+		}
+
 		public const int kWidth = 160;
 		public const int kHeight = 144;
 		// Represents each pixel of the LCD, where the data is the palette color.
-		public int[,] LCDBackBuffer = new int[kWidth, kHeight];
-		public int[,] LCDFrontBuffer = new int[kWidth, kHeight];
+		public Pixel[,] LCDBackBuffer = new Pixel[kWidth, kHeight];
+		public Pixel[,] LCDFrontBuffer = new Pixel[kWidth, kHeight];
 
 		// Emulator rendering options.
 		public bool ShouldRenderBackground = true;
@@ -387,9 +397,11 @@
 				{
 					byte byte1 = Memory.Instance.Read(objAddress);
 					int y = byte1;
+					byte byte2 = Memory.Instance.Read(objAddress + 1);
+					int x = byte2;
 
-					// Objects with a Y of 0 or 160 are hidden.
-					if (y == 0 || y == 160)
+					// Objects with a Y of 0 or greater than 160 are hidden.
+					if (y == 0 || y >= 160)
 					{
 						continue;
 					}
@@ -402,8 +414,7 @@
 
 					// The X and Y values are actually offset.
 					y -= 16;
-					byte byte2 = Memory.Instance.Read(objAddress + 1);
-					int x = byte2 - 8;
+					x -= 8;
 					byte tileNumber = Memory.Instance.Read(objAddress + 2);
 					int tileAddress = 0x8000;
 					if (OBJSize)
@@ -425,15 +436,15 @@
 					bool rendered = false;
 					if (!OBJSize)
 					{
-						rendered = RenderTile(tileAddress, x, y, objPaletteData, true, xFlip, yFlip, priority);
+						rendered = RenderTile(tileAddress, x, y, objPaletteData, true, xFlip, yFlip, priority, objAddress);
 					}
 					else
 					{
-						rendered = RenderTile(tileAddress, x, yFlip ? y + 8 : y, objPaletteData, true, xFlip, yFlip, priority);
+						rendered = RenderTile(tileAddress, x, yFlip ? y + 8 : y, objPaletteData, true, xFlip, yFlip, priority, objAddress);
 
 						// In 8x16 mode, also render the next tile immediately below.
 						tileAddress = 0x8000 + (tileNumber | 0x01) * 16;
-						rendered = RenderTile(tileAddress, x, yFlip ? y : y + 8, objPaletteData, true, xFlip, yFlip, priority);
+						rendered = RenderTile(tileAddress, x, yFlip ? y : y + 8, objPaletteData, true, xFlip, yFlip, priority, objAddress);
 					}
 
 					if (rendered)
@@ -446,15 +457,21 @@
 
 		// Draw an individual tile with data from an address at a location with a palette.
 		private bool RenderTile(int tileAddress, int x, int y, byte palette,
-			bool transparency = false, bool xFlip = false, bool yFlip = false, bool priority = false)
+			bool transparency = false, bool xFlip = false, bool yFlip = false, bool priority = false, int objAddress = 0x000)
 		{
-			bool rendered = false;
-
 			// Exit early if we wouldn't render on this particular scanline.
 			if (LY < y || LY > y + 7)
 			{
-				return rendered;
+				return false;
 			}
+
+			// Exit early if the tile is completely off-screen, but it still affects the scanline limit.
+			if (x < -8 || x >= kWidth)
+			{
+				return true;
+			}
+
+			bool rendered = false;
 
 			// Draw each tile, pixel by pixel.
 			for (int pixelY = 0; pixelY < 8; ++pixelY)
@@ -486,16 +503,30 @@
 						{
 							if (!priority)
 							{
-								LCDBackBuffer[lcdX, lcdY] = lcdColor;
+								if (LCDBackBuffer[lcdX, lcdY].objAddress == 0x0000 ||
+									LCDBackBuffer[lcdX, lcdY].x > lcdX ||		// TODO: Only applies in non-CGB mode.
+									(LCDBackBuffer[lcdX, lcdY].x == lcdX && LCDBackBuffer[lcdX, lcdY].objAddress > objAddress))
+								{
+									LCDBackBuffer[lcdX, lcdY].color = lcdColor;
+									LCDBackBuffer[lcdX, lcdY].x = lcdX;
+									LCDBackBuffer[lcdX, lcdY].objAddress = objAddress;
+								}
 								rendered = true;
 							}
 							else
 							{
 								// If priority is on, only render above BG color 0.
 								int bgColor0 = Utilities.GetBitsFromByte(BGPaletteData, 0, 1);
-								if (LCDBackBuffer[lcdX, lcdY] == bgColor0)
+								if (LCDBackBuffer[lcdX, lcdY].color == bgColor0)
 								{
-									LCDBackBuffer[lcdX, lcdY] = lcdColor;
+									if (LCDBackBuffer[lcdX, lcdY].objAddress == 0x0000 ||
+										LCDBackBuffer[lcdX, lcdY].x > lcdX ||       // TODO: Only applies in non-CGB mode.
+										(LCDBackBuffer[lcdX, lcdY].x == lcdX && LCDBackBuffer[lcdX, lcdY].objAddress > objAddress))
+									{
+										LCDBackBuffer[lcdX, lcdY].color = lcdColor;
+										LCDBackBuffer[lcdX, lcdY].x = lcdX;
+										LCDBackBuffer[lcdX, lcdY].objAddress = objAddress;
+									}
 									rendered = true;
 								}
 							}

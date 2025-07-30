@@ -43,7 +43,7 @@
 			{
 				for (int y = 0; y < PPU.kHeight; ++y)
 				{
-					int brushIndex = PPU.Instance.LCDFrontBuffer[x, y];
+					int brushIndex = PPU.Instance.LCDFrontBuffer[x, y].color;
 					// Don't bother rendering the clear color again.
 					if (brushIndex != 0)
 					{
