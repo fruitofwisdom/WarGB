@@ -23,7 +23,6 @@ namespace GBSharp
 	// Sound channel 4 is a noise generator.
 	internal class NoiseGeneratorChannel : Channel
 	{
-		// TODO: Use the correct wave generator.
 		private readonly NoiseGeneratorProvider _noiseGeneratorProvider = new();
 
 		// The envelope settings. (NR42, 0xFF21)

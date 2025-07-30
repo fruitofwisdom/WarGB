@@ -34,7 +34,6 @@ namespace GBSharp
 	// Sound channel 3 is a user-defined wave channel.
 	internal class WaveTableChannel : Channel
 	{
-		// TODO: Use the correct wave generator.
 		private readonly WaveTableProvider _waveTableProvider = new();
 
 		// The output level. (NR32, 0xFF1C)

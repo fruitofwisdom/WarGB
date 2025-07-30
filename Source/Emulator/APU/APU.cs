@@ -126,6 +126,7 @@ namespace GBSharp
 		public void On()
 		{
 			_allSoundOn = true;
+			Play();
 		}
 
 		public void Off()

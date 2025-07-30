@@ -34,8 +34,6 @@ namespace GBSharp
 		}
 	}
 
-	// TODO: Other generators for sound channels 3 and 4.
-
 	// Sound channels 1 and 2 are a rectangular, "pulse" wave. Note that channel 2 doesn't support sweep.
 	internal class PulseWaveChannel : Channel
 	{
@@ -182,7 +180,6 @@ namespace GBSharp
 				uint frequencyData = LowOrderFrequencyData + (HighOrderFrequencyData << 8);
 				if (_sweepEnabled && frequencyData != lastFrequencyData)
 				{
-					//GameBoy.DebugOutput += "Channel 0 changing frequency from " + lastFrequencyData + " to " + frequencyData + "\n";
 					lastFrequencyData = frequencyData;
 				}
 				if (frequencyData < 2047)
@@ -192,7 +189,6 @@ namespace GBSharp
 					newFrequency = Math.Max(0.0f, newFrequency);
 					_pulseWaveProvider._frequency = newFrequency;
 					float justFrequency = (131072 / periodValue);
-					//GameBoy.DebugOutput += $"Channel 0 frequency is {frequencyData}, so {justFrequency:F3} + {_sweepFrequencyShift:F3} = {newFrequency:F3},\n";
 				}
 			}
 
