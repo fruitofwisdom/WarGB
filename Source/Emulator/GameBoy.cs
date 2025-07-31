@@ -42,6 +42,7 @@
 			Memory.Instance.Reset();
 			PPU.Instance.Reset();
 			APU.Instance.Reset();
+			SGB.Instance.Reset();
 
 			Playing = false;
 			_needToStop = false;

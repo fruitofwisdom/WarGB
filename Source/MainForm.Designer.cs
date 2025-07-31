@@ -42,6 +42,7 @@
 			exitToolStripMenuItem = new ToolStripMenuItem();
 			optionsToolStripMenuItem = new ToolStripMenuItem();
 			controlsToolStripMenuItem = new ToolStripMenuItem();
+			sgbEnabledToolStripMenuItem = new ToolStripMenuItem();
 			lcdColorToolStripMenuItem = new ToolStripMenuItem();
 			originalGreenToolStripMenuItem = new ToolStripMenuItem();
 			originalGreenWithGhostingToolStripMenuItem = new ToolStripMenuItem();
@@ -56,12 +57,12 @@
 			backgroundToolStripMenuItem = new ToolStripMenuItem();
 			windowToolStripMenuItem = new ToolStripMenuItem();
 			objectsToolStripMenuItem = new ToolStripMenuItem();
+			muteSoundToolStripMenuItem = new ToolStripMenuItem();
 			soundChannelsToolStripMenuItem = new ToolStripMenuItem();
 			pulseWaveChannel1ToolStripMenuItem = new ToolStripMenuItem();
 			pulseWaveChannel2ToolStripMenuItem = new ToolStripMenuItem();
 			waveTableChannel3ToolStripMenuItem = new ToolStripMenuItem();
 			noiseGeneratorChannel4ToolStripMenuItem = new ToolStripMenuItem();
-			soundOnToolStripMenuItem = new ToolStripMenuItem();
 			debugToolStripMenuItem = new ToolStripMenuItem();
 			displayFrameTimeToolStripMenuItem = new ToolStripMenuItem();
 			logOpcodesToolStripMenuItem = new ToolStripMenuItem();
@@ -164,7 +165,7 @@
 			// 
 			// optionsToolStripMenuItem
 			// 
-			optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { controlsToolStripMenuItem, lcdColorToolStripMenuItem, lcdSizeToolStripMenuItem, renderToolStripMenuItem, soundChannelsToolStripMenuItem, soundOnToolStripMenuItem });
+			optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { controlsToolStripMenuItem, sgbEnabledToolStripMenuItem, lcdColorToolStripMenuItem, lcdSizeToolStripMenuItem, renderToolStripMenuItem, muteSoundToolStripMenuItem, soundChannelsToolStripMenuItem });
 			optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
 			optionsToolStripMenuItem.Size = new Size(61, 20);
 			optionsToolStripMenuItem.Text = "Options";
@@ -173,15 +174,22 @@
 			// 
 			controlsToolStripMenuItem.Name = "controlsToolStripMenuItem";
 			controlsToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.N;
-			controlsToolStripMenuItem.Size = new Size(180, 22);
+			controlsToolStripMenuItem.Size = new Size(184, 22);
 			controlsToolStripMenuItem.Text = "Controls...";
 			controlsToolStripMenuItem.Click += ControlsToolStripMenuItemClick;
+			// 
+			// sgbEnabledToolStripMenuItem
+			// 
+			sgbEnabledToolStripMenuItem.Name = "SGBEnabledToolStripMenuItem";
+			sgbEnabledToolStripMenuItem.Size = new Size(184, 22);
+			sgbEnabledToolStripMenuItem.Text = "SGB Enabled";
+			sgbEnabledToolStripMenuItem.Click += SGBEnabledToolStripMenuItem_Click;
 			// 
 			// lcdColorToolStripMenuItem
 			// 
 			lcdColorToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { originalGreenToolStripMenuItem, originalGreenWithGhostingToolStripMenuItem, blackAndWhiteToolStripMenuItem });
 			lcdColorToolStripMenuItem.Name = "lcdColorToolStripMenuItem";
-			lcdColorToolStripMenuItem.Size = new Size(180, 22);
+			lcdColorToolStripMenuItem.Size = new Size(184, 22);
 			lcdColorToolStripMenuItem.Text = "LCD Color";
 			// 
 			// originalGreenToolStripMenuItem
@@ -211,7 +219,7 @@
 			// 
 			lcdSizeToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { oneXToolStripMenuItem, twoXToolStripMenuItem, threeXToolStripMenuItem, fourXToolStripMenuItem, fiveXToolStripMenuItem });
 			lcdSizeToolStripMenuItem.Name = "lcdSizeToolStripMenuItem";
-			lcdSizeToolStripMenuItem.Size = new Size(180, 22);
+			lcdSizeToolStripMenuItem.Size = new Size(184, 22);
 			lcdSizeToolStripMenuItem.Text = "LCD Size";
 			// 
 			// oneXToolStripMenuItem
@@ -255,7 +263,7 @@
 			// 
 			renderToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { backgroundToolStripMenuItem, windowToolStripMenuItem, objectsToolStripMenuItem });
 			renderToolStripMenuItem.Name = "renderToolStripMenuItem";
-			renderToolStripMenuItem.Size = new Size(180, 22);
+			renderToolStripMenuItem.Size = new Size(184, 22);
 			renderToolStripMenuItem.Text = "Render";
 			// 
 			// backgroundToolStripMenuItem
@@ -263,7 +271,7 @@
 			backgroundToolStripMenuItem.Checked = true;
 			backgroundToolStripMenuItem.CheckState = CheckState.Checked;
 			backgroundToolStripMenuItem.Name = "backgroundToolStripMenuItem";
-			backgroundToolStripMenuItem.Size = new Size(138, 22);
+			backgroundToolStripMenuItem.Size = new Size(180, 22);
 			backgroundToolStripMenuItem.Text = "Background";
 			backgroundToolStripMenuItem.Click += backgroundToolStripMenuItem_Click;
 			// 
@@ -272,7 +280,7 @@
 			windowToolStripMenuItem.Checked = true;
 			windowToolStripMenuItem.CheckState = CheckState.Checked;
 			windowToolStripMenuItem.Name = "windowToolStripMenuItem";
-			windowToolStripMenuItem.Size = new Size(138, 22);
+			windowToolStripMenuItem.Size = new Size(180, 22);
 			windowToolStripMenuItem.Text = "Window";
 			windowToolStripMenuItem.Click += windowToolStripMenuItem_Click;
 			// 
@@ -281,15 +289,23 @@
 			objectsToolStripMenuItem.Checked = true;
 			objectsToolStripMenuItem.CheckState = CheckState.Checked;
 			objectsToolStripMenuItem.Name = "objectsToolStripMenuItem";
-			objectsToolStripMenuItem.Size = new Size(138, 22);
+			objectsToolStripMenuItem.Size = new Size(180, 22);
 			objectsToolStripMenuItem.Text = "Objects";
 			objectsToolStripMenuItem.Click += objectsToolStripMenuItem_Click;
+			// 
+			// muteSoundToolStripMenuItem
+			// 
+			muteSoundToolStripMenuItem.Name = "muteSoundToolStripMenuItem";
+			muteSoundToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.M;
+			muteSoundToolStripMenuItem.Size = new Size(184, 22);
+			muteSoundToolStripMenuItem.Text = "Mute Sound";
+			muteSoundToolStripMenuItem.Click += MuteSoundToolStripMenuClick;
 			// 
 			// soundChannelsToolStripMenuItem
 			// 
 			soundChannelsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { pulseWaveChannel1ToolStripMenuItem, pulseWaveChannel2ToolStripMenuItem, waveTableChannel3ToolStripMenuItem, noiseGeneratorChannel4ToolStripMenuItem });
 			soundChannelsToolStripMenuItem.Name = "soundChannelsToolStripMenuItem";
-			soundChannelsToolStripMenuItem.Size = new Size(180, 22);
+			soundChannelsToolStripMenuItem.Size = new Size(184, 22);
 			soundChannelsToolStripMenuItem.Text = "Sound Channels";
 			// 
 			// pulseWaveChannel1ToolStripMenuItem
@@ -327,16 +343,6 @@
 			noiseGeneratorChannel4ToolStripMenuItem.Size = new Size(223, 22);
 			noiseGeneratorChannel4ToolStripMenuItem.Text = "Noise Generator (Channel 4)";
 			noiseGeneratorChannel4ToolStripMenuItem.Click += noiseGeneratorChannel4ToolStripMenuItem_Click;
-			// 
-			// soundOnToolStripMenuItem
-			// 
-			soundOnToolStripMenuItem.Checked = true;
-			soundOnToolStripMenuItem.CheckState = CheckState.Checked;
-			soundOnToolStripMenuItem.Name = "soundOnToolStripMenuItem";
-			soundOnToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.M;
-			soundOnToolStripMenuItem.Size = new Size(180, 22);
-			soundOnToolStripMenuItem.Text = "Sound On";
-			soundOnToolStripMenuItem.Click += SoundOnToolStripMenuClick;
 			// 
 			// debugToolStripMenuItem
 			// 
@@ -543,6 +549,7 @@
 		private ToolStripMenuItem exitToolStripMenuItem;
 		private ToolStripMenuItem optionsToolStripMenuItem;
 		private ToolStripMenuItem controlsToolStripMenuItem;
+		private ToolStripMenuItem sgbEnabledToolStripMenuItem;
 		private ToolStripMenuItem lcdColorToolStripMenuItem;
 		private ToolStripMenuItem originalGreenToolStripMenuItem;
 		private ToolStripMenuItem originalGreenWithGhostingToolStripMenuItem;
@@ -557,12 +564,12 @@
 		private ToolStripMenuItem backgroundToolStripMenuItem;
 		private ToolStripMenuItem windowToolStripMenuItem;
 		private ToolStripMenuItem objectsToolStripMenuItem;
+		private ToolStripMenuItem muteSoundToolStripMenuItem;
 		private ToolStripMenuItem soundChannelsToolStripMenuItem;
 		private ToolStripMenuItem pulseWaveChannel1ToolStripMenuItem;
 		private ToolStripMenuItem pulseWaveChannel2ToolStripMenuItem;
 		private ToolStripMenuItem waveTableChannel3ToolStripMenuItem;
 		private ToolStripMenuItem noiseGeneratorChannel4ToolStripMenuItem;
-		private ToolStripMenuItem soundOnToolStripMenuItem;
 		private ToolStripMenuItem debugToolStripMenuItem;
 		private ToolStripMenuItem displayFrameTimeToolStripMenuItem;
 		private ToolStripMenuItem logOpcodesToolStripMenuItem;

@@ -244,6 +244,15 @@
 			if (address == 0xFF00)
 			{
 				data = Controller.Instance.ReadFromRegister();
+
+				// This is also where communication from the SGB happens.
+				if ((data & 0x30) == 0x30 && SGB.Instance.Enabled)
+				{
+					// NOTE: If the buttons and d-pad are both deselected, report that we are an SGB player two. This
+					// is traditionally how games detect that an SGB is present to then send other commands.
+					// TODO: Did we break player one? Should we report both player one and player two?
+					data = 0xFE;
+				}
 			}
 			else if (address == 0xFF01)
 			{
@@ -809,9 +818,28 @@
 		{
 			if (address == 0xFF00)
 			{
+				bool bit4 = Utilities.GetBoolFromByte(data, 4);
+				bool bit5 = Utilities.GetBoolFromByte(data, 5);
 				// NOTE: Unexpectedly, inputs are considered 1 when not selected or pressed.
-				Controller.Instance.SelectButtons = !Utilities.GetBoolFromByte(data, 5);
-				Controller.Instance.SelectDpad = !Utilities.GetBoolFromByte(data, 4);
+				Controller.Instance.SelectButtons = !bit5;
+				Controller.Instance.SelectDpad = !bit4;
+
+				// This is also where communication to the SGB happens.
+				if (SGB.Instance.Receiving)
+				{
+					if (!bit4)
+					{
+						SGB.Instance.SendBit(0x00);
+					}
+					else if (!bit5)
+					{
+						SGB.Instance.SendBit(0x01);
+					}
+				}
+				else if (!bit4 && !bit5)
+				{
+					SGB.Instance.StartReceiving();
+				}
 			}
 			else if (address == 0xFF01)
 			{

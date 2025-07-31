@@ -49,7 +49,7 @@
 			{
 				for (int y = 0; y < PPU.kHeight; ++y)
 				{
-					int brushIndex = PPU.Instance.LCDFrontBuffer[x, y].color;
+					int brushIndex = PPU.Instance.LCDFrontBuffer[x, y].Color;
 
 					// When ghosting is enabled, ramp down the color.
 					if (WithGhosting)

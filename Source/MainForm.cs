@@ -111,6 +111,13 @@ namespace GBSharp
 			controlsForm.ShowDialog();
 		}
 
+		private void SGBEnabledToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			sgbEnabledToolStripMenuItem.Checked = !sgbEnabledToolStripMenuItem.Checked;
+			SGB.Instance.Allowed = sgbEnabledToolStripMenuItem.Checked;
+			Settings.Default.SGBEnabled = sgbEnabledToolStripMenuItem.Checked;
+		}
+
 		private void OriginalGreenToolStripMenuClick(object sender, EventArgs e)
 		{
 			if (!originalGreenToolStripMenuItem.Checked)
@@ -249,6 +256,13 @@ namespace GBSharp
 			Settings.Default.ShouldRenderObjects = objectsToolStripMenuItem.Checked;
 		}
 
+		private void MuteSoundToolStripMenuClick(object sender, EventArgs e)
+		{
+			muteSoundToolStripMenuItem.Checked = !muteSoundToolStripMenuItem.Checked;
+			_gameBoy.Mute(muteSoundToolStripMenuItem.Checked);
+			Settings.Default.MuteSound = muteSoundToolStripMenuItem.Checked;
+		}
+
 		private void pulseWaveChannel1ToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			pulseWaveChannel1ToolStripMenuItem.Checked = !pulseWaveChannel1ToolStripMenuItem.Checked;
@@ -275,13 +289,6 @@ namespace GBSharp
 			noiseGeneratorChannel4ToolStripMenuItem.Checked = !noiseGeneratorChannel4ToolStripMenuItem.Checked;
 			_gameBoy.MuteChannel(3, !noiseGeneratorChannel4ToolStripMenuItem.Checked);
 			Settings.Default.MuteChannel3 = !noiseGeneratorChannel4ToolStripMenuItem.Checked;
-		}
-
-		private void SoundOnToolStripMenuClick(object sender, EventArgs e)
-		{
-			soundOnToolStripMenuItem.Checked = !soundOnToolStripMenuItem.Checked;
-			_gameBoy.Mute(!soundOnToolStripMenuItem.Checked);
-			Settings.Default.MuteSound = !soundOnToolStripMenuItem.Checked;
 		}
 
 		private void DisplayFrameTimeToolStripMenuClick(object sender, EventArgs e)
@@ -888,6 +895,10 @@ namespace GBSharp
 			{
 				objectsToolStripMenuItem_Click(sender, e);
 			}
+			if (Settings.Default.MuteSound)
+			{
+				MuteSoundToolStripMenuClick(sender, e);
+			}
 			if (Settings.Default.MuteChannel0)
 			{
 				pulseWaveChannel1ToolStripMenuItem_Click(sender, e);
@@ -904,9 +915,9 @@ namespace GBSharp
 			{
 				noiseGeneratorChannel4ToolStripMenuItem_Click(sender, e);
 			}
-			if (Settings.Default.MuteSound)
+			if (Settings.Default.SGBEnabled)
 			{
-				SoundOnToolStripMenuClick(sender, e);
+				SGBEnabledToolStripMenuItem_Click(sender, e);
 			}
 		}
 	}

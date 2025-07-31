@@ -4,10 +4,10 @@
 	{
 		internal struct Pixel
 		{
-			public int color = 0;
+			public int Color = 0;
 			// These two are needed for priority handling.
-			public int x = 0;
-			public int objAddress = 0x0000;
+			public int X = 0;
+			public int ObjAddress = 0x0000;
 
 			public Pixel() { }
 		}
@@ -70,7 +70,10 @@
 		// The window Y and X values (FF4A and FF4B)
 		public int WY;
 		public int WX;
-		private int _wly;		// the window's LY
+		private int _wly;       // the window's LY
+
+		// The SGB screen mask options.
+		public int ScreenMask;
 
 		private static PPU? _instance;
 		public static PPU Instance
@@ -126,6 +129,8 @@
 			WY = 0;
 			WX = 0;
 			_wly = 0;
+
+			ScreenMask = 0;
 		}
 
 		// Update one dot of the PPU and return if rendering occurred.
@@ -317,6 +322,31 @@
 				return;
 			}
 
+			// Handle the SGB screen mask.
+			if (ScreenMask == 1)
+			{
+				// Freeze the screen.
+				return;
+			}
+			else if (ScreenMask == 2)
+			{
+				// Turn the screen black.
+				for (int x = 0; x < kWidth; ++x)
+				{
+					for (int y = 0; y < kHeight; ++y)
+					{
+						LCDBackBuffer[x, y].Color = 3;
+					}
+				}
+				return;
+			}
+			else if (ScreenMask == 3)
+			{
+				// Turn the screen color 0.
+				Array.Clear(LCDBackBuffer);
+				return;
+			}
+
 			// Draw the background by iterating over each of its tiles.
 			if (ShouldRenderBackground && BGWindowEnable)
 			{
@@ -503,13 +533,13 @@
 						{
 							if (!priority)
 							{
-								if (LCDBackBuffer[lcdX, lcdY].objAddress == 0x0000 ||
-									LCDBackBuffer[lcdX, lcdY].x > lcdX ||		// TODO: Only applies in non-CGB mode.
-									(LCDBackBuffer[lcdX, lcdY].x == lcdX && LCDBackBuffer[lcdX, lcdY].objAddress > objAddress))
+								if (LCDBackBuffer[lcdX, lcdY].ObjAddress == 0x0000 ||
+									LCDBackBuffer[lcdX, lcdY].X > lcdX ||		// TODO: Only applies in non-CGB mode.
+									(LCDBackBuffer[lcdX, lcdY].X == lcdX && LCDBackBuffer[lcdX, lcdY].ObjAddress > objAddress))
 								{
-									LCDBackBuffer[lcdX, lcdY].color = lcdColor;
-									LCDBackBuffer[lcdX, lcdY].x = lcdX;
-									LCDBackBuffer[lcdX, lcdY].objAddress = objAddress;
+									LCDBackBuffer[lcdX, lcdY].Color = lcdColor;
+									LCDBackBuffer[lcdX, lcdY].X = lcdX;
+									LCDBackBuffer[lcdX, lcdY].ObjAddress = objAddress;
 								}
 								rendered = true;
 							}
@@ -517,15 +547,15 @@
 							{
 								// If priority is on, only render above BG color 0.
 								int bgColor0 = Utilities.GetBitsFromByte(BGPaletteData, 0, 1);
-								if (LCDBackBuffer[lcdX, lcdY].color == bgColor0)
+								if (LCDBackBuffer[lcdX, lcdY].Color == bgColor0)
 								{
-									if (LCDBackBuffer[lcdX, lcdY].objAddress == 0x0000 ||
-										LCDBackBuffer[lcdX, lcdY].x > lcdX ||       // TODO: Only applies in non-CGB mode.
-										(LCDBackBuffer[lcdX, lcdY].x == lcdX && LCDBackBuffer[lcdX, lcdY].objAddress > objAddress))
+									if (LCDBackBuffer[lcdX, lcdY].ObjAddress == 0x0000 ||
+										LCDBackBuffer[lcdX, lcdY].X > lcdX ||       // TODO: Only applies in non-CGB mode.
+										(LCDBackBuffer[lcdX, lcdY].X == lcdX && LCDBackBuffer[lcdX, lcdY].ObjAddress > objAddress))
 									{
-										LCDBackBuffer[lcdX, lcdY].color = lcdColor;
-										LCDBackBuffer[lcdX, lcdY].x = lcdX;
-										LCDBackBuffer[lcdX, lcdY].objAddress = objAddress;
+										LCDBackBuffer[lcdX, lcdY].Color = lcdColor;
+										LCDBackBuffer[lcdX, lcdY].X = lcdX;
+										LCDBackBuffer[lcdX, lcdY].ObjAddress = objAddress;
 									}
 									rendered = true;
 								}

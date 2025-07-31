@@ -105,6 +105,13 @@
 			_halted = false;
 			_stopped = false;
 			_was16BitOpcode = false;
+
+			// TODO: Set up sets of registers another way?
+			if (ROM.Instance.SGBCompatible)
+			{
+				A = 0xFF;
+				C = 0x14;
+			}
 		}
 
 		// Step through one instruction and return the number of cycles elapsed.
