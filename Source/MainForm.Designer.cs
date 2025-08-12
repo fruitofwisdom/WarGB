@@ -42,11 +42,11 @@
 			exitToolStripMenuItem = new ToolStripMenuItem();
 			optionsToolStripMenuItem = new ToolStripMenuItem();
 			controlsToolStripMenuItem = new ToolStripMenuItem();
-			sgbEnabledToolStripMenuItem = new ToolStripMenuItem();
 			lcdColorToolStripMenuItem = new ToolStripMenuItem();
 			originalGreenToolStripMenuItem = new ToolStripMenuItem();
 			originalGreenWithGhostingToolStripMenuItem = new ToolStripMenuItem();
 			blackAndWhiteToolStripMenuItem = new ToolStripMenuItem();
+			superGameBoyToolStripMenuItem = new ToolStripMenuItem();
 			lcdSizeToolStripMenuItem = new ToolStripMenuItem();
 			oneXToolStripMenuItem = new ToolStripMenuItem();
 			twoXToolStripMenuItem = new ToolStripMenuItem();
@@ -66,6 +66,7 @@
 			debugToolStripMenuItem = new ToolStripMenuItem();
 			displayFrameTimeToolStripMenuItem = new ToolStripMenuItem();
 			logOpcodesToolStripMenuItem = new ToolStripMenuItem();
+			logSGBPacketsToolStripMenuItem = new ToolStripMenuItem();
 			nextFrameToolStripMenuItem = new ToolStripMenuItem();
 			nextOpcodeToolStripMenuItem = new ToolStripMenuItem();
 			nextScanlineToolStripMenuItem = new ToolStripMenuItem();
@@ -165,7 +166,7 @@
 			// 
 			// optionsToolStripMenuItem
 			// 
-			optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { controlsToolStripMenuItem, sgbEnabledToolStripMenuItem, lcdColorToolStripMenuItem, lcdSizeToolStripMenuItem, renderToolStripMenuItem, muteSoundToolStripMenuItem, soundChannelsToolStripMenuItem });
+			optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { controlsToolStripMenuItem, lcdColorToolStripMenuItem, lcdSizeToolStripMenuItem, renderToolStripMenuItem, muteSoundToolStripMenuItem, soundChannelsToolStripMenuItem });
 			optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
 			optionsToolStripMenuItem.Size = new Size(61, 20);
 			optionsToolStripMenuItem.Text = "Options";
@@ -178,16 +179,9 @@
 			controlsToolStripMenuItem.Text = "Controls...";
 			controlsToolStripMenuItem.Click += ControlsToolStripMenuItemClick;
 			// 
-			// sgbEnabledToolStripMenuItem
-			// 
-			sgbEnabledToolStripMenuItem.Name = "SGBEnabledToolStripMenuItem";
-			sgbEnabledToolStripMenuItem.Size = new Size(184, 22);
-			sgbEnabledToolStripMenuItem.Text = "SGB Enabled";
-			sgbEnabledToolStripMenuItem.Click += SGBEnabledToolStripMenuItem_Click;
-			// 
 			// lcdColorToolStripMenuItem
 			// 
-			lcdColorToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { originalGreenToolStripMenuItem, originalGreenWithGhostingToolStripMenuItem, blackAndWhiteToolStripMenuItem });
+			lcdColorToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { originalGreenToolStripMenuItem, originalGreenWithGhostingToolStripMenuItem, blackAndWhiteToolStripMenuItem, superGameBoyToolStripMenuItem });
 			lcdColorToolStripMenuItem.Name = "lcdColorToolStripMenuItem";
 			lcdColorToolStripMenuItem.Size = new Size(184, 22);
 			lcdColorToolStripMenuItem.Text = "LCD Color";
@@ -215,6 +209,13 @@
 			blackAndWhiteToolStripMenuItem.Text = "Black and White";
 			blackAndWhiteToolStripMenuItem.Click += BlackAndWhiteToolStripMenuClick;
 			// 
+			// superGameBoyToolStripMenuItem
+			// 
+			superGameBoyToolStripMenuItem.Name = "superGameBoyToolStripMenuItem";
+			superGameBoyToolStripMenuItem.Size = new Size(227, 22);
+			superGameBoyToolStripMenuItem.Text = "Super Game Boy";
+			superGameBoyToolStripMenuItem.Click += SuperGameBoyToolStripMenuItemClick;
+			// 
 			// lcdSizeToolStripMenuItem
 			// 
 			lcdSizeToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { oneXToolStripMenuItem, twoXToolStripMenuItem, threeXToolStripMenuItem, fourXToolStripMenuItem, fiveXToolStripMenuItem });
@@ -225,21 +226,21 @@
 			// oneXToolStripMenuItem
 			// 
 			oneXToolStripMenuItem.Name = "oneXToolStripMenuItem";
-			oneXToolStripMenuItem.Size = new Size(86, 22);
+			oneXToolStripMenuItem.Size = new Size(180, 22);
 			oneXToolStripMenuItem.Text = "1x";
 			oneXToolStripMenuItem.Click += OneXToolStripMenuItemClick;
 			// 
 			// twoXToolStripMenuItem
 			// 
 			twoXToolStripMenuItem.Name = "twoXToolStripMenuItem";
-			twoXToolStripMenuItem.Size = new Size(86, 22);
+			twoXToolStripMenuItem.Size = new Size(180, 22);
 			twoXToolStripMenuItem.Text = "2x";
 			twoXToolStripMenuItem.Click += TwoXToolStripMenuItemClick;
 			// 
 			// threeXToolStripMenuItem
 			// 
 			threeXToolStripMenuItem.Name = "threeXToolStripMenuItem";
-			threeXToolStripMenuItem.Size = new Size(86, 22);
+			threeXToolStripMenuItem.Size = new Size(180, 22);
 			threeXToolStripMenuItem.Text = "3x";
 			threeXToolStripMenuItem.Click += ThreeXToolStripMenuItemClick;
 			// 
@@ -248,14 +249,14 @@
 			fourXToolStripMenuItem.Checked = true;
 			fourXToolStripMenuItem.CheckState = CheckState.Checked;
 			fourXToolStripMenuItem.Name = "fourXToolStripMenuItem";
-			fourXToolStripMenuItem.Size = new Size(86, 22);
+			fourXToolStripMenuItem.Size = new Size(180, 22);
 			fourXToolStripMenuItem.Text = "4x";
 			fourXToolStripMenuItem.Click += FourXToolStripMenuItemClick;
 			// 
 			// fiveXToolStripMenuItem
 			// 
 			fiveXToolStripMenuItem.Name = "fiveXToolStripMenuItem";
-			fiveXToolStripMenuItem.Size = new Size(86, 22);
+			fiveXToolStripMenuItem.Size = new Size(180, 22);
 			fiveXToolStripMenuItem.Text = "5x";
 			fiveXToolStripMenuItem.Click += FiveXToolStripMenuItemClick;
 			// 
@@ -346,7 +347,7 @@
 			// 
 			// debugToolStripMenuItem
 			// 
-			debugToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { displayFrameTimeToolStripMenuItem, logOpcodesToolStripMenuItem, nextFrameToolStripMenuItem, nextOpcodeToolStripMenuItem, nextScanlineToolStripMenuItem, showDebugOutputToolStripMenuItem });
+			debugToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { displayFrameTimeToolStripMenuItem, logOpcodesToolStripMenuItem, logSGBPacketsToolStripMenuItem, nextFrameToolStripMenuItem, nextOpcodeToolStripMenuItem, nextScanlineToolStripMenuItem, showDebugOutputToolStripMenuItem });
 			debugToolStripMenuItem.Name = "debugToolStripMenuItem";
 			debugToolStripMenuItem.Size = new Size(54, 20);
 			debugToolStripMenuItem.Text = "Debug";
@@ -367,6 +368,14 @@
 			logOpcodesToolStripMenuItem.Text = "Log Opcodes";
 			logOpcodesToolStripMenuItem.ToolTipText = "Write opcodes, CPU state, etc to a log file. (This file will get very large.)";
 			logOpcodesToolStripMenuItem.Click += LogOpcodesToolStripMenuClick;
+			// 
+			// logSGBPacketsToolStripMenuItem
+			// 
+			logSGBPacketsToolStripMenuItem.Name = "logSGBPacketsToolStripMenuItem";
+			logSGBPacketsToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.S;
+			logSGBPacketsToolStripMenuItem.Size = new Size(224, 22);
+			logSGBPacketsToolStripMenuItem.Text = "Log SGB Packets";
+			logSGBPacketsToolStripMenuItem.Click += LogSGBPacketsToolStripMenuItemClick;
 			// 
 			// nextFrameToolStripMenuItem
 			// 
@@ -549,11 +558,11 @@
 		private ToolStripMenuItem exitToolStripMenuItem;
 		private ToolStripMenuItem optionsToolStripMenuItem;
 		private ToolStripMenuItem controlsToolStripMenuItem;
-		private ToolStripMenuItem sgbEnabledToolStripMenuItem;
 		private ToolStripMenuItem lcdColorToolStripMenuItem;
 		private ToolStripMenuItem originalGreenToolStripMenuItem;
 		private ToolStripMenuItem originalGreenWithGhostingToolStripMenuItem;
 		private ToolStripMenuItem blackAndWhiteToolStripMenuItem;
+		private ToolStripMenuItem superGameBoyToolStripMenuItem;
 		private ToolStripMenuItem lcdSizeToolStripMenuItem;
 		private ToolStripMenuItem oneXToolStripMenuItem;
 		private ToolStripMenuItem twoXToolStripMenuItem;
@@ -573,6 +582,7 @@
 		private ToolStripMenuItem debugToolStripMenuItem;
 		private ToolStripMenuItem displayFrameTimeToolStripMenuItem;
 		private ToolStripMenuItem logOpcodesToolStripMenuItem;
+		private ToolStripMenuItem logSGBPacketsToolStripMenuItem;
 		private ToolStripMenuItem nextFrameToolStripMenuItem;
 		private ToolStripMenuItem nextOpcodeToolStripMenuItem;
 		private ToolStripMenuItem nextScanlineToolStripMenuItem;

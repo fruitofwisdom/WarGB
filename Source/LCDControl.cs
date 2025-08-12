@@ -63,7 +63,15 @@
 					// Don't bother rendering the clear color again.
 					if (brushIndex != 0)
 					{
-						Brush brush = UseOriginalGreen ? _originalGreenBrushes[brushIndex] : _blackAndWhiteBrushes[brushIndex];
+						Brush brush;
+						if (SGB.Instance.Enabled)
+						{
+							brush = new SolidBrush(PPU.Instance.LCDFrontBuffer[x, y].SGBPalette.Colors[brushIndex]);
+						}
+						else
+						{
+							brush = UseOriginalGreen ? _originalGreenBrushes[brushIndex] : _blackAndWhiteBrushes[brushIndex];
+						}
 						e.Graphics.FillRectangle(brush, x * scale, y * scale, scale, scale);
 					}
 

@@ -3,7 +3,7 @@
 	internal class Memory
 	{
 		// Character data, BG display data, etc. - 0x8000 to 0x9FFF
-		private readonly byte[] VRAM;
+		public byte[] VRAM { get; private set; }
 		// External expansion working RAM - 0xA000 to 0xBFFF
 		private byte[] ExternalRAM;
 		// Unit working RAM - 0xC000 to 0xDFFF

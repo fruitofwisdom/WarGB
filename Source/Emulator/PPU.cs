@@ -8,6 +8,7 @@
 			// These two are needed for priority handling.
 			public int X = 0;
 			public int ObjAddress = 0x0000;
+			public SGB.Palette SGBPalette = new();
 
 			public Pixel() { }
 		}
@@ -31,7 +32,7 @@
 
 		private uint Dots;
 		// Count objects rendered per scanline for accuracy.
-		private int _objectsRendered = 0;
+		private int _objectsRendered;
 
 		// The LCDC register control flags (FF40)
 		private bool LCDEnabled;
@@ -72,7 +73,7 @@
 		public int WX;
 		private int _wly;       // the window's LY
 
-		// The SGB screen mask options.
+		// The SGB options.
 		public int ScreenMask;
 
 		private static PPU? _instance;
@@ -95,9 +96,17 @@
 			// Retain emulator options.
 			_objectsRendered = 0;
 
-			Clear();
+			for (int x = 0; x < kWidth; ++x)
+			{
+				for (int y = 0; y < kHeight; ++y)
+				{
+					LCDBackBuffer[x, y] = new Pixel();
+					LCDFrontBuffer[x, y] = new Pixel();
+				}
+			}
 
 			Dots = 0;
+			_objectsRendered = 0;
 
 			LCDEnabled = true;
 			WindowTileMapArea = false;
@@ -220,13 +229,19 @@
 
 				if (LY == kVBlankLine)
 				{
-					// When done, copy the back buffer to the front buffer.
-					Array.Copy(LCDBackBuffer, LCDFrontBuffer, LCDBackBuffer.Length);
-					Array.Clear(LCDBackBuffer);
-
 					if (GameBoy.ShouldLogOpcodes)
 					{
 						GameBoy.LogOutput += $"[{Dots}, {LY}] A v-blank interrupt occurred.\n";
+					}
+
+					// When done, copy the back buffer to the front buffer.
+					Array.Copy(LCDBackBuffer, LCDFrontBuffer, LCDFrontBuffer.Length);
+					for (int x = 0; x < kWidth; ++x)
+					{
+						for (int y = 0; y < kHeight; ++y)
+						{
+							LCDBackBuffer[x, y] = new Pixel();
+						}
 					}
 
 					// Set the v-blank IF flag.
@@ -309,12 +324,6 @@
 			PPUMode = Utilities.GetBitsFromByte(stat, 0, 1);
 		}
 
-		private void Clear()
-		{
-			Array.Clear(LCDBackBuffer);
-			Array.Clear(LCDFrontBuffer);
-		}
-
 		public void Render()
 		{
 			if (!LCDEnabled)
@@ -343,7 +352,13 @@
 			else if (ScreenMask == 3)
 			{
 				// Turn the screen color 0.
-				Array.Clear(LCDBackBuffer);
+				for (int x = 0; x < kWidth; ++x)
+				{
+					for (int y = 0; y < kHeight; ++y)
+					{
+						LCDBackBuffer[x, y].Color = 0;
+					}
+				}
 				return;
 			}
 
@@ -540,6 +555,10 @@
 									LCDBackBuffer[lcdX, lcdY].Color = lcdColor;
 									LCDBackBuffer[lcdX, lcdY].X = lcdX;
 									LCDBackBuffer[lcdX, lcdY].ObjAddress = objAddress;
+									if (SGB.Instance.Enabled)
+									{
+										LCDBackBuffer[lcdX, lcdY].SGBPalette = SGB.Instance.GetPaletteAt(lcdX, lcdY);
+									}
 								}
 								rendered = true;
 							}
@@ -556,6 +575,10 @@
 										LCDBackBuffer[lcdX, lcdY].Color = lcdColor;
 										LCDBackBuffer[lcdX, lcdY].X = lcdX;
 										LCDBackBuffer[lcdX, lcdY].ObjAddress = objAddress;
+										if (SGB.Instance.Enabled)
+										{
+											LCDBackBuffer[lcdX, lcdY].SGBPalette = SGB.Instance.GetPaletteAt(lcdX, lcdY);
+										}
 									}
 									rendered = true;
 								}

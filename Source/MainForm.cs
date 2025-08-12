@@ -111,13 +111,6 @@ namespace GBSharp
 			controlsForm.ShowDialog();
 		}
 
-		private void SGBEnabledToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			sgbEnabledToolStripMenuItem.Checked = !sgbEnabledToolStripMenuItem.Checked;
-			SGB.Instance.Allowed = sgbEnabledToolStripMenuItem.Checked;
-			Settings.Default.SGBEnabled = sgbEnabledToolStripMenuItem.Checked;
-		}
-
 		private void OriginalGreenToolStripMenuClick(object sender, EventArgs e)
 		{
 			if (!originalGreenToolStripMenuItem.Checked)
@@ -125,10 +118,14 @@ namespace GBSharp
 				originalGreenToolStripMenuItem.Checked = true;
 				originalGreenWithGhostingToolStripMenuItem.Checked = false;
 				blackAndWhiteToolStripMenuItem.Checked = false;
+				superGameBoyToolStripMenuItem.Checked = false;
 				lcdControl.UseOriginalGreen = true;
 				lcdControl.WithGhosting = false;
 				Settings.Default.LCDColorOriginalGreen = true;
 				Settings.Default.LCDGhosting = false;
+				Settings.Default.SGBEnabled = false;
+				SGB.Instance.Allowed = false;
+				SGB.Instance.Reset();
 			}
 		}
 
@@ -136,13 +133,17 @@ namespace GBSharp
 		{
 			if (!originalGreenWithGhostingToolStripMenuItem.Checked)
 			{
-				originalGreenWithGhostingToolStripMenuItem.Checked = true;
 				originalGreenToolStripMenuItem.Checked = false;
+				originalGreenWithGhostingToolStripMenuItem.Checked = true;
 				blackAndWhiteToolStripMenuItem.Checked = false;
+				superGameBoyToolStripMenuItem.Checked = false;
 				lcdControl.UseOriginalGreen = true;
 				lcdControl.WithGhosting = true;
 				Settings.Default.LCDColorOriginalGreen = true;
 				Settings.Default.LCDGhosting = true;
+				Settings.Default.SGBEnabled = false;
+				SGB.Instance.Allowed = false;
+				SGB.Instance.Reset();
 			}
 		}
 
@@ -150,13 +151,35 @@ namespace GBSharp
 		{
 			if (!blackAndWhiteToolStripMenuItem.Checked)
 			{
-				blackAndWhiteToolStripMenuItem.Checked = true;
 				originalGreenToolStripMenuItem.Checked = false;
 				originalGreenWithGhostingToolStripMenuItem.Checked = false;
+				blackAndWhiteToolStripMenuItem.Checked = true;
+				superGameBoyToolStripMenuItem.Checked = false;
 				lcdControl.UseOriginalGreen = false;
 				lcdControl.WithGhosting = false;
 				Settings.Default.LCDColorOriginalGreen = false;
 				Settings.Default.LCDGhosting = false;
+				Settings.Default.SGBEnabled = false;
+				SGB.Instance.Allowed = false;
+				SGB.Instance.Reset();
+			}
+		}
+
+		private void SuperGameBoyToolStripMenuItemClick(object sender, EventArgs e)
+		{
+			if (!superGameBoyToolStripMenuItem.Checked)
+			{
+				originalGreenToolStripMenuItem.Checked = false;
+				originalGreenWithGhostingToolStripMenuItem.Checked = false;
+				blackAndWhiteToolStripMenuItem.Checked = false;
+				superGameBoyToolStripMenuItem.Checked = true;
+				lcdControl.UseOriginalGreen = false;
+				lcdControl.WithGhosting = false;
+				Settings.Default.LCDColorOriginalGreen = false;
+				Settings.Default.LCDGhosting = false;
+				Settings.Default.SGBEnabled = true;
+				SGB.Instance.Allowed = true;
+				SGB.Instance.Reset();
 			}
 		}
 
@@ -301,6 +324,12 @@ namespace GBSharp
 		{
 			logOpcodesToolStripMenuItem.Checked = !logOpcodesToolStripMenuItem.Checked;
 			GameBoy.ShouldLogOpcodes = logOpcodesToolStripMenuItem.Checked;
+		}
+
+		private void LogSGBPacketsToolStripMenuItemClick(object sender, EventArgs e)
+		{
+			logSGBPacketsToolStripMenuItem.Checked = !logSGBPacketsToolStripMenuItem.Checked;
+			SGB.ShouldLogPackets = logSGBPacketsToolStripMenuItem.Checked;
 		}
 
 		private void NextFrameToolStripMenuItemClick(object sender, EventArgs e)
@@ -850,13 +879,17 @@ namespace GBSharp
 		{
 			// Apply user settings.
 			UpdateRecentROMs();
-			if (Settings.Default.LCDColorOriginalGreen && !Settings.Default.LCDGhosting)
+			if (Settings.Default.LCDColorOriginalGreen)
 			{
 				OriginalGreenToolStripMenuClick(sender, e);
 			}
-			else if (Settings.Default.LCDColorOriginalGreen && Settings.Default.LCDGhosting)
+			else if (Settings.Default.LCDColorOriginalGreen)
 			{
 				OriginalGreenWithGhostingToolStripMenuClick(sender, e);
+			}
+			else if (Settings.Default.SGBEnabled)
+			{
+				SuperGameBoyToolStripMenuItemClick(sender, e);
 			}
 			else
 			{
@@ -914,10 +947,6 @@ namespace GBSharp
 			if (Settings.Default.MuteChannel3)
 			{
 				noiseGeneratorChannel4ToolStripMenuItem_Click(sender, e);
-			}
-			if (Settings.Default.SGBEnabled)
-			{
-				SGBEnabledToolStripMenuItem_Click(sender, e);
 			}
 		}
 	}

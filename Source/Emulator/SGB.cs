@@ -12,6 +12,22 @@
 			}
 		}
 
+		public struct Palette
+		{
+			public Color[] Colors;
+
+			public Palette()
+			{
+				Colors =
+				[
+					Color.White,
+					Color.White,
+					Color.White,
+					Color.White
+				];
+			}
+		}
+
 		// Emulator SGB options.
 		public bool Allowed = false;
 
@@ -22,9 +38,17 @@
 		private int _numBitsReceived;
 
 		// A transmission is a series of packets.
-		private List<Packet> _packets = [];
+		private readonly List<Packet> _packets = [];
 		private int _currentPacket = 0;
 		private int _transmissionLength;
+
+		private readonly byte[] _paletteData;
+		public Palette[] Palettes = new Palette[4];
+
+		private readonly byte[] _attributeFiles;
+		private int _attributeFileNumber;
+
+		public static bool ShouldLogPackets = false;
 
 		private static SGB? _instance;
 		public static SGB Instance
@@ -38,6 +62,9 @@
 
 		public SGB()
 		{
+			_paletteData = new byte[4 * 1024];
+			_attributeFiles = new byte[4050];		// 45 attributes at 90 bytes each
+
 			Reset();
 		}
 
@@ -54,6 +81,15 @@
 			_packets.Clear();
 			_currentPacket = 0;
 			_transmissionLength = 0;
+
+			Array.Clear(_paletteData);
+			for (int i = 0; i < Palettes.Length; ++i)
+			{
+				Palettes[i] = new Palette();
+			}
+
+			Array.Clear(_attributeFiles);
+			_attributeFileNumber = 0;
 		}
 
 		public void StartReceiving()
@@ -111,20 +147,91 @@
 			{
 				case 0x00:		// PAL01
 					{
-						// TODO: Implement.
-						GameBoy.DebugOutput += "Finish implementing command code PAL01 (0x00).\n";
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += "Received SGB packet PAL01 (0x00).\n";
+						}
+
+						// Read the color data from the packet.
+						ushort color0 = (ushort)(_packets[0]._data[1] + (ushort)(_packets[0]._data[2] << 8));
+						ushort palette0Color1 = (ushort)(_packets[0]._data[3] + (ushort)(_packets[0]._data[4] << 8));
+						ushort palette0Color2 = (ushort)(_packets[0]._data[5] + (ushort)(_packets[0]._data[6] << 8));
+						ushort palette0Color3 = (ushort)(_packets[0]._data[7] + (ushort)(_packets[0]._data[8] << 8));
+						ushort palette1Color1 = (ushort)(_packets[0]._data[9] + (ushort)(_packets[0]._data[10] << 8));
+						ushort palette1Color2 = (ushort)(_packets[0]._data[11] + (ushort)(_packets[0]._data[12] << 8));
+						ushort palette1Color3 = (ushort)(_packets[0]._data[13] + (ushort)(_packets[0]._data[14] << 8));
+
+						// Update the in-use Palettes based on the new colors.
+						Palettes[0].Colors[0] = GetColorFromData(color0);
+						Palettes[0].Colors[1] = GetColorFromData(palette0Color1);
+						Palettes[0].Colors[2] = GetColorFromData(palette0Color2);
+						Palettes[0].Colors[3] = GetColorFromData(palette0Color3);
+						Palettes[1].Colors[0] = GetColorFromData(color0);
+						Palettes[1].Colors[1] = GetColorFromData(palette1Color1);
+						Palettes[1].Colors[2] = GetColorFromData(palette1Color2);
+						Palettes[1].Colors[3] = GetColorFromData(palette1Color3);
+					}
+					break;
+
+				case 0x01:		// PAL23
+					{
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += "Received SGB packet PAL23 (0x01).\n";
+						}
+
+						// Read the color data from the packet.
+						ushort color0 = (ushort)(_packets[0]._data[1] + (ushort)(_packets[0]._data[2] << 8));
+						ushort palette2Color1 = (ushort)(_packets[0]._data[3] + (ushort)(_packets[0]._data[4] << 8));
+						ushort palette2Color2 = (ushort)(_packets[0]._data[5] + (ushort)(_packets[0]._data[6] << 8));
+						ushort palette2Color3 = (ushort)(_packets[0]._data[7] + (ushort)(_packets[0]._data[8] << 8));
+						ushort palette3Color1 = (ushort)(_packets[0]._data[9] + (ushort)(_packets[0]._data[10] << 8));
+						ushort palette3Color2 = (ushort)(_packets[0]._data[11] + (ushort)(_packets[0]._data[12] << 8));
+						ushort palette3Color3 = (ushort)(_packets[0]._data[13] + (ushort)(_packets[0]._data[14] << 8));
+
+						// Update the in-use Palettes based on the new colors.
+						Palettes[2].Colors[0] = GetColorFromData(color0);
+						Palettes[2].Colors[1] = GetColorFromData(palette2Color1);
+						Palettes[2].Colors[2] = GetColorFromData(palette2Color2);
+						Palettes[2].Colors[3] = GetColorFromData(palette2Color3);
+						Palettes[3].Colors[0] = GetColorFromData(color0);
+						Palettes[3].Colors[1] = GetColorFromData(palette3Color1);
+						Palettes[3].Colors[2] = GetColorFromData(palette3Color2);
+						Palettes[3].Colors[3] = GetColorFromData(palette3Color3);
 					}
 					break;
 
 				case 0x04:		// ATTR_BLK
 					{
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += "Received SGB packet ATTR_BLK (0x04). Unimplemented.\n";
+						}
+
 						// TODO: Implement.
 						GameBoy.DebugOutput += "Finish implementing command code ATTR_BLK (0x04).\n";
 					}
 					break;
 
+				case 0x05:		// ATTR_LIN
+					{
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += "Received SGB packet ATTR_LIN (0x05). Unimplemented.\n";
+						}
+
+						// TODO: Implement.
+						GameBoy.DebugOutput += "Finish implementing command code ATTR_LIN (0x05).\n";
+					}
+					break;
+
 				case 0x06:		// ATTR_DIV
 					{
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += "Received SGB packet ATTR_DIV (0x06). Unimplemented.\n";
+						}
+
 						// TODO: Implement.
 						GameBoy.DebugOutput += "Finish implementing command code ATTR_DIV (0x06).\n";
 					}
@@ -132,6 +239,11 @@
 
 				case 0x07:		// ATTR_CHR
 					{
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += "Received SGB packet ATTR_CHR (0x07). Unimplemented.\n";
+						}
+
 						// TODO: Implement.
 						GameBoy.DebugOutput += "Finish implementing command code ATTR_CHR (0x07).\n";
 					}
@@ -139,58 +251,136 @@
 
 				case 0x08:		// SOUND
 					{
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += "Received SGB packet SOUND (0x08). Unimplemented.\n";
+						}
+
 						// TODO: Support SGB sound?
 					}
 					break;
 
 				case 0x09:		// SOU_TRN
 					{
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += "Received SGB packet SOU_TRN (0x09). Unimplemented.\n";
+						}
+
 						// TODO: Support SGB sound?
 					}
 					break;
 
 				case 0x0A:		// PAL_SET
 					{
-						byte flags = _packets[0]._data[9];
-						// Cancel the screen mask.
-						if ((flags & 0x40) == 0x040)
+						if (ShouldLogPackets)
 						{
-							PPU.Instance.ScreenMask = 0;
+							GameBoy.DebugOutput += "Received SGB packet PAL_SET (0x0A):";
 						}
 
-						// TODO: Implement.
-						GameBoy.DebugOutput += "Finish implementing command code PAL_SET (0x0A).\n";
+						ushort higher = (ushort)(_packets[0]._data[2] << 8);
+						ushort lower = _packets[0]._data[1];
+						ushort palette0 = (ushort)(higher + lower);
+						higher = (ushort)(_packets[0]._data[4] << 8);
+						lower = _packets[0]._data[3];
+						ushort palette1 = (ushort)(higher + lower);
+						higher = (ushort)(_packets[0]._data[6] << 8);
+						lower = _packets[0]._data[5];
+						ushort palette2 = (ushort)(higher + lower);
+						higher = (ushort)(_packets[0]._data[8] << 8);
+						lower = _packets[0]._data[7];
+						ushort palette3 = (ushort)(higher + lower);
+
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += $" {palette0}, {palette1}, {palette2}, {palette3}";
+						}
+
+						byte flags = _packets[0]._data[9];
+						bool cancelScreenMask = (flags & 0x40) == 0x40;
+						if (cancelScreenMask)
+						{
+							// Cancel the screen mask.
+							PPU.Instance.ScreenMask = 0;
+						}
+						bool applyATF = (flags & 0x80) == 0x80;
+						int atfNumber = flags & 0x3F;
+						if (applyATF)
+						{
+							// Apply the attribute file.
+							_attributeFileNumber = atfNumber;
+
+							if (ShouldLogPackets)
+							{
+								GameBoy.DebugOutput += $", ATF: {_attributeFileNumber}";
+							}
+						}
+
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += "\n";
+						}
+
+						// Update the in-use Palettes based on the new palette indices.
+						Palettes[0] = GetPaletteFromPaletteData(palette0);
+						Palettes[1] = GetPaletteFromPaletteData(palette1);
+						Palettes[2] = GetPaletteFromPaletteData(palette2);
+						Palettes[3] = GetPaletteFromPaletteData(palette3);
 					}
 					break;
 
 				case 0x0B:		// PAL_TRN
 					{
-						// TODO: Implement.
-						GameBoy.DebugOutput += "Finish implementing command code PAL_TRN (0x0B).\n";
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += "Received SGB packet PAL_TRN (0x0B).\n";
+						}
+
+						// Immediately transfer the palette data from VRAM starting at 0x8800.
+						Array.Copy(Memory.Instance.VRAM, 0x0800, _paletteData, 0, _paletteData.Length);
 					}
 					break;
 
 				case 0x0C:		// ATRC_EN
 					{
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += "Received SGB packet ATRC_EN (0x0C). Unimplemented.\n";
+						}
+
 						// NOTE: Ignore?
 					}
 					break;
 
 				case 0x0E:		// ICON_EN
 					{
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += "Received SGB packet ICON_EN (0x0E). Unimplemented.\n";
+						}
+
 						// NOTE: Ignore?
 					}
 					break;
 
 				case 0x0F:		// DATA_SND
 					{
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += "Received SGB packet DATA_SND (0x0F). Unimplemented.\n";
+						}
+
 						// TODO: Anything?
-						GameBoy.DebugOutput += "Finish implementing command code DATA_SND (0x0F)?\n";
 					}
 					break;
 
 				case 0x11:		// MLT_REQ
 					{
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += "Received SGB packet MLT_REQ (0x11).\n";
+						}
+
 						// This is traditionally used to detect SGB support.
 						Enabled = true;
 					}
@@ -198,25 +388,45 @@
 
 				case 0x13:		// CHR_TRN
 					{
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += "Received SGB packet CHR_TRN (0x13). Unimplemented.\n";
+						}
+
 						// TODO: Support SGB border?
 					}
 					break;
 
 				case 0x14:		// PCT_TRN
 					{
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += "Received SGB packet PCT_TRN (0x14). Unimplemented.\n";
+						}
+
 						// TODO: Support SGB border?
 					}
 					break;
 
 				case 0x15:		// ATTR_TRN
 					{
-						// TODO: Implement.
-						GameBoy.DebugOutput += "Finish implementing command code ATTR_TRN (0x15).\n";
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += "Received SGB packet ATTR_TRN (0x15).\n";
+						}
+
+						// Immediately transfer the attribute files from VRAM starting at 0x8000.
+						Array.Copy(Memory.Instance.VRAM, 0, _attributeFiles, 0, _attributeFiles.Length);
 					}
 					break;
 
 				case 0x17:		// MASK_EN
 					{
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += $"Received SGB packet MASK_EN (0x17): {_packets[0]._data[1]}\n";
+						}
+
 						// Set the screen mask.
 						PPU.Instance.ScreenMask = _packets[0]._data[1];
 					}
@@ -224,8 +434,12 @@
 
 				case 0x19:		// PAL_PRI
 					{
-						// TODO: Anything?
-						GameBoy.DebugOutput += "Finish implementing command code PAL_PRI (0x19)?\n";
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += "Received SGB packet PAL_PRI (0x19). Unimplemented.\n";
+						}
+
+						// NOTE: Ignore?
 					}
 					break;
 
@@ -236,6 +450,58 @@
 					}
 					break;
 			}
+		}
+
+		// Returns the Palette to use at an x and y.
+		public Palette GetPaletteAt(int x, int y)
+		{
+			// Figure out which tile x and y are in.
+			int tileX = x / 8;
+			int tileY = y / 8;
+			int tileIndex = tileX + tileY * 32;
+
+			// Each ATF is 90 bytes, so find where our tile is stored.
+			byte atf = _attributeFiles[_attributeFileNumber * 90 + tileIndex / 4];
+
+			// Then read the palette index out of the ATF.
+			int tileShift = (3 - (tileIndex % 4)) * 2;
+			int paletteIndex = (atf >> tileShift) & 0x03;
+
+			return Palettes[paletteIndex];
+		}
+
+		// Return a Color from the given ushort 5-bit color data.
+		private Color GetColorFromData(ushort colorData)
+		{
+			Color color;
+
+			// Convert each channel from 5-bit to 8-bit RGB.
+			int red = (int)((float)(ushort)(colorData & 0x001F) / 0x001F * 255);
+			int green = (int)((float)(ushort)((colorData & 0x03E0) >> 5) / 0x001F * 255);
+			int blue = (int)((float)(ushort)((colorData & 0x7C00) >> 10) / 0x001F * 255);
+			color = Color.FromArgb(255, red, green, blue);
+
+			return color;
+		}
+
+		// Return a new Palette from the palette data.
+		private Palette GetPaletteFromPaletteData(ushort palette)
+		{
+			Palette newPalette = new();
+
+			// Read the color data from the palette data.
+			ushort color0 = (ushort)(_paletteData[palette * 8] + (ushort)(_paletteData[palette * 8 + 1] << 8));
+			ushort color1 = (ushort)(_paletteData[palette * 8 + 2] + (ushort)(_paletteData[palette * 8 + 3] << 8));
+			ushort color2 = (ushort)(_paletteData[palette * 8 + 4] + (ushort)(_paletteData[palette * 8 + 5] << 8));
+			ushort color3 = (ushort)(_paletteData[palette * 8 + 6] + (ushort)(_paletteData[palette * 8 + 7] << 8));
+
+			// Convert each color from 5-bit to 8-bit RGB.
+			newPalette.Colors[0] = GetColorFromData(color0);
+			newPalette.Colors[1] = GetColorFromData(color1);
+			newPalette.Colors[2] = GetColorFromData(color2);
+			newPalette.Colors[3] = GetColorFromData(color3);
+
+			return newPalette;
 		}
 	}
 }
