@@ -60,8 +60,8 @@
 						}
 					}
 
-					// Don't bother rendering the clear color again.
-					if (brushIndex != 0)
+					// Don't bother rendering the clear color again (unless color 0 is from a color palette).
+					if (brushIndex != 0 || SGB.Instance.Enabled)
 					{
 						Brush brush;
 						if (SGB.Instance.Enabled)

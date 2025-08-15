@@ -42,11 +42,17 @@
 		private int _currentPacket = 0;
 		private int _transmissionLength;
 
+		// Data for the palettes in SGB memory.
 		private readonly byte[] _paletteData;
+		// Actual palettes currently in use.
 		public Palette[] Palettes = new Palette[4];
 
-		private readonly byte[] _attributeFiles;
+		// Data for the attribute files in SGB memory.
+		private readonly byte[] _attributeFileData;
+		// Actual attribute file in use.
 		private int _attributeFileNumber;
+		// The 20x18 grid of attribute characters (mapping tiles to palettes).
+		private readonly int[,] _attributeChars;
 
 		public static bool ShouldLogPackets = false;
 
@@ -62,8 +68,9 @@
 
 		public SGB()
 		{
-			_paletteData = new byte[4 * 1024];
-			_attributeFiles = new byte[4050];		// 45 attributes at 90 bytes each
+			_paletteData = new byte[4096];				// 512 palettes at 8 bytes each
+			_attributeFileData = new byte[4050];		// 45 attributes at 90 bytes each
+			_attributeChars = new int[PPU.kWidth / 8, PPU.kHeight / 8];
 
 			Reset();
 		}
@@ -88,8 +95,9 @@
 				Palettes[i] = new Palette();
 			}
 
-			Array.Clear(_attributeFiles);
+			Array.Clear(_attributeFileData);
 			_attributeFileNumber = 0;
+			Array.Clear(_attributeChars);
 		}
 
 		public void StartReceiving()
@@ -205,11 +213,10 @@
 					{
 						if (ShouldLogPackets)
 						{
-							GameBoy.DebugOutput += "Received SGB packet ATTR_BLK (0x04). Unimplemented.\n";
+							GameBoy.DebugOutput += "Received SGB packet ATTR_BLK (0x04).\n";
 						}
 
-						// TODO: Implement.
-						GameBoy.DebugOutput += "Finish implementing command code ATTR_BLK (0x04).\n";
+						HandleAttrBlk();
 					}
 					break;
 
@@ -217,11 +224,10 @@
 					{
 						if (ShouldLogPackets)
 						{
-							GameBoy.DebugOutput += "Received SGB packet ATTR_LIN (0x05). Unimplemented.\n";
+							GameBoy.DebugOutput += "Received SGB packet ATTR_LIN (0x05).\n";
 						}
 
-						// TODO: Implement.
-						GameBoy.DebugOutput += "Finish implementing command code ATTR_LIN (0x05).\n";
+						HandleAttrLin();
 					}
 					break;
 
@@ -229,11 +235,10 @@
 					{
 						if (ShouldLogPackets)
 						{
-							GameBoy.DebugOutput += "Received SGB packet ATTR_DIV (0x06). Unimplemented.\n";
+							GameBoy.DebugOutput += "Received SGB packet ATTR_DIV (0x06).\n";
 						}
 
-						// TODO: Implement.
-						GameBoy.DebugOutput += "Finish implementing command code ATTR_DIV (0x06).\n";
+						HandleAttrDiv();
 					}
 					break;
 
@@ -241,11 +246,10 @@
 					{
 						if (ShouldLogPackets)
 						{
-							GameBoy.DebugOutput += "Received SGB packet ATTR_CHR (0x07). Unimplemented.\n";
+							GameBoy.DebugOutput += "Received SGB packet ATTR_CHR (0x07).\n";
 						}
 
-						// TODO: Implement.
-						GameBoy.DebugOutput += "Finish implementing command code ATTR_CHR (0x07).\n";
+						HandleAttrChr();
 					}
 					break;
 
@@ -308,7 +312,11 @@
 						if (applyATF)
 						{
 							// Apply the attribute file.
-							_attributeFileNumber = atfNumber;
+							if (atfNumber != _attributeFileNumber)
+							{
+								_attributeFileNumber = atfNumber;
+								ApplyAttributeFile();
+							}
 
 							if (ShouldLogPackets)
 							{
@@ -415,8 +423,37 @@
 							GameBoy.DebugOutput += "Received SGB packet ATTR_TRN (0x15).\n";
 						}
 
-						// Immediately transfer the attribute files from VRAM starting at 0x8000.
-						Array.Copy(Memory.Instance.VRAM, 0, _attributeFiles, 0, _attributeFiles.Length);
+						// Immediately transfer the attribute files from VRAM starting at 0x8800.
+						Array.Copy(Memory.Instance.VRAM, 0x0800, _attributeFileData, 0, _attributeFileData.Length);
+					}
+					break;
+
+				case 0x16:      // ATTR_SET
+					{
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += "Received SGB packet ATTR_SET (0x16): ";
+						}
+
+						bool cancelScreenMask = (_packets[0]._data[0] & 0x40) == 0x40;
+						if (cancelScreenMask)
+						{
+							// Cancel the screen mask.
+							PPU.Instance.ScreenMask = 0;
+						}
+						int atfNumber = _packets[0]._data[0] & 0x3F;
+						if (atfNumber != _attributeFileNumber)
+						{
+							// Apply the attribute file.
+							_attributeFileNumber = atfNumber;
+							ApplyAttributeFile();
+						}
+
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += $"{_attributeFileNumber}\n";
+						}
+
 					}
 					break;
 
@@ -452,22 +489,28 @@
 			}
 		}
 
+		// Apply the current attribute file to the attribute characters.
+		private void ApplyAttributeFile()
+		{
+			Array.Clear(_attributeChars);
+			for (int y = 0; y < PPU.kHeight / 8; ++y)
+			{
+				for (int x = 0; x < PPU.kWidth / 8; ++x)
+				{
+					// Each byte is 4 palettes, 20 chars per 5 bytes, 90 bytes total.
+					int offset = _attributeFileNumber * 90 + (x + y * PPU.kWidth / 8) / 4;
+					byte data = _attributeFileData[offset];
+					int shift = (3 - (x % 4)) * 2;
+					int palette = (data & (0x03 << shift)) >> shift;
+					_attributeChars[x, y] = palette;
+				}
+			}
+		}
+
 		// Returns the Palette to use at an x and y.
 		public Palette GetPaletteAt(int x, int y)
 		{
-			// Figure out which tile x and y are in.
-			int tileX = x / 8;
-			int tileY = y / 8;
-			int tileIndex = tileX + tileY * 32;
-
-			// Each ATF is 90 bytes, so find where our tile is stored.
-			byte atf = _attributeFiles[_attributeFileNumber * 90 + tileIndex / 4];
-
-			// Then read the palette index out of the ATF.
-			int tileShift = (3 - (tileIndex % 4)) * 2;
-			int paletteIndex = (atf >> tileShift) & 0x03;
-
-			return Palettes[paletteIndex];
+			return Palettes[_attributeChars[x / 8, y / 8]];
 		}
 
 		// Return a Color from the given ushort 5-bit color data.
@@ -502,6 +545,174 @@
 			newPalette.Colors[3] = GetColorFromData(color3);
 
 			return newPalette;
+		}
+
+		private void HandleAttrBlk()
+		{
+			int numDataSets = _packets[0]._data[1];
+
+			// Read each data set and apply its rectangle.
+			int packet = 0;
+			int data = 2;
+			for (int i = 0; i < numDataSets; ++i)
+			{
+				// Each data set comes consecutively in packets, but after the first two bytes of the first packet.
+				bool changeInside = (_packets[packet]._data[data] & 0x01) == 0x01;
+				bool changeSurrouding = (_packets[packet]._data[data] & 0x02) == 0x02;
+				bool changeOutside = (_packets[packet]._data[data] & 0x04) == 0x04;
+				if (++data > 15) { packet++; data = 0; }
+				int paletteInside = _packets[packet]._data[data] & 0x03;
+				int paletteSurrounding = (_packets[packet]._data[data] & 0x0C) >> 2;
+				int paletteOutside = (_packets[packet]._data[data] & 0x30) >> 4;
+				if (++data > 15) { packet++; data = 0; }
+				int left = _packets[packet]._data[data];
+				if (++data > 15) { packet++; data = 0; }
+				int top = _packets[packet]._data[data];
+				if (++data > 15) { packet++; data = 0; }
+				int right = _packets[packet]._data[data];
+				if (++data > 15) { packet++; data = 0; }
+				int bottom = _packets[packet]._data[data];
+				if (++data > 15) { packet++; data = 0; }
+
+				for (int x = 0; x < PPU.kWidth / 8; ++x)
+				{
+					for (int y = 0; y < PPU.kHeight / 8; ++y)
+					{
+						if ((x > left && x < right && y > top && y < bottom) && changeInside)
+						{
+							_attributeChars[x, y] = paletteInside;
+						}
+
+						if ((x < left || x > right || y < top || y > bottom) && changeOutside)
+						{
+							_attributeChars[x, y] = paletteOutside;
+						}
+
+						if (((x == left || x == right) && y >= top && y <= bottom) ||
+							((y == top || y == bottom) && x >= left && x <= right))
+						{
+							_attributeChars[x, y] = changeSurrouding ? paletteSurrounding :
+								(changeInside ? paletteInside : paletteOutside);
+						}
+					}
+				}
+			}
+		}
+
+		private void HandleAttrLin()
+		{
+			int numDataSets = _packets[0]._data[1];
+
+			// Read each data set and apply its line.
+			int packet = 0;
+			int data = 2;
+			for (int i = 0; i < numDataSets; ++i)
+			{
+				int lineNumber = _packets[packet]._data[data] & 0x1F;
+				int palette = (_packets[packet]._data[data] & 0x60) >> 5;
+				bool horizontal = (_packets[packet]._data[data] & 0x80) == 0x80;
+
+				for (int j = 0; j < (horizontal ? PPU.kWidth / 8 : PPU.kHeight / 8); ++j)
+				{
+					if (horizontal)
+					{
+						_attributeChars[j, lineNumber] = palette;
+					}
+					else
+					{
+						_attributeChars[lineNumber, j] = palette;
+					}
+				}
+
+				if (++data > 15) { packet++; data = 0; }
+			}
+		}
+
+		private void HandleAttrDiv()
+		{
+			int bottomRightPalette = _packets[0]._data[1] & 0x03;
+			int topLeftPalette = (_packets[0]._data[1] & 0x0C) >> 2;
+			int divisionPalette = (_packets[0]._data[1] & 0x30) >> 4;
+			bool horizontal = (_packets[0]._data[1] & 0x40) == 0x40;
+			int xOrY = _packets[0]._data[2];
+
+			// Apply the division.
+			for (int x = 0; x < PPU.kWidth / 8; ++x)
+			{
+				for (int y = 0; y < PPU.kHeight / 8; ++y)
+				{
+					if (x < xOrY && !horizontal)
+					{
+						_attributeChars[x, y] = topLeftPalette;
+					}
+					if (y < xOrY && horizontal)
+					{
+						_attributeChars[x, y] = topLeftPalette;
+					}
+					if (x == xOrY && !horizontal)
+					{
+						_attributeChars[x, y] = divisionPalette;
+					}
+					if (y == xOrY && horizontal)
+					{
+						_attributeChars[x, y] = divisionPalette;
+					}
+					if (x > xOrY && !horizontal)
+					{
+						_attributeChars[x, y] = bottomRightPalette;
+					}
+					if (y > xOrY && horizontal)
+					{
+						_attributeChars[x, y] = bottomRightPalette;
+					}
+				}
+			}
+		}
+
+		private void HandleAttrChr()
+		{
+			int x = _packets[0]._data[1];
+			int y = _packets[0]._data[2];
+			int numDataSets = _packets[0]._data[3] + (_packets[0]._data[4] << 8);
+			if (numDataSets > 360)
+			{
+				numDataSets = 360;
+			}
+			bool topToBottom = _packets[0]._data[5] == 0x01;
+
+			// Read each data set and apply its character.
+			int packet = 0;
+			int data = 6;
+			for (int i = 0; i < numDataSets; ++i)
+			{
+				int shift = (3 - (i % 4)) * 2;
+				int palette =(_packets[packet]._data[data] & (0x03 << shift)) >> shift;
+				_attributeChars[x, y] = palette;
+				if (i % 4 == 3)
+				{
+					data++;
+				}
+				if (data > 15)
+				{
+					packet++; data = 0;
+				}
+				if (topToBottom)
+				{
+					if (++y >= PPU.kHeight / 8)
+					{
+						y = 0;
+						x++;
+					}
+				}
+				else
+				{
+					if (++x >= PPU.kWidth / 8)
+					{
+						x = 0;
+						y++;
+					}
+				}
+			}
 		}
 	}
 }
