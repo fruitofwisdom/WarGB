@@ -41,6 +41,11 @@
 		private void LCDControl_Paint(object sender, PaintEventArgs e)
 		{
 			Color clearColor = UseOriginalGreen ? _originalGreenBrushes[0].Color : _blackAndWhiteBrushes[0].Color;
+			if (SGB.Instance.Enabled)
+			{
+				// The SGB clear color is the first color of the first palette.
+				clearColor = SGB.Instance.Palettes[0].Colors[0];
+			}
 			e.Graphics.Clear(clearColor);
 
 			// Read from the PPU's front buffer and render to our Graphics object.
@@ -60,8 +65,8 @@
 						}
 					}
 
-					// Don't bother rendering the clear color again (unless color 0 is from a color palette).
-					if (brushIndex != 0 || SGB.Instance.Enabled)
+					// Don't bother rendering the clear color again.
+					if (brushIndex != 0)
 					{
 						Brush brush;
 						if (SGB.Instance.Enabled)
