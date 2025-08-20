@@ -314,6 +314,12 @@ namespace GBSharp
 			Settings.Default.MuteChannel3 = !noiseGeneratorChannel4ToolStripMenuItem.Checked;
 		}
 
+		private void ClearDebugOutputToolStripMenuItemClick(object sender, EventArgs e)
+		{
+			debugRichTextBox.Clear();
+			GameBoy.DebugOutput = "";
+		}
+
 		private void DisplayFrameTimeToolStripMenuClick(object sender, EventArgs e)
 		{
 			displayFrameTimeToolStripMenuItem.Checked = !displayFrameTimeToolStripMenuItem.Checked;
@@ -356,13 +362,13 @@ namespace GBSharp
 			{
 				showDebugOutputToolStripMenuItem.Checked = false;
 				debugRichTextBox.Hide();
-				Size = new Size(Width - 255, Height);
+				Size = new Size(Width - (debugRichTextBox.Width + 5), Height);
 			}
 			else
 			{
 				showDebugOutputToolStripMenuItem.Checked = true;
 				debugRichTextBox.Show();
-				Size = new Size(Width + 255, Height);
+				Size = new Size(Width + (debugRichTextBox.Width + 5), Height);
 			}
 		}
 
@@ -417,6 +423,8 @@ namespace GBSharp
 			if (GameBoy.DebugOutput != "")
 			{
 				debugRichTextBox.AppendText(GameBoy.DebugOutput);
+				debugRichTextBox.SelectionStart = debugRichTextBox.Text.Length;
+				debugRichTextBox.ScrollToCaret();
 				GameBoy.DebugOutput = "";
 			}
 			if (GameBoy.DebugStatus != "")

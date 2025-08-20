@@ -64,6 +64,7 @@
 			waveTableChannel3ToolStripMenuItem = new ToolStripMenuItem();
 			noiseGeneratorChannel4ToolStripMenuItem = new ToolStripMenuItem();
 			debugToolStripMenuItem = new ToolStripMenuItem();
+			clearDebugOutputToolStripMenuItem = new ToolStripMenuItem();
 			displayFrameTimeToolStripMenuItem = new ToolStripMenuItem();
 			logOpcodesToolStripMenuItem = new ToolStripMenuItem();
 			logSGBPacketsToolStripMenuItem = new ToolStripMenuItem();
@@ -226,21 +227,21 @@
 			// oneXToolStripMenuItem
 			// 
 			oneXToolStripMenuItem.Name = "oneXToolStripMenuItem";
-			oneXToolStripMenuItem.Size = new Size(180, 22);
+			oneXToolStripMenuItem.Size = new Size(86, 22);
 			oneXToolStripMenuItem.Text = "1x";
 			oneXToolStripMenuItem.Click += OneXToolStripMenuItemClick;
 			// 
 			// twoXToolStripMenuItem
 			// 
 			twoXToolStripMenuItem.Name = "twoXToolStripMenuItem";
-			twoXToolStripMenuItem.Size = new Size(180, 22);
+			twoXToolStripMenuItem.Size = new Size(86, 22);
 			twoXToolStripMenuItem.Text = "2x";
 			twoXToolStripMenuItem.Click += TwoXToolStripMenuItemClick;
 			// 
 			// threeXToolStripMenuItem
 			// 
 			threeXToolStripMenuItem.Name = "threeXToolStripMenuItem";
-			threeXToolStripMenuItem.Size = new Size(180, 22);
+			threeXToolStripMenuItem.Size = new Size(86, 22);
 			threeXToolStripMenuItem.Text = "3x";
 			threeXToolStripMenuItem.Click += ThreeXToolStripMenuItemClick;
 			// 
@@ -249,14 +250,14 @@
 			fourXToolStripMenuItem.Checked = true;
 			fourXToolStripMenuItem.CheckState = CheckState.Checked;
 			fourXToolStripMenuItem.Name = "fourXToolStripMenuItem";
-			fourXToolStripMenuItem.Size = new Size(180, 22);
+			fourXToolStripMenuItem.Size = new Size(86, 22);
 			fourXToolStripMenuItem.Text = "4x";
 			fourXToolStripMenuItem.Click += FourXToolStripMenuItemClick;
 			// 
 			// fiveXToolStripMenuItem
 			// 
 			fiveXToolStripMenuItem.Name = "fiveXToolStripMenuItem";
-			fiveXToolStripMenuItem.Size = new Size(180, 22);
+			fiveXToolStripMenuItem.Size = new Size(86, 22);
 			fiveXToolStripMenuItem.Text = "5x";
 			fiveXToolStripMenuItem.Click += FiveXToolStripMenuItemClick;
 			// 
@@ -272,7 +273,7 @@
 			backgroundToolStripMenuItem.Checked = true;
 			backgroundToolStripMenuItem.CheckState = CheckState.Checked;
 			backgroundToolStripMenuItem.Name = "backgroundToolStripMenuItem";
-			backgroundToolStripMenuItem.Size = new Size(180, 22);
+			backgroundToolStripMenuItem.Size = new Size(138, 22);
 			backgroundToolStripMenuItem.Text = "Background";
 			backgroundToolStripMenuItem.Click += backgroundToolStripMenuItem_Click;
 			// 
@@ -281,7 +282,7 @@
 			windowToolStripMenuItem.Checked = true;
 			windowToolStripMenuItem.CheckState = CheckState.Checked;
 			windowToolStripMenuItem.Name = "windowToolStripMenuItem";
-			windowToolStripMenuItem.Size = new Size(180, 22);
+			windowToolStripMenuItem.Size = new Size(138, 22);
 			windowToolStripMenuItem.Text = "Window";
 			windowToolStripMenuItem.Click += windowToolStripMenuItem_Click;
 			// 
@@ -290,7 +291,7 @@
 			objectsToolStripMenuItem.Checked = true;
 			objectsToolStripMenuItem.CheckState = CheckState.Checked;
 			objectsToolStripMenuItem.Name = "objectsToolStripMenuItem";
-			objectsToolStripMenuItem.Size = new Size(180, 22);
+			objectsToolStripMenuItem.Size = new Size(138, 22);
 			objectsToolStripMenuItem.Text = "Objects";
 			objectsToolStripMenuItem.Click += objectsToolStripMenuItem_Click;
 			// 
@@ -347,10 +348,17 @@
 			// 
 			// debugToolStripMenuItem
 			// 
-			debugToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { displayFrameTimeToolStripMenuItem, logOpcodesToolStripMenuItem, logSGBPacketsToolStripMenuItem, nextFrameToolStripMenuItem, nextOpcodeToolStripMenuItem, nextScanlineToolStripMenuItem, showDebugOutputToolStripMenuItem });
+			debugToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { clearDebugOutputToolStripMenuItem, displayFrameTimeToolStripMenuItem, logOpcodesToolStripMenuItem, logSGBPacketsToolStripMenuItem, nextFrameToolStripMenuItem, nextOpcodeToolStripMenuItem, nextScanlineToolStripMenuItem, showDebugOutputToolStripMenuItem });
 			debugToolStripMenuItem.Name = "debugToolStripMenuItem";
 			debugToolStripMenuItem.Size = new Size(54, 20);
 			debugToolStripMenuItem.Text = "Debug";
+			// 
+			// clearDebugOutputToolStripMenuItem
+			// 
+			clearDebugOutputToolStripMenuItem.Name = "clearDebugOutputToolStripMenuItem";
+			clearDebugOutputToolStripMenuItem.Size = new Size(224, 22);
+			clearDebugOutputToolStripMenuItem.Text = "Clear Debug Output";
+			clearDebugOutputToolStripMenuItem.Click += ClearDebugOutputToolStripMenuItemClick;
 			// 
 			// displayFrameTimeToolStripMenuItem
 			// 
@@ -493,14 +501,15 @@
 			// 
 			// debugRichTextBox
 			// 
-			debugRichTextBox.Font = new Font("Cascadia Code", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+			debugRichTextBox.Font = new Font("Cascadia Code", 8.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
 			debugRichTextBox.Location = new Point(658, 52);
 			debugRichTextBox.Name = "debugRichTextBox";
 			debugRichTextBox.ReadOnly = true;
-			debugRichTextBox.Size = new Size(250, 576);
+			debugRichTextBox.Size = new Size(350, 576);
 			debugRichTextBox.TabIndex = 3;
 			debugRichTextBox.Text = "";
 			debugRichTextBox.Visible = false;
+			debugRichTextBox.WordWrap = false;
 			// 
 			// statusStrip
 			// 
@@ -580,6 +589,7 @@
 		private ToolStripMenuItem waveTableChannel3ToolStripMenuItem;
 		private ToolStripMenuItem noiseGeneratorChannel4ToolStripMenuItem;
 		private ToolStripMenuItem debugToolStripMenuItem;
+		private ToolStripMenuItem clearDebugOutputToolStripMenuItem;
 		private ToolStripMenuItem displayFrameTimeToolStripMenuItem;
 		private ToolStripMenuItem logOpcodesToolStripMenuItem;
 		private ToolStripMenuItem logSGBPacketsToolStripMenuItem;
