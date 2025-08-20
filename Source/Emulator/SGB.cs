@@ -39,8 +39,12 @@
 
 		// A transmission is a series of packets.
 		private readonly List<Packet> _packets = [];
-		private int _currentPacket = 0;
+		private int _currentPacket;
 		private int _transmissionLength;
+
+		// For handling multiple players.
+		private int _playerCount;
+		private int _activePlayer;
 
 		// Data for the palettes in SGB memory.
 		private readonly byte[] _paletteData;
@@ -88,6 +92,9 @@
 			_packets.Clear();
 			_currentPacket = 0;
 			_transmissionLength = 0;
+
+			_playerCount = 1;
+			_activePlayer = 1;
 
 			Array.Clear(_paletteData);
 			for (int i = 0; i < Palettes.Length; ++i)
@@ -386,11 +393,37 @@
 					{
 						if (ShouldLogPackets)
 						{
-							GameBoy.DebugOutput += "Received SGB packet MLT_REQ (0x11).\n";
+							GameBoy.DebugOutput += "Received SGB packet MLT_REQ (0x11): ";
 						}
 
 						// This is traditionally used to detect SGB support.
+						byte request = _packets[0]._data[1];
 						Enabled = true;
+
+						// TODO: Is this the correct interpretation of the request?
+						if ((byte)(request & 0x01) == 0x01)
+						{
+							_playerCount = 2;
+						}
+						else if ((byte)(request & 0x02) == 0x02)
+						{
+							_playerCount = 4;
+						}
+						else
+						{
+							_playerCount = 1;
+						}
+
+						// If the player count has decreased, fix the active player.
+						if (_activePlayer > _playerCount)
+						{
+							_activePlayer = _playerCount;
+						}
+
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += $"0x{request:X2}\n";
+						}
 					}
 					break;
 
@@ -487,6 +520,12 @@
 					}
 					break;
 			}
+		}
+
+		// Return the active player in the format the controller expects.
+		public byte ActivePlayer()
+		{
+			return (byte)(0xFF - _activePlayer + 1);
 		}
 
 		// Apply the current attribute file to the attribute characters.
@@ -712,6 +751,16 @@
 						y++;
 					}
 				}
+			}
+		}
+
+		// Increment the active player.
+		public void NextPlayer()
+		{
+			_activePlayer++;
+			if (_activePlayer > _playerCount)
+			{
+				_activePlayer = 1;
 			}
 		}
 	}

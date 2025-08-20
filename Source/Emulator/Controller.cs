@@ -64,6 +64,12 @@
 				data |= (byte)(B ? 0x00 : 0x02);
 				data |= (byte)(Select ? 0x00 : 0x04);
 				data |= (byte)(Start ? 0x00 : 0x08);
+
+				if (SGB.Instance.Enabled && SGB.Instance.ActivePlayer() != 0xFF)
+				{
+					// TODO: Add a mapping for additional players?
+					data |= 0x3F;
+				}
 			}
 			else if (SelectDpad)
 			{
@@ -72,11 +78,25 @@
 				data |= (byte)(Left ? 0x00 : 0x02);
 				data |= (byte)(Up ? 0x00 : 0x04);
 				data |= (byte)(Down ? 0x00 : 0x08);
+
+				if (SGB.Instance.Enabled && SGB.Instance.ActivePlayer() != 0xFF)
+				{
+					// TODO: Add a mapping for additional players?
+					data |= 0x3F;
+				}
 			}
 			else
 			{
-				// All buttons released.
-				data |= 0x3F;
+				if (SGB.Instance.Enabled)
+				{
+					// Return which controller is active.
+					data = SGB.Instance.ActivePlayer();
+				}
+				else
+				{
+					// All buttons released.
+					data |= 0x3F;
+				}
 			}
 
 			return data;
