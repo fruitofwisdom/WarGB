@@ -393,12 +393,26 @@ namespace GBSharp
 		private void ResetButtonClick(object sender, EventArgs e)
 		{
 			bool wasPlaying = _gameBoy.Playing;
+
+			// Stop any current threads.
+			if (_gameBoyThread != null)
+			{
+				_gameBoy.Stop();
+				_gameBoyThread.Join();
+			}
+
 			_gameBoy.Reset();
+
+			// Start a new thread to run the Game Boy.
+			_gameBoyThread = new Thread(new ThreadStart(_gameBoy.Run));
+			_gameBoyThread.IsBackground = true;
+			_gameBoyThread.Start();
+
 			if (wasPlaying)
 			{
-				_gameBoy.Play();
+				// Play automatically.
+				PlayButtonClick(this, new EventArgs());
 			}
-			UpdatePlayState();
 		}
 
 		private void NextFrameButtonClick(object sender, EventArgs e)
@@ -754,7 +768,6 @@ namespace GBSharp
 				_gameBoyThread.IsBackground = true;
 				_gameBoyThread.Start();
 				resetButton.Enabled = true;
-				UpdatePlayState();
 
 				// Play automatically.
 				PlayButtonClick(this, new EventArgs());
