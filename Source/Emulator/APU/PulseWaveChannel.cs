@@ -1,6 +1,6 @@
 ﻿using NAudio.Wave.SampleProviders;
 
-namespace GBSharp
+namespace WarGB
 {
 	// A pulse wave generator for sound channels 1 and 2.
 	internal class PulseWaveProvider : SampleProvider

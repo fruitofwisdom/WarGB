@@ -1,4 +1,4 @@
-﻿namespace GBSharp
+﻿namespace WarGB
 {
 	public partial class LCDControl : UserControl
 	{

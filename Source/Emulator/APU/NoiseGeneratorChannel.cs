@@ -1,6 +1,6 @@
 ﻿using NAudio.Wave.SampleProviders;
 
-namespace GBSharp
+namespace WarGB
 {
 	// A noise generator for sound channel 4.
 	internal class NoiseGeneratorProvider : SampleProvider

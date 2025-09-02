@@ -1,6 +1,6 @@
-﻿using GBSharp.Properties;
+﻿using WarGB.Properties;
 
-namespace GBSharp
+namespace WarGB
 {
 	public partial class ControlsForm : Form
 	{

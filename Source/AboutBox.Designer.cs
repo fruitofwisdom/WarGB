@@ -1,4 +1,4 @@
-﻿namespace GBSharp
+﻿namespace WarGB
 {
 	partial class AboutBox
 	{
@@ -88,7 +88,7 @@
 			labelProductName.Name = "labelProductName";
 			labelProductName.Size = new Size(316, 20);
 			labelProductName.TabIndex = 19;
-			labelProductName.Text = "GB#";
+			labelProductName.Text = "WarGB";
 			labelProductName.TextAlign = ContentAlignment.MiddleLeft;
 			// 
 			// labelVersion
@@ -124,7 +124,7 @@
 			labelWebsite.Size = new Size(243, 15);
 			labelWebsite.TabIndex = 22;
 			labelWebsite.TabStop = true;
-			labelWebsite.Text = "https://github.com/fruitofwisdom/GBSharp";
+			labelWebsite.Text = "https://github.com/fruitofwisdom/WarGB";
 			labelWebsite.TextAlign = ContentAlignment.MiddleLeft;
 			labelWebsite.LinkClicked += LabelWebsiteLinkClicked;
 			// 
@@ -140,7 +140,7 @@
 			textBoxDescription.Size = new Size(316, 147);
 			textBoxDescription.TabIndex = 23;
 			textBoxDescription.TabStop = false;
-			textBoxDescription.Text = "Welcome to version 0.3-beta of GB#, a Game Boy emulator written in C#.";
+			textBoxDescription.Text = "Welcome to version 0.3-beta of WarGB, a Game Boy emulator written in C#.";
 			// 
 			// okButton
 			// 
@@ -169,7 +169,7 @@
 			ShowIcon = false;
 			ShowInTaskbar = false;
 			StartPosition = FormStartPosition.CenterParent;
-			Text = "About GB#";
+			Text = "About WarGB";
 			tableLayoutPanel.ResumeLayout(false);
 			tableLayoutPanel.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)logoPictureBox).EndInit();

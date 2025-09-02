@@ -1,4 +1,4 @@
-﻿namespace GBSharp
+﻿namespace WarGB
 {
 	internal class GameBoy
 	{
@@ -65,7 +65,7 @@
 		public void Run()
 		{
 			// NOTE: We skip any validation or BIOS handling.
-			Thread.CurrentThread.Name = "GB# Game Boy";
+			Thread.CurrentThread.Name = "WarGB Game Boy";
 			DebugOutput += "Ready to play " + ROM.Instance.Title + "!\n";
 
 			uint clocksToNextCPUCycle = 0;

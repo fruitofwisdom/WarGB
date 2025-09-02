@@ -1,4 +1,4 @@
-﻿namespace GBSharp
+﻿namespace WarGB
 {
 	internal class Controller
 	{

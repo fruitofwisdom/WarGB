@@ -1,4 +1,4 @@
-namespace GBSharp
+namespace WarGB
 {
 	internal static class Program
 	{

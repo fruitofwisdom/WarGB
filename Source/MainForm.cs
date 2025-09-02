@@ -1,8 +1,8 @@
-using GBSharp.Properties;
+using WarGB.Properties;
 using SharpDX.XInput;
 //using Windows.Gaming.Input;
 
-namespace GBSharp
+namespace WarGB
 {
 	public partial class MainForm : Form
 	{
@@ -372,7 +372,7 @@ namespace GBSharp
 			}
 		}
 
-		private void AboutGBSharpToolStripMenuItemClick(object sender, EventArgs e)
+		private void AboutWarGBToolStripMenuItemClick(object sender, EventArgs e)
 		{
 			AboutBox aboutBox = new();
 			aboutBox.ShowDialog();
@@ -761,7 +761,7 @@ namespace GBSharp
 				_gameBoy.Reset();
 
 				// Put the game name and ROM type in our title.
-				Text = "GB# - " + ROM.Instance.Title + " (" + ROM.Instance.CartridgeType.ToString().Replace("_", "+") + ")";
+				Text = "WarGB - " + ROM.Instance.Title + " (" + ROM.Instance.CartridgeType.ToString().Replace("_", "+") + ")";
 
 				// Start a new thread to run the Game Boy.
 				_gameBoyThread = new Thread(new ThreadStart(_gameBoy.Run));

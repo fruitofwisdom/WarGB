@@ -1,6 +1,6 @@
 ﻿using NAudio.Wave;
 
-namespace GBSharp
+namespace WarGB
 {
 	internal class APU
 	{

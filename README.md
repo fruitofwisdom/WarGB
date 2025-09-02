@@ -1,4 +1,4 @@
-# GBSharp
+# WarGB
 A Game Boy emulator written in C#.
 
 Supports the full instruction set, rendering, all sound channels, and Super Game Boy support for color palettes.

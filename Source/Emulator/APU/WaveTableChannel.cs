@@ -1,6 +1,6 @@
 using NAudio.Wave.SampleProviders;
 
-namespace GBSharp
+namespace WarGB
 {
 	// A wave table generator for sound channel 3.
 	internal class WaveTableProvider : SampleProvider

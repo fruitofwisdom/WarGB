@@ -1,4 +1,4 @@
-﻿namespace GBSharp
+﻿namespace WarGB
 {
 	partial class MainForm
 	{
@@ -73,7 +73,7 @@
 			nextScanlineToolStripMenuItem = new ToolStripMenuItem();
 			showDebugOutputToolStripMenuItem = new ToolStripMenuItem();
 			helpToolStripMenuItem = new ToolStripMenuItem();
-			aboutGBSharpToolStripMenuItem = new ToolStripMenuItem();
+			aboutWarGBToolStripMenuItem = new ToolStripMenuItem();
 			toolStrip = new ToolStrip();
 			playButton = new ToolStripButton();
 			pauseButton = new ToolStripButton();
@@ -422,18 +422,18 @@
 			// 
 			// helpToolStripMenuItem
 			// 
-			helpToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { aboutGBSharpToolStripMenuItem });
+			helpToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { aboutWarGBToolStripMenuItem });
 			helpToolStripMenuItem.Name = "helpToolStripMenuItem";
 			helpToolStripMenuItem.Size = new Size(44, 20);
 			helpToolStripMenuItem.Text = "Help";
 			// 
-			// aboutGBSharpToolStripMenuItem
+			// aboutWarGBToolStripMenuItem
 			// 
-			aboutGBSharpToolStripMenuItem.Name = "aboutGBSharpToolStripMenuItem";
-			aboutGBSharpToolStripMenuItem.ShortcutKeys = Keys.F1;
-			aboutGBSharpToolStripMenuItem.Size = new Size(174, 22);
-			aboutGBSharpToolStripMenuItem.Text = "About GBSharp";
-			aboutGBSharpToolStripMenuItem.Click += AboutGBSharpToolStripMenuItemClick;
+			aboutWarGBToolStripMenuItem.Name = "aboutWarGBToolStripMenuItem";
+			aboutWarGBToolStripMenuItem.ShortcutKeys = Keys.F1;
+			aboutWarGBToolStripMenuItem.Size = new Size(174, 22);
+			aboutWarGBToolStripMenuItem.Text = "About WarGB";
+			aboutWarGBToolStripMenuItem.Click += AboutWarGBToolStripMenuItemClick;
 			// 
 			// toolStrip
 			// 
@@ -539,7 +539,7 @@
 			KeyPreview = true;
 			MainMenuStrip = menuStrip;
 			Name = "MainForm";
-			Text = "GB#";
+			Text = "WarGB";
 			FormClosing += MainForm_FormClosing;
 			Load += MainForm_Load;
 			menuStrip.ResumeLayout(false);
@@ -598,7 +598,7 @@
 		private ToolStripMenuItem nextScanlineToolStripMenuItem;
 		private ToolStripMenuItem showDebugOutputToolStripMenuItem;
 		private ToolStripMenuItem helpToolStripMenuItem;
-		private ToolStripMenuItem aboutGBSharpToolStripMenuItem;
+		private ToolStripMenuItem aboutWarGBToolStripMenuItem;
 		private ToolStrip toolStrip;
 		private ToolStripButton playButton;
 		private ToolStripButton pauseButton;
