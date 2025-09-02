@@ -18,7 +18,7 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="LCDColorOriginalGreen" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="LCDSize" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">4</Value>
@@ -75,7 +75,7 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="SGBEnabled" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+      <Value Profile="(Default)">True</Value>
     </Setting>
   </Settings>
 </SettingsFile>

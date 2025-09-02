@@ -85,7 +85,7 @@ namespace GBSharp.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool LCDColorOriginalGreen {
             get {
                 return ((bool)(this["LCDColorOriginalGreen"]));
@@ -313,7 +313,7 @@ namespace GBSharp.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool SGBEnabled {
             get {
                 return ((bool)(this["SGBEnabled"]));
