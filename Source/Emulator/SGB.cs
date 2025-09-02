@@ -468,25 +468,23 @@
 							GameBoy.DebugOutput += "Received SGB packet ATTR_SET (0x16): ";
 						}
 
-						bool cancelScreenMask = (_packets[0]._data[0] & 0x40) == 0x40;
+						bool cancelScreenMask = (_packets[0]._data[1] & 0x40) == 0x40;
 						if (cancelScreenMask)
 						{
 							// Cancel the screen mask.
 							PPU.Instance.ScreenMask = 0;
 						}
-						int atfNumber = _packets[0]._data[0] & 0x3F;
+						int atfNumber = _packets[0]._data[1] & 0x3F;
+						if (ShouldLogPackets)
+						{
+							GameBoy.DebugOutput += $"{atfNumber}\n";
+						}
 						if (atfNumber != _attributeFileNumber)
 						{
 							// Apply the attribute file.
 							_attributeFileNumber = atfNumber;
 							ApplyAttributeFile();
 						}
-
-						if (ShouldLogPackets)
-						{
-							GameBoy.DebugOutput += $"{_attributeFileNumber}\n";
-						}
-
 					}
 					break;
 
@@ -538,6 +536,11 @@
 				{
 					// Each byte is 4 palettes, 20 chars per 5 bytes, 90 bytes total.
 					int offset = _attributeFileNumber * 90 + (x + y * PPU.kWidth / 8) / 4;
+					if (offset >= _attributeFileData.Length)
+					{
+						offset = _attributeFileData.Length - 1;
+						GameBoy.DebugOutput += $"Attribute file number {_attributeFileNumber} is out of range!\n";
+					}
 					byte data = _attributeFileData[offset];
 					int shift = (3 - (x % 4)) * 2;
 					int palette = (data & (0x03 << shift)) >> shift;

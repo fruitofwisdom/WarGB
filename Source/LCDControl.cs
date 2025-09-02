@@ -54,9 +54,24 @@
 			{
 				for (int y = 0; y < PPU.kHeight; ++y)
 				{
+					Brush brush;
 					int brushIndex = PPU.Instance.LCDFrontBuffer[x, y].Color;
 
-					// When ghosting is enabled, ramp down the color.
+					// SGB screen masks 2 and 3 are just solid colors.
+					if (PPU.Instance.ScreenMask == 2)
+					{
+						brush = new SolidBrush(Color.Black);
+						e.Graphics.FillRectangle(brush, x * scale, y * scale, scale, scale);
+						continue;
+					}
+					else if (PPU.Instance.ScreenMask == 3)
+					{
+						brush = new SolidBrush(Color.White);
+						e.Graphics.FillRectangle(brush, x * scale, y * scale, scale, scale);
+						continue;
+					}
+
+					// When original green ghosting is enabled, "ramp" down the color.
 					if (WithGhosting)
 					{
 						if (brushIndex < _lastColor[x, y])
@@ -65,10 +80,8 @@
 						}
 					}
 
-					// Don't bother rendering the clear color again.
-					if (brushIndex != 0)
+					if (brushIndex != 0)		// Don't bother rendering the clear color again.
 					{
-						Brush brush;
 						if (SGB.Instance.Enabled)
 						{
 							brush = new SolidBrush(PPU.Instance.LCDFrontBuffer[x, y].SGBPalette.Colors[brushIndex]);

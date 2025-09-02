@@ -160,68 +160,67 @@
 			}
 			byte newLY = (byte)(Dots / kDotsPerLine);
 
-			if (newLY >= kVBlankLine)
+			if (newLY == LY)		// The scanline hasn't changed yet.
 			{
-				// Vertical blank.
-				PPUMode = 0x01;
-
-				// A STAT interrupt has occurred.
-				if (_lastPPUMode != PPUMode && Mode1IntSelect)
+				// Handle the correct PPU mode.
+				if (LY >= kVBlankLine)
 				{
-					CPU.Instance.IF |= 0x02;
-				}
-			}
-			else if (Dots % kDotsPerLine < 80)
-			{
-				// OAM scan.
-				PPUMode = 0x02;
+					// Vertical blank.
+					PPUMode = 0x01;
 
-				// A STAT interrupt has occurred.
-				if (_lastPPUMode != PPUMode && Mode2IntSelect)
-				{
-					CPU.Instance.IF |= 0x02;
-				}
-			}
-			else if (Dots % kDotsPerLine < 252)
-			{
-				// Drawing pixels.
-				PPUMode = 0x03;
-
-				// Actually render to LCD data.
-				if (_lastPPUMode != PPUMode && LY < kVBlankLine)
-				{
-					Render();
-					didRender = true;
-				}
-			}
-			else
-			{
-				// Horizontal blank.
-				PPUMode = 0x00;
-
-				// A STAT interrupt has occurred.
-				if (_lastPPUMode != PPUMode && Mode0IntSelect)
-				{
-					if (GameBoy.ShouldLogOpcodes)
+					// A STAT interrupt has occurred.
+					if (_lastPPUMode != PPUMode && Mode1IntSelect)
 					{
-						GameBoy.LogOutput += $"[{Dots}, {LY}] A STAT interrupt occurred with newLY={newLY}.\n";
+						CPU.Instance.IF |= 0x02;
 					}
-
-					CPU.Instance.IF |= 0x02;
 				}
-			}
-			_lastPPUMode = PPUMode;
+				else if (Dots % kDotsPerLine < 80)
+				{
+					// OAM scan.
+					PPUMode = 0x02;
 
-			// Did we start rendering a new scanline?
-			if (newLY != LY)
+					// A STAT interrupt has occurred.
+					if (_lastPPUMode != PPUMode && Mode2IntSelect)
+					{
+						CPU.Instance.IF |= 0x02;
+					}
+				}
+				else if (Dots % kDotsPerLine < 376)
+				{
+					// Drawing pixels.
+					PPUMode = 0x03;
+
+					// Rendering this scanline begins now.
+					if (_lastPPUMode != PPUMode)
+					{
+						Render();
+						didRender = true;
+					}
+				}
+				else
+				{
+					// Horizontal blank.
+					PPUMode = 0x00;
+
+					// A STAT interrupt has occurred.
+					if (_lastPPUMode != PPUMode && Mode0IntSelect)
+					{
+						if (GameBoy.ShouldLogOpcodes)
+						{
+							GameBoy.LogOutput += $"[{Dots}, {LY}] A STAT interrupt occurred with newLY={newLY}.\n";
+						}
+
+						CPU.Instance.IF |= 0x02;
+					}
+				}
+
+				_lastPPUMode = PPUMode;
+			}
+			else		// We started rendering a new scanline.
 			{
 				LY = newLY;
 
-				// Update the window's LY when it's enabled.
-				if (WindowEnabled)
-				{
-					_wly++;
-				}
+				// Reset the window's internal line counter too.
 				if (LY == 0)
 				{
 					_wly = 0;
@@ -335,30 +334,17 @@
 			if (ScreenMask == 1)
 			{
 				// Freeze the screen.
+				Array.Copy(LCDFrontBuffer, LCDBackBuffer, LCDBackBuffer.Length);
 				return;
 			}
 			else if (ScreenMask == 2)
 			{
-				// Turn the screen black.
-				for (int x = 0; x < kWidth; ++x)
-				{
-					for (int y = 0; y < kHeight; ++y)
-					{
-						LCDBackBuffer[x, y].Color = 3;
-					}
-				}
+				// Turn the screen black. (Handled in LCDControl.)
 				return;
 			}
 			else if (ScreenMask == 3)
 			{
-				// Turn the screen color 0.
-				for (int x = 0; x < kWidth; ++x)
-				{
-					for (int y = 0; y < kHeight; ++y)
-					{
-						LCDBackBuffer[x, y].Color = 0;
-					}
-				}
+				// Turn the screen white. (Handled in LCDControl.)
 				return;
 			}
 
@@ -401,37 +387,7 @@
 				}
 			}
 
-			// Draw the window as well.
-			if (ShouldRenderWindow && WindowEnabled && BGWindowEnable)
-			{
-				for (int tileY = 0; tileY < 32; ++tileY)
-				{
-					for (int tileX = 0; tileX < 32; ++tileX)
-					{
-						int mapAddress = WindowTileMapArea ? 0x9C00 : 0x9800;
-						mapAddress += tileY * 32 + tileX;
-
-						// Each tile is 16 bytes, but can be addressed in one of two ways.
-						int tileAddress;
-						if (BGWindowTileDataArea)
-						{
-							byte tileNumber = Memory.Instance.Read(mapAddress);
-							tileAddress = 0x8000 + tileNumber * 16;
-						}
-						else
-						{
-							sbyte tileNumber = (sbyte)Memory.Instance.Read(mapAddress);
-							tileAddress = 0x9000 + tileNumber * 16;
-						}
-
-						// NOTE: The window has a 7 pixel x-offset.
-						int x = tileX * 8 + WX - 7;
-						int y = tileY * 8 + WY;
-						// TODO: Fix the implementation of _wly.
-						RenderTile(tileAddress, x, y, BGPaletteData);
-					}
-				}
-			}
+			RenderWindow();
 
 			// Draw the objects by iterating over each of their tiles.
 			if (ShouldRenderObjects && OBJEnabled)
@@ -481,15 +437,15 @@
 					bool rendered = false;
 					if (!OBJSize)
 					{
-						rendered = RenderTile(tileAddress, x, y, objPaletteData, true, xFlip, yFlip, priority, objAddress);
+						rendered = RenderTile(tileAddress, x, y, objPaletteData, true, true, xFlip, yFlip, priority, objAddress);
 					}
 					else
 					{
-						rendered = RenderTile(tileAddress, x, yFlip ? y + 8 : y, objPaletteData, true, xFlip, yFlip, priority, objAddress);
+						rendered = RenderTile(tileAddress, x, yFlip ? y + 8 : y, objPaletteData, true, true, xFlip, yFlip, priority, objAddress);
 
 						// In 8x16 mode, also render the next tile immediately below.
 						tileAddress = 0x8000 + (tileNumber | 0x01) * 16;
-						rendered = RenderTile(tileAddress, x, yFlip ? y : y + 8, objPaletteData, true, xFlip, yFlip, priority, objAddress);
+						rendered = RenderTile(tileAddress, x, yFlip ? y : y + 8, objPaletteData, true, true, xFlip, yFlip, priority, objAddress);
 					}
 
 					if (rendered)
@@ -500,9 +456,60 @@
 			}
 		}
 
+		// Render the window layer, if it's enabled.
+		private void RenderWindow()
+		{
+			// Draw the window as well.
+			if (ShouldRenderWindow && WindowEnabled && BGWindowEnable)
+			{
+				bool renderedWindow = false;
+
+				for (int tileY = 0; tileY < 32; ++tileY)
+				{
+					for (int tileX = 0; tileX < 32; ++tileX)
+					{
+						// The window uses its own internal line counter to look up which tiles to render.
+						int tileLookupY = tileY - (LY - _wly - WY) / 8;
+
+						int mapAddress = WindowTileMapArea ? 0x9C00 : 0x9800;
+						mapAddress += tileLookupY * 32 + tileX;
+
+						// Each tile is 16 bytes, but can be addressed in one of two ways.
+						int tileAddress;
+						if (BGWindowTileDataArea)
+						{
+							byte tileNumber = Memory.Instance.Read(mapAddress);
+							tileAddress = 0x8000 + tileNumber * 16;
+						}
+						else
+						{
+							sbyte tileNumber = (sbyte)Memory.Instance.Read(mapAddress);
+							tileAddress = 0x9000 + tileNumber * 16;
+						}
+
+						// NOTE: The window has a 7 pixel x-offset.
+						int x = tileX * 8 + WX - 7;
+						int y = tileY * 8 + WY;
+						bool didRender = RenderTile(tileAddress, x, y, BGPaletteData);
+						if (didRender && GameBoy.ShouldLogOpcodes)
+						{
+							GameBoy.LogOutput += $"Rendered 0x{mapAddress:X4} at ({x}, {y}) for ({tileX}, {tileLookupY}).\tLY = {LY} and _wly = {_wly}.\n";
+						}
+						renderedWindow |= didRender;
+					}
+				}
+
+				// The internal window line counter only increments if the window was actually rendered this scanline.
+				if (renderedWindow)
+				{
+					_wly++;
+				}
+			}
+		}
+
 		// Draw an individual tile with data from an address at a location with a palette.
 		private bool RenderTile(int tileAddress, int x, int y, byte palette,
-			bool transparency = false, bool xFlip = false, bool yFlip = false, bool priority = false, int objAddress = 0x000)
+			bool useOamLimit = false, bool transparency = false, bool xFlip = false, bool yFlip = false, bool priority = false, int objAddress = 0x000)
 		{
 			// Exit early if we wouldn't render on this particular scanline.
 			if (LY < y || LY > y + 7)
@@ -511,7 +518,7 @@
 			}
 
 			// Exit early if the tile is completely off-screen, but it still affects the scanline limit.
-			if (x < -8 || x >= kWidth)
+			if ((x < -8 || x >= kWidth) && useOamLimit)
 			{
 				return true;
 			}
@@ -549,11 +556,11 @@
 							if (!priority)
 							{
 								if (LCDBackBuffer[lcdX, lcdY].ObjAddress == 0x0000 ||
-									LCDBackBuffer[lcdX, lcdY].X > lcdX ||		// TODO: Only applies in non-CGB mode.
-									(LCDBackBuffer[lcdX, lcdY].X == lcdX && LCDBackBuffer[lcdX, lcdY].ObjAddress > objAddress))
+									LCDBackBuffer[lcdX, lcdY].X > x ||		// TODO: Only applies in non-CGB mode.
+									(LCDBackBuffer[lcdX, lcdY].X == x && LCDBackBuffer[lcdX, lcdY].ObjAddress > objAddress))
 								{
 									LCDBackBuffer[lcdX, lcdY].Color = lcdColor;
-									LCDBackBuffer[lcdX, lcdY].X = lcdX;
+									LCDBackBuffer[lcdX, lcdY].X = x;
 									LCDBackBuffer[lcdX, lcdY].ObjAddress = objAddress;
 									if (SGB.Instance.Enabled)
 									{
@@ -569,11 +576,11 @@
 								if (LCDBackBuffer[lcdX, lcdY].Color == bgColor0)
 								{
 									if (LCDBackBuffer[lcdX, lcdY].ObjAddress == 0x0000 ||
-										LCDBackBuffer[lcdX, lcdY].X > lcdX ||       // TODO: Only applies in non-CGB mode.
-										(LCDBackBuffer[lcdX, lcdY].X == lcdX && LCDBackBuffer[lcdX, lcdY].ObjAddress > objAddress))
+										LCDBackBuffer[lcdX, lcdY].X > x ||       // TODO: Only applies in non-CGB mode.
+										(LCDBackBuffer[lcdX, lcdY].X == x && LCDBackBuffer[lcdX, lcdY].ObjAddress > objAddress))
 									{
 										LCDBackBuffer[lcdX, lcdY].Color = lcdColor;
-										LCDBackBuffer[lcdX, lcdY].X = lcdX;
+										LCDBackBuffer[lcdX, lcdY].X = x;
 										LCDBackBuffer[lcdX, lcdY].ObjAddress = objAddress;
 										if (SGB.Instance.Enabled)
 										{
