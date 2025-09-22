@@ -308,7 +308,7 @@
 			stat |= (byte)(Mode1IntSelect ? 0x10 : 0x00);
 			stat |= (byte)(Mode0IntSelect ? 0x08 : 0x00);
 			stat |= (byte)(LYCEqualsLY ? 0x04 : 0x00);
-			stat |= PPUMode;
+			stat |= (byte)(LCDEnabled ? PPUMode : 0x00);
 
 			return stat;
 		}
