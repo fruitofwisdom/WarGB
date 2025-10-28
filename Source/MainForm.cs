@@ -1,5 +1,5 @@
-using WarGB.Properties;
 using SharpDX.XInput;
+using WarGB.Properties;
 //using Windows.Gaming.Input;
 
 namespace WarGB

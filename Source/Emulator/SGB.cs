@@ -46,6 +46,8 @@
 		private int _playerCount;
 		private int _activePlayer;
 
+		public Color ClearColor { get; private set; }
+
 		// Data for the palettes in SGB memory.
 		private readonly byte[] _paletteData;
 		// Actual palettes currently in use.
@@ -95,6 +97,8 @@
 
 			_playerCount = 1;
 			_activePlayer = 1;
+
+			ClearColor = Color.White;
 
 			Array.Clear(_paletteData);
 			for (int i = 0; i < Palettes.Length; ++i)
@@ -185,6 +189,9 @@
 						Palettes[1].Colors[1] = GetColorFromData(palette1Color1);
 						Palettes[1].Colors[2] = GetColorFromData(palette1Color2);
 						Palettes[1].Colors[3] = GetColorFromData(palette1Color3);
+
+						// Clear color is the most recently set color 0.
+						ClearColor = Palettes[0].Colors[0];
 					}
 					break;
 
@@ -213,6 +220,9 @@
 						Palettes[3].Colors[1] = GetColorFromData(palette3Color1);
 						Palettes[3].Colors[2] = GetColorFromData(palette3Color2);
 						Palettes[3].Colors[3] = GetColorFromData(palette3Color3);
+
+						// Clear color is the most recently set color 0.
+						ClearColor = Palettes[2].Colors[0];
 					}
 					break;
 
@@ -341,6 +351,9 @@
 						Palettes[1] = GetPaletteFromPaletteData(palette1);
 						Palettes[2] = GetPaletteFromPaletteData(palette2);
 						Palettes[3] = GetPaletteFromPaletteData(palette3);
+
+						// Clear color is the most recently set color 0.
+						ClearColor = Palettes[0].Colors[0];
 					}
 					break;
 

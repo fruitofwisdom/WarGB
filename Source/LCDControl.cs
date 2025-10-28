@@ -43,8 +43,7 @@
 			Color clearColor = UseOriginalGreen ? _originalGreenBrushes[0].Color : _blackAndWhiteBrushes[0].Color;
 			if (SGB.Instance.Enabled)
 			{
-				// The SGB clear color is the first color of the first palette.
-				clearColor = SGB.Instance.Palettes[0].Colors[0];
+				clearColor = SGB.Instance.ClearColor;
 			}
 			e.Graphics.Clear(clearColor);
 
