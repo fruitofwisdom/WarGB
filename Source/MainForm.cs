@@ -372,6 +372,17 @@ namespace WarGB
 			}
 		}
 
+		private void TracePixelToolStripMenuItemClick(object sender, EventArgs e)
+		{
+			tracePixelToolStripMenuItem.Checked = !tracePixelToolStripMenuItem.Checked;
+		}
+
+		private void VerbosePPUToolStripMenuItemClick(object sender, EventArgs e)
+		{
+			verbosePPUToolStripMenuItem.Checked = !verbosePPUToolStripMenuItem.Checked;
+			PPU.Instance.Verbose = verbosePPUToolStripMenuItem.Checked;
+		}
+
 		private void AboutWarGBToolStripMenuItemClick(object sender, EventArgs e)
 		{
 			AboutBox aboutBox = new();
@@ -419,6 +430,18 @@ namespace WarGB
 		{
 			_gameBoy.NextFrame();
 			UpdatePlayState();
+		}
+
+		private void LcdControlMouseClick(object sender, MouseEventArgs e)
+		{
+			if (tracePixelToolStripMenuItem.Checked)
+			{
+				int pixelX = e.X / lcdControl.Scale;
+				int pixelY = e.Y / lcdControl.Scale;
+				PPU.Instance.TracePixelX = pixelX;
+				PPU.Instance.TracePixelY = pixelY;
+				PPU.Instance.ShouldTracePixel = true;
+			}
 		}
 
 		public static void Pause()

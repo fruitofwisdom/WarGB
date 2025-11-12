@@ -72,6 +72,8 @@
 			nextOpcodeToolStripMenuItem = new ToolStripMenuItem();
 			nextScanlineToolStripMenuItem = new ToolStripMenuItem();
 			showDebugOutputToolStripMenuItem = new ToolStripMenuItem();
+			tracePixelToolStripMenuItem = new ToolStripMenuItem();
+			verbosePPUToolStripMenuItem = new ToolStripMenuItem();
 			helpToolStripMenuItem = new ToolStripMenuItem();
 			aboutWarGBToolStripMenuItem = new ToolStripMenuItem();
 			toolStrip = new ToolStrip();
@@ -348,7 +350,7 @@
 			// 
 			// debugToolStripMenuItem
 			// 
-			debugToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { clearDebugOutputToolStripMenuItem, displayFrameTimeToolStripMenuItem, logOpcodesToolStripMenuItem, logSGBPacketsToolStripMenuItem, nextFrameToolStripMenuItem, nextOpcodeToolStripMenuItem, nextScanlineToolStripMenuItem, showDebugOutputToolStripMenuItem });
+			debugToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { clearDebugOutputToolStripMenuItem, displayFrameTimeToolStripMenuItem, logOpcodesToolStripMenuItem, logSGBPacketsToolStripMenuItem, nextFrameToolStripMenuItem, nextOpcodeToolStripMenuItem, nextScanlineToolStripMenuItem, showDebugOutputToolStripMenuItem, tracePixelToolStripMenuItem, verbosePPUToolStripMenuItem });
 			debugToolStripMenuItem.Name = "debugToolStripMenuItem";
 			debugToolStripMenuItem.Size = new Size(54, 20);
 			debugToolStripMenuItem.Text = "Debug";
@@ -420,6 +422,22 @@
 			showDebugOutputToolStripMenuItem.Text = "Show Debug Output";
 			showDebugOutputToolStripMenuItem.Click += ShowDebugOutputToolStripMenuClick;
 			// 
+			// tracePixelToolStripMenuItem
+			// 
+			tracePixelToolStripMenuItem.Name = "tracePixelToolStripMenuItem";
+			tracePixelToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.T;
+			tracePixelToolStripMenuItem.Size = new Size(224, 22);
+			tracePixelToolStripMenuItem.Text = "Trace Pixel";
+			tracePixelToolStripMenuItem.Click += TracePixelToolStripMenuItemClick;
+			// 
+			// verbosePPUToolStripMenuItem
+			// 
+			verbosePPUToolStripMenuItem.Name = "verbosePPUToolStripMenuItem";
+			verbosePPUToolStripMenuItem.ShortcutKeys = Keys.Control | Keys.V;
+			verbosePPUToolStripMenuItem.Size = new Size(224, 22);
+			verbosePPUToolStripMenuItem.Text = "Verbose PPU";
+			verbosePPUToolStripMenuItem.Click += VerbosePPUToolStripMenuItemClick;
+			// 
 			// helpToolStripMenuItem
 			// 
 			helpToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { aboutWarGBToolStripMenuItem });
@@ -431,7 +449,7 @@
 			// 
 			aboutWarGBToolStripMenuItem.Name = "aboutWarGBToolStripMenuItem";
 			aboutWarGBToolStripMenuItem.ShortcutKeys = Keys.F1;
-			aboutWarGBToolStripMenuItem.Size = new Size(174, 22);
+			aboutWarGBToolStripMenuItem.Size = new Size(165, 22);
 			aboutWarGBToolStripMenuItem.Text = "About WarGB";
 			aboutWarGBToolStripMenuItem.Click += AboutWarGBToolStripMenuItemClick;
 			// 
@@ -497,6 +515,7 @@
 			lcdControl.TabIndex = 2;
 			lcdControl.KeyDown += lcdControl_KeyDown;
 			lcdControl.KeyUp += lcdControl_KeyUp;
+			lcdControl.MouseClick += LcdControlMouseClick;
 			lcdControl.PreviewKeyDown += lcdControl_PreviewKeyDown;
 			// 
 			// debugRichTextBox
@@ -597,6 +616,8 @@
 		private ToolStripMenuItem nextOpcodeToolStripMenuItem;
 		private ToolStripMenuItem nextScanlineToolStripMenuItem;
 		private ToolStripMenuItem showDebugOutputToolStripMenuItem;
+		private ToolStripMenuItem tracePixelToolStripMenuItem;
+		private ToolStripMenuItem verbosePPUToolStripMenuItem;
 		private ToolStripMenuItem helpToolStripMenuItem;
 		private ToolStripMenuItem aboutWarGBToolStripMenuItem;
 		private ToolStrip toolStrip;

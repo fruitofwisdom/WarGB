@@ -1174,10 +1174,18 @@
 			else if (address == 0xFF42)
 			{
 				PPU.Instance.SCY = data;
+				if (GameBoy.ShouldLogOpcodes && PPU.Instance.Verbose)
+				{
+					GameBoy.LogOutput += $"Setting SCY to {data}.\n";
+				}
 			}
 			else if (address == 0xFF43)
 			{
 				PPU.Instance.SCX = data;
+				if (GameBoy.ShouldLogOpcodes && PPU.Instance.Verbose)
+				{
+					GameBoy.LogOutput += $"Setting SCX to {data}.\n";
+				}
 			}
 			else if (address == 0xFF44)
 			{

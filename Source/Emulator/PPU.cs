@@ -24,6 +24,18 @@
 		public bool ShouldRenderWindow = true;
 		public bool ShouldRenderObjects = true;
 
+		// Pixel tracing options.
+		public bool ShouldTracePixel = false;
+		private bool _tracingPixel = false;
+		public int TracePixelX = 0;
+		public int TracePixelY = 0;
+		private string _tracingString = "";
+		private string _tracingStringInProgress = "";
+		private bool _didRenderPixel = false;
+		private bool _didTracePixel = false;
+
+		public bool Verbose = false;		// verbose debug logging
+
 		// Every 456 dots, we increment LY, possibly trigger v-blank, etc.
 		public const uint kDotsPerLine = 456;
 		private const uint kVBlankLine = 144;
@@ -93,7 +105,8 @@
 
 		public void Reset()
 		{
-			// Retain emulator options.
+			// Retain emulator and pixel tracing options.
+
 			_objectsRendered = 0;
 
 			for (int x = 0; x < kWidth; ++x)
@@ -168,9 +181,18 @@
 					// Vertical blank.
 					PPUMode = 0x01;
 
+					if (_lastPPUMode != PPUMode && GameBoy.ShouldLogOpcodes && Verbose)
+					{
+						GameBoy.LogOutput += $"Switching to mode 1 at LY {LY} and Dot {Dots}.\n";
+					}
+
 					// A STAT interrupt has occurred.
 					if (_lastPPUMode != PPUMode && Mode1IntSelect)
 					{
+						if (GameBoy.ShouldLogOpcodes && Verbose)
+						{
+							GameBoy.LogOutput += "Triggering a mode 1 STAT interrupt at LY {LY}.\n";
+						}
 						CPU.Instance.IF |= 0x02;
 					}
 				}
@@ -179,9 +201,20 @@
 					// OAM scan.
 					PPUMode = 0x02;
 
+					if (_lastPPUMode != PPUMode && GameBoy.ShouldLogOpcodes && Verbose)
+					{
+						GameBoy.LogOutput += $"Switching to mode 2 at LY {LY} and Dot {Dots}.\n";
+					}
+
 					// A STAT interrupt has occurred.
 					if (_lastPPUMode != PPUMode && Mode2IntSelect)
 					{
+						if (GameBoy.ShouldLogOpcodes && Verbose)
+						{
+							GameBoy.LogOutput += "Triggering a mode 2 STAT interrupt at LY {LY}.\n";
+						}
+
+						// Set the LCD IF flag.
 						CPU.Instance.IF |= 0x02;
 					}
 				}
@@ -190,9 +223,19 @@
 					// Drawing pixels.
 					PPUMode = 0x03;
 
+					if (_lastPPUMode != PPUMode && GameBoy.ShouldLogOpcodes && Verbose)
+					{
+						GameBoy.LogOutput += $"Switching to mode 3 at LY {LY} and Dot {Dots}.\n";
+					}
+
 					// Rendering this scanline begins now.
 					if (_lastPPUMode != PPUMode)
 					{
+						if (GameBoy.ShouldLogOpcodes && Verbose)
+						{
+							GameBoy.LogOutput += $"Rendering scanline {LY}.\n";
+						}
+
 						Render();
 						didRender = true;
 					}
@@ -202,35 +245,58 @@
 					// Horizontal blank.
 					PPUMode = 0x00;
 
+					if (_lastPPUMode != PPUMode && GameBoy.ShouldLogOpcodes && Verbose)
+					{
+						GameBoy.LogOutput += $"Switching to mode 0 at LY {LY} and Dot {Dots}.\n";
+					}
+
 					// A STAT interrupt has occurred.
 					if (_lastPPUMode != PPUMode && Mode0IntSelect)
 					{
-						if (GameBoy.ShouldLogOpcodes)
+						if (GameBoy.ShouldLogOpcodes && Verbose)
 						{
-							GameBoy.LogOutput += $"[{Dots}, {LY}] A STAT interrupt occurred with newLY={newLY}.\n";
+							GameBoy.LogOutput += "Triggering a mode 0 STAT interrupt at LY {LY}.\n";
 						}
 
+						// Set the LCD IF flag.
 						CPU.Instance.IF |= 0x02;
 					}
 				}
 
 				_lastPPUMode = PPUMode;
 			}
-			else		// We started rendering a new scanline.
+			else		// We started a new scanline.
 			{
 				LY = newLY;
 
-				// Reset the window's internal line counter too.
 				if (LY == 0)
 				{
+					// Reset the window's internal line counter too.
 					_wly = 0;
+
+					// Stop pixel tracing if done.
+					if (_tracingPixel)
+					{
+						_tracingPixel = false;
+						_tracingString += "Done tracing.\n";
+						GameBoy.DebugOutput += _tracingString;
+						_tracingString = "";
+					}
+
+					// Start pixel tracing if requested.
+					if (ShouldTracePixel)
+					{
+						ShouldTracePixel = false;
+						_tracingPixel = true;
+						_tracingString = $"Tracing the pixel at ({TracePixelX}, {TracePixelY}).\n";
+					}
 				}
 
 				if (LY == kVBlankLine)
 				{
-					if (GameBoy.ShouldLogOpcodes)
+					if (GameBoy.ShouldLogOpcodes && Verbose)
 					{
-						GameBoy.LogOutput += $"[{Dots}, {LY}] A v-blank interrupt occurred.\n";
+						GameBoy.LogOutput += $"Triggering a v-blank interrupt.\n";
 					}
 
 					// When done, copy the back buffer to the front buffer.
@@ -251,9 +317,9 @@
 				LYCEqualsLY = LYC == LY;
 				if (LYCEqualsLY && LYCIntSelect)
 				{
-					if (GameBoy.ShouldLogOpcodes)
+					if (GameBoy.ShouldLogOpcodes && Verbose)
 					{
-						GameBoy.LogOutput += $"[{Dots}, {LY}] A STAT interrupt occurred with LYC={LYC}.\n";
+						GameBoy.LogOutput += $"Triggering a LYC=LY interrupt at LY {LY}.\n";
 					}
 
 					// Set the LCD IF flag.
@@ -351,6 +417,11 @@
 			// Draw the background by iterating over each of its tiles.
 			if (ShouldRenderBackground && BGWindowEnable)
 			{
+				if (_tracingPixel)
+				{
+					_tracingStringInProgress += "Rendering the background.\n";
+				}
+
 				for (int tileY = 0; tileY < 32; ++tileY)
 				{
 					for (int tileX = 0; tileX < 32; ++tileX)
@@ -383,6 +454,14 @@
 							y += 256;
 						}
 						RenderTile(tileAddress, x, y, BGPaletteData);
+
+						// Report any pixel tracing results.
+						if (_didRenderPixel)
+						{
+							_tracingStringInProgress += $"Rendered the pixel with color {LCDBackBuffer[TracePixelX, TracePixelY].Color}, tileAddress 0x{tileAddress:X4}.\n";
+							_didRenderPixel = false;
+							_didTracePixel = true;
+						}
 					}
 				}
 			}
@@ -392,6 +471,11 @@
 			// Draw the objects by iterating over each of their tiles.
 			if (ShouldRenderObjects && OBJEnabled)
 			{
+				if (_tracingPixel)
+				{
+					_tracingStringInProgress += "Rendering the objects.\n";
+				}
+
 				// TODO: Handle variable dot rendering speeds?
 				_objectsRendered = 0;
 				for (int objAddress = 0xFE00; objAddress <= 0xFE9C; objAddress += 0x04)
@@ -427,7 +511,6 @@
 						tileAddress += tileNumber * 16;
 					}
 					byte attributes = Memory.Instance.Read(objAddress + 3);
-					// TODO: Also handle priority of opaque pixels by OAM location.
 					bool priority = Utilities.GetBoolFromByte(attributes, 7);
 					bool yFlip = Utilities.GetBoolFromByte(attributes, 6);
 					bool xFlip = Utilities.GetBoolFromByte(attributes, 5);
@@ -452,7 +535,26 @@
 					{
 						_objectsRendered++;
 					}
+
+					// Report any pixel tracing results.
+					if (_didRenderPixel)
+					{
+						_tracingStringInProgress += $"Rendered the pixel with color {LCDBackBuffer[TracePixelX, TracePixelY].Color}, tileAddress 0x{tileAddress:X4}.\n";
+						_didRenderPixel = false;
+						_didTracePixel = true;
+					}
 				}
+			}
+
+			// Report any pixel tracing results.
+			if (_tracingPixel)
+			{
+				if (_didTracePixel)
+				{
+					_tracingString += _tracingStringInProgress;
+					_didTracePixel = false;
+				}
+				_tracingStringInProgress = "";
 			}
 		}
 
@@ -462,6 +564,11 @@
 			// Draw the window as well.
 			if (ShouldRenderWindow && WindowEnabled && BGWindowEnable)
 			{
+				if (_tracingPixel)
+				{
+					_tracingStringInProgress += "Rendering the window.\n";
+				}
+
 				bool renderedWindow = false;
 
 				for (int tileY = 0; tileY < 32; ++tileY)
@@ -491,11 +598,15 @@
 						int x = tileX * 8 + WX - 7;
 						int y = tileY * 8 + WY;
 						bool didRender = RenderTile(tileAddress, x, y, BGPaletteData);
-						if (didRender && GameBoy.ShouldLogOpcodes)
-						{
-							GameBoy.LogOutput += $"Rendered 0x{mapAddress:X4} at ({x}, {y}) for ({tileX}, {tileLookupY}).\tLY = {LY} and _wly = {_wly}.\n";
-						}
 						renderedWindow |= didRender;
+
+						// Report any pixel tracing results.
+						if (_didRenderPixel)
+						{
+							_tracingStringInProgress += $"Rendered the pixel with color {LCDBackBuffer[TracePixelX, TracePixelY].Color}, tileAddress 0x{tileAddress:X4}.\n";
+							_didRenderPixel = false;
+							_didTracePixel = true;
+						}
 					}
 				}
 
@@ -566,6 +677,11 @@
 									{
 										LCDBackBuffer[lcdX, lcdY].SGBPalette = SGB.Instance.GetPaletteAt(lcdX, lcdY);
 									}
+
+									if (_tracingPixel && TracePixelX == lcdX && TracePixelY == lcdY)
+									{
+										_didRenderPixel = true;
+									}
 								}
 								rendered = true;
 							}
@@ -585,6 +701,11 @@
 										if (SGB.Instance.Enabled)
 										{
 											LCDBackBuffer[lcdX, lcdY].SGBPalette = SGB.Instance.GetPaletteAt(lcdX, lcdY);
+										}
+
+										if (_tracingPixel && TracePixelX == lcdX && TracePixelY == lcdY)
+										{
+											_didRenderPixel = true;
 										}
 									}
 									rendered = true;

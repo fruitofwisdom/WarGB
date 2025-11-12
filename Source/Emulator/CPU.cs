@@ -199,6 +199,7 @@
 					cycles = 5;
 					_halted = false;
 				}
+				// Handle a serial interrupt.
 				else if ((byte)(IE & 0x08) == 0x08 && (byte)(IF & 0x08) == 0x08)
 				{
 					IME = false;
@@ -212,6 +213,7 @@
 					cycles = 5;
 					_halted = false;
 				}
+				// Handle a joypad interrupt.
 				else if ((byte)(IE & 0x10) == 0x10 && (byte)(IF & 0x10) == 0x10)
 				{
 					IME = false;
@@ -366,7 +368,7 @@
 					output += " ";
 				}
 				byte d8 = Memory.Instance.Read(HL);
-				output += $"A=0x{A:X2}, F=0x{GetF():X2}, BC=0x{B:X2}{C:X2}, DE=0x{D:X2}{E:X2}, HL=0x{HL:X4} (0x{d8:X2}), SP=0x{SP:X4}\n";
+				output += $"A=0x{A:X2}, F=0x{GetF():X2}, BC=0x{B:X2}{C:X2}, DE=0x{D:X2}{E:X2}, HL=0x{HL:X4} (0x{d8:X2}), SP=0x{SP:X4}, IME={IME}, IE=0x{IE:X2}, IF=0x{IF:X2}\n";
 				GameBoy.LogOutput += output;
 			}
 		}
