@@ -183,6 +183,17 @@ namespace WarGB
 			}
 		}
 
+		// Resize the window and LCDControl, applying the proper DPI scale.
+		private void ResizeWindow(int lcdSize)
+		{
+			float dpiScale = DeviceDpi / 96.0f;
+			lcdControl.Width = (int)(PPU.kWidth * lcdSize * dpiScale);
+			lcdControl.Height = (int)(PPU.kHeight * lcdSize * dpiScale);
+			Width = lcdControl.Width + (int)((showDebugOutputToolStripMenuItem.Checked ? 295 : 40) * dpiScale);
+			Height = lcdControl.Height + (int)(125 * dpiScale);
+			debugRichTextBox.Left = lcdControl.Right + (int)(6 * dpiScale);
+		}
+
 		private void OneXToolStripMenuItemClick(object sender, EventArgs e)
 		{
 			oneXToolStripMenuItem.Checked = true;
@@ -190,12 +201,9 @@ namespace WarGB
 			threeXToolStripMenuItem.Checked = false;
 			fourXToolStripMenuItem.Checked = false;
 			fiveXToolStripMenuItem.Checked = false;
-			lcdControl.Width = PPU.kWidth;
-			lcdControl.Height = PPU.kHeight;
-			Width = lcdControl.Width + (showDebugOutputToolStripMenuItem.Checked ? 295 : 40);
-			Height = lcdControl.Height + 125;
-			debugRichTextBox.Left = lcdControl.Right + 6;
 			Settings.Default.LCDSize = 1;
+
+			ResizeWindow(1);
 		}
 
 		private void TwoXToolStripMenuItemClick(object sender, EventArgs e)
@@ -205,12 +213,9 @@ namespace WarGB
 			threeXToolStripMenuItem.Checked = false;
 			fourXToolStripMenuItem.Checked = false;
 			fiveXToolStripMenuItem.Checked = false;
-			lcdControl.Width = PPU.kWidth * 2;
-			lcdControl.Height = PPU.kHeight * 2;
-			Width = lcdControl.Width + (showDebugOutputToolStripMenuItem.Checked ? 295 : 40);
-			Height = lcdControl.Height + 125;
-			debugRichTextBox.Left = lcdControl.Right + 6;
 			Settings.Default.LCDSize = 2;
+
+			ResizeWindow(2);
 		}
 
 		private void ThreeXToolStripMenuItemClick(object sender, EventArgs e)
@@ -220,12 +225,9 @@ namespace WarGB
 			threeXToolStripMenuItem.Checked = true;
 			fourXToolStripMenuItem.Checked = false;
 			fiveXToolStripMenuItem.Checked = false;
-			lcdControl.Width = PPU.kWidth * 3;
-			lcdControl.Height = PPU.kHeight * 3;
-			Width = lcdControl.Width + (showDebugOutputToolStripMenuItem.Checked ? 295 : 40);
-			Height = lcdControl.Height + 125;
-			debugRichTextBox.Left = lcdControl.Right + 6;
 			Settings.Default.LCDSize = 3;
+
+			ResizeWindow(3);
 		}
 
 		private void FourXToolStripMenuItemClick(object sender, EventArgs e)
@@ -235,12 +237,9 @@ namespace WarGB
 			threeXToolStripMenuItem.Checked = false;
 			fourXToolStripMenuItem.Checked = true;
 			fiveXToolStripMenuItem.Checked = false;
-			lcdControl.Width = PPU.kWidth * 4;
-			lcdControl.Height = PPU.kHeight * 4;
-			Width = lcdControl.Width + (showDebugOutputToolStripMenuItem.Checked ? 295 : 40);
-			Height = lcdControl.Height + 125;
-			debugRichTextBox.Left = lcdControl.Right + 6;
 			Settings.Default.LCDSize = 4;
+
+			ResizeWindow(4);
 		}
 
 		private void FiveXToolStripMenuItemClick(object sender, EventArgs e)
@@ -250,12 +249,9 @@ namespace WarGB
 			threeXToolStripMenuItem.Checked = false;
 			fourXToolStripMenuItem.Checked = false;
 			fiveXToolStripMenuItem.Checked = true;
-			lcdControl.Width = PPU.kWidth * 5;
-			lcdControl.Height = PPU.kHeight * 5;
-			Width = lcdControl.Width + (showDebugOutputToolStripMenuItem.Checked ? 295 : 40);
-			Height = lcdControl.Height + 125;
-			debugRichTextBox.Left = lcdControl.Right + 6;
 			Settings.Default.LCDSize = 5;
+
+			ResizeWindow(5);
 		}
 
 		private void backgroundToolStripMenuItem_Click(object sender, EventArgs e)
@@ -436,8 +432,8 @@ namespace WarGB
 		{
 			if (tracePixelToolStripMenuItem.Checked)
 			{
-				int pixelX = e.X / lcdControl.Scale;
-				int pixelY = e.Y / lcdControl.Scale;
+				int pixelX = (int)(e.X / lcdControl.LCDScale);
+				int pixelY = (int)(e.Y / lcdControl.LCDScale);
 				PPU.Instance.TracePixelX = pixelX;
 				PPU.Instance.TracePixelY = pixelY;
 				PPU.Instance.ShouldTracePixel = true;

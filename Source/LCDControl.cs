@@ -5,7 +5,7 @@
 		public bool UseOriginalGreen = true;
 		public bool WithGhosting = false;
 
-		public int Scale = 1;
+		public float LCDScale = 1.0f;
 
 		// The four shades of green we'll use for the Game Boy's LCD.
 		private readonly SolidBrush[] _originalGreenBrushes;
@@ -42,7 +42,7 @@
 
 		private void LCDControl_Paint(object sender, PaintEventArgs e)
 		{
-			Scale = Size.Width / PPU.kWidth;
+			LCDScale = (float)Size.Width / PPU.kWidth;
 
 			Color clearColor = UseOriginalGreen ? _originalGreenBrushes[0].Color : _blackAndWhiteBrushes[0].Color;
 			if (SGB.Instance.Enabled)
@@ -63,13 +63,13 @@
 					if (PPU.Instance.ScreenMask == 2)
 					{
 						brush = new SolidBrush(Color.Black);
-						e.Graphics.FillRectangle(brush, x * Scale, y * Scale, Scale, Scale);
+						e.Graphics.FillRectangle(brush, x * LCDScale, y * LCDScale, LCDScale, LCDScale);
 						continue;
 					}
 					else if (PPU.Instance.ScreenMask == 3)
 					{
 						brush = new SolidBrush(Color.White);
-						e.Graphics.FillRectangle(brush, x * Scale, y * Scale, Scale, Scale);
+						e.Graphics.FillRectangle(brush, x * LCDScale, y * LCDScale, LCDScale, LCDScale);
 						continue;
 					}
 
@@ -92,7 +92,7 @@
 						{
 							brush = UseOriginalGreen ? _originalGreenBrushes[brushIndex] : _blackAndWhiteBrushes[brushIndex];
 						}
-						e.Graphics.FillRectangle(brush, x * Scale, y * Scale, Scale, Scale);
+						e.Graphics.FillRectangle(brush, x * LCDScale, y * LCDScale, LCDScale, LCDScale);
 					}
 
 					_lastColor[x, y] = brushIndex;

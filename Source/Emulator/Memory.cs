@@ -93,7 +93,7 @@
 				{
 					using (Stream reader = File.OpenRead(savePath))
 					{
-						reader.Read(ExternalRAM, 0, ExternalRAM.Length);
+						reader.ReadExactly(ExternalRAM);
 					}
 				}
 			}

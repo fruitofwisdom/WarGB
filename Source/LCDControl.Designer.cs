@@ -32,8 +32,8 @@
 			// 
 			// LCDControl
 			// 
-			AutoScaleDimensions = new SizeF(7F, 15F);
-			AutoScaleMode = AutoScaleMode.Font;
+			AutoScaleDimensions = new SizeF(96F, 96F);
+			AutoScaleMode = AutoScaleMode.Dpi;
 			DoubleBuffered = true;
 			Name = "LCDControl";
 			Size = new Size(160, 144);
