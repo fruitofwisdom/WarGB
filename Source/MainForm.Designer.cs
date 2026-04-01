@@ -42,11 +42,12 @@
 			exitToolStripMenuItem = new ToolStripMenuItem();
 			optionsToolStripMenuItem = new ToolStripMenuItem();
 			controlsToolStripMenuItem = new ToolStripMenuItem();
-			lcdColorToolStripMenuItem = new ToolStripMenuItem();
+			gameBoyTypeToolStripMenuItem = new ToolStripMenuItem();
 			originalGreenToolStripMenuItem = new ToolStripMenuItem();
 			originalGreenWithGhostingToolStripMenuItem = new ToolStripMenuItem();
 			blackAndWhiteToolStripMenuItem = new ToolStripMenuItem();
 			superGameBoyToolStripMenuItem = new ToolStripMenuItem();
+			gameBoyColorToolStripMenuItem = new ToolStripMenuItem();
 			lcdSizeToolStripMenuItem = new ToolStripMenuItem();
 			oneXToolStripMenuItem = new ToolStripMenuItem();
 			twoXToolStripMenuItem = new ToolStripMenuItem();
@@ -169,7 +170,7 @@
 			// 
 			// optionsToolStripMenuItem
 			// 
-			optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { controlsToolStripMenuItem, lcdColorToolStripMenuItem, lcdSizeToolStripMenuItem, renderToolStripMenuItem, muteSoundToolStripMenuItem, soundChannelsToolStripMenuItem });
+			optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { controlsToolStripMenuItem, gameBoyTypeToolStripMenuItem, lcdSizeToolStripMenuItem, renderToolStripMenuItem, muteSoundToolStripMenuItem, soundChannelsToolStripMenuItem });
 			optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
 			optionsToolStripMenuItem.Size = new Size(61, 20);
 			optionsToolStripMenuItem.Text = "Options";
@@ -184,10 +185,10 @@
 			// 
 			// lcdColorToolStripMenuItem
 			// 
-			lcdColorToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { originalGreenToolStripMenuItem, originalGreenWithGhostingToolStripMenuItem, blackAndWhiteToolStripMenuItem, superGameBoyToolStripMenuItem });
-			lcdColorToolStripMenuItem.Name = "lcdColorToolStripMenuItem";
-			lcdColorToolStripMenuItem.Size = new Size(184, 22);
-			lcdColorToolStripMenuItem.Text = "LCD Color";
+			gameBoyTypeToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { originalGreenToolStripMenuItem, originalGreenWithGhostingToolStripMenuItem, blackAndWhiteToolStripMenuItem, superGameBoyToolStripMenuItem, gameBoyColorToolStripMenuItem });
+			gameBoyTypeToolStripMenuItem.Name = "lcdColorToolStripMenuItem";
+			gameBoyTypeToolStripMenuItem.Size = new Size(184, 22);
+			gameBoyTypeToolStripMenuItem.Text = "Game Boy Type";
 			// 
 			// originalGreenToolStripMenuItem
 			// 
@@ -218,6 +219,13 @@
 			superGameBoyToolStripMenuItem.Size = new Size(227, 22);
 			superGameBoyToolStripMenuItem.Text = "Super Game Boy";
 			superGameBoyToolStripMenuItem.Click += SuperGameBoyToolStripMenuItemClick;
+			// 
+			// gameBoyColorToolStripMenuItem
+			// 
+			gameBoyColorToolStripMenuItem.Name = "gameBoyColorToolStripMenuItem";
+			gameBoyColorToolStripMenuItem.Size = new Size(227, 22);
+			gameBoyColorToolStripMenuItem.Text = "Game Boy Color";
+			gameBoyColorToolStripMenuItem.Click += GameBoyColorToolStripMenuItem_Click;
 			// 
 			// lcdSizeToolStripMenuItem
 			// 
@@ -586,11 +594,12 @@
 		private ToolStripMenuItem exitToolStripMenuItem;
 		private ToolStripMenuItem optionsToolStripMenuItem;
 		private ToolStripMenuItem controlsToolStripMenuItem;
-		private ToolStripMenuItem lcdColorToolStripMenuItem;
+		private ToolStripMenuItem gameBoyTypeToolStripMenuItem;
 		private ToolStripMenuItem originalGreenToolStripMenuItem;
 		private ToolStripMenuItem originalGreenWithGhostingToolStripMenuItem;
 		private ToolStripMenuItem blackAndWhiteToolStripMenuItem;
 		private ToolStripMenuItem superGameBoyToolStripMenuItem;
+		private ToolStripMenuItem gameBoyColorToolStripMenuItem;
 		private ToolStripMenuItem lcdSizeToolStripMenuItem;
 		private ToolStripMenuItem oneXToolStripMenuItem;
 		private ToolStripMenuItem twoXToolStripMenuItem;

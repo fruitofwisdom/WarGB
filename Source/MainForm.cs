@@ -50,7 +50,7 @@ namespace WarGB
 		{
 			OpenFileDialog openFileDialog = new()
 			{
-				Filter = "Game Boy ROMs (*.gb)|*.gb|All files (*.*)|*.*",
+				Filter = "Game Boy ROMs (*.gb;*.gbc)|*.gb;*.gbc|All files (*.*)|*.*",
 				RestoreDirectory = true
 			};
 
@@ -119,13 +119,16 @@ namespace WarGB
 				originalGreenWithGhostingToolStripMenuItem.Checked = false;
 				blackAndWhiteToolStripMenuItem.Checked = false;
 				superGameBoyToolStripMenuItem.Checked = false;
+				gameBoyColorToolStripMenuItem.Checked = false;
 				lcdControl.UseOriginalGreen = true;
 				lcdControl.WithGhosting = false;
+				SGB.Instance.Allowed = false;
+				SGB.Instance.Reset();
+				CPU.Instance.IsCGB = false;
 				Settings.Default.LCDColorOriginalGreen = true;
 				Settings.Default.LCDGhosting = false;
 				Settings.Default.SGBEnabled = false;
-				SGB.Instance.Allowed = false;
-				SGB.Instance.Reset();
+				Settings.Default.CGBEnabled = false;
 			}
 		}
 
@@ -137,13 +140,16 @@ namespace WarGB
 				originalGreenWithGhostingToolStripMenuItem.Checked = true;
 				blackAndWhiteToolStripMenuItem.Checked = false;
 				superGameBoyToolStripMenuItem.Checked = false;
+				gameBoyColorToolStripMenuItem.Checked = false;
 				lcdControl.UseOriginalGreen = true;
 				lcdControl.WithGhosting = true;
-				Settings.Default.LCDColorOriginalGreen = true;
-				Settings.Default.LCDGhosting = true;
-				Settings.Default.SGBEnabled = false;
 				SGB.Instance.Allowed = false;
 				SGB.Instance.Reset();
+				CPU.Instance.IsCGB = false;
+				Settings.Default.LCDColorOriginalGreen = false;
+				Settings.Default.LCDGhosting = true;
+				Settings.Default.SGBEnabled = false;
+				Settings.Default.CGBEnabled = false;
 			}
 		}
 
@@ -155,13 +161,16 @@ namespace WarGB
 				originalGreenWithGhostingToolStripMenuItem.Checked = false;
 				blackAndWhiteToolStripMenuItem.Checked = true;
 				superGameBoyToolStripMenuItem.Checked = false;
+				gameBoyColorToolStripMenuItem.Checked = false;
 				lcdControl.UseOriginalGreen = false;
 				lcdControl.WithGhosting = false;
+				SGB.Instance.Allowed = false;
+				SGB.Instance.Reset();
+				CPU.Instance.IsCGB = false;
 				Settings.Default.LCDColorOriginalGreen = false;
 				Settings.Default.LCDGhosting = false;
 				Settings.Default.SGBEnabled = false;
-				SGB.Instance.Allowed = false;
-				SGB.Instance.Reset();
+				Settings.Default.CGBEnabled = false;
 			}
 		}
 
@@ -173,13 +182,37 @@ namespace WarGB
 				originalGreenWithGhostingToolStripMenuItem.Checked = false;
 				blackAndWhiteToolStripMenuItem.Checked = false;
 				superGameBoyToolStripMenuItem.Checked = true;
+				gameBoyColorToolStripMenuItem.Checked = false;
 				lcdControl.UseOriginalGreen = false;
 				lcdControl.WithGhosting = false;
+				SGB.Instance.Allowed = true;
+				SGB.Instance.Reset();
+				CPU.Instance.IsCGB = false;
 				Settings.Default.LCDColorOriginalGreen = false;
 				Settings.Default.LCDGhosting = false;
 				Settings.Default.SGBEnabled = true;
-				SGB.Instance.Allowed = true;
+				Settings.Default.CGBEnabled = false;
+			}
+		}
+
+		private void GameBoyColorToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (!gameBoyColorToolStripMenuItem.Checked)
+			{
+				originalGreenToolStripMenuItem.Checked = false;
+				originalGreenWithGhostingToolStripMenuItem.Checked = false;
+				blackAndWhiteToolStripMenuItem.Checked = false;
+				superGameBoyToolStripMenuItem.Checked = false;
+				gameBoyColorToolStripMenuItem.Checked = true;
+				lcdControl.UseOriginalGreen = false;
+				lcdControl.WithGhosting = false;
+				SGB.Instance.Allowed = false;
 				SGB.Instance.Reset();
+				CPU.Instance.IsCGB = true;
+				Settings.Default.LCDColorOriginalGreen = false;
+				Settings.Default.LCDGhosting = false;
+				Settings.Default.SGBEnabled = false;
+				Settings.Default.CGBEnabled = true;
 			}
 		}
 
@@ -930,6 +963,10 @@ namespace WarGB
 			else if (Settings.Default.SGBEnabled)
 			{
 				SuperGameBoyToolStripMenuItemClick(sender, e);
+			}
+			else if (Settings.Default.CGBEnabled)
+			{
+				GameBoyColorToolStripMenuItem_Click(sender, e);
 			}
 			else
 			{

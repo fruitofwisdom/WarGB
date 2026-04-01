@@ -636,6 +636,9 @@
 
 			bool rendered = false;
 
+			// Are we a Game Boy Color with a CGB game?
+			bool isCGB = CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly);
+
 			// Draw each tile, pixel by pixel.
 			for (int pixelY = 0; pixelY < 8; ++pixelY)
 			{
@@ -667,7 +670,7 @@
 							if (!priority)
 							{
 								if (LCDBackBuffer[lcdX, lcdY].ObjAddress == 0x0000 ||
-									LCDBackBuffer[lcdX, lcdY].X > x ||		// TODO: Only applies in non-CGB mode.
+									(!isCGB && LCDBackBuffer[lcdX, lcdY].X > x) ||		// Only applies in non-CGB mode.
 									(LCDBackBuffer[lcdX, lcdY].X == x && LCDBackBuffer[lcdX, lcdY].ObjAddress > objAddress))
 								{
 									LCDBackBuffer[lcdX, lcdY].Color = lcdColor;
@@ -692,7 +695,7 @@
 								if (LCDBackBuffer[lcdX, lcdY].Color == bgColor0)
 								{
 									if (LCDBackBuffer[lcdX, lcdY].ObjAddress == 0x0000 ||
-										LCDBackBuffer[lcdX, lcdY].X > x ||       // TODO: Only applies in non-CGB mode.
+										(!isCGB && LCDBackBuffer[lcdX, lcdY].X > x) ||      // Only applies in non-CGB mode.
 										(LCDBackBuffer[lcdX, lcdY].X == x && LCDBackBuffer[lcdX, lcdY].ObjAddress > objAddress))
 									{
 										LCDBackBuffer[lcdX, lcdY].Color = lcdColor;

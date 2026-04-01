@@ -476,7 +476,7 @@
 			}
 			else if (address == 0xFF4D)
 			{
-				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
 					data = 0x7E;
 					byte doubleSpeed = (byte)(CPU.Instance.DoubleSpeed ? 0x80 : 0x00);
@@ -491,7 +491,7 @@
 			}
 			else if (address == 0xFF4F)
 			{
-				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
 					// TODO: CGB support.
 					GameBoy.DebugOutput += $"Reading from unimplemented CGB register: 0x{address:X4}!\n";
@@ -505,7 +505,21 @@
 			}
 			else if (address == 0xFF53)
 			{
-				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				{
+					// TODO: CGB support.
+					GameBoy.DebugOutput += $"Reading from unimplemented CGB register: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+				else
+				{
+					GameBoy.DebugOutput += $"Reading from CGB register in non-CGB game: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+			}
+			else if (address == 0xFF70)
+			{
+				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
 					// TODO: CGB support.
 					GameBoy.DebugOutput += $"Reading from unimplemented CGB register: 0x{address:X4}!\n";
@@ -1230,7 +1244,7 @@
 			}
 			else if (address == 0xFF4D)
 			{
-				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
 					CPU.Instance.DoubleSpeedArmed = true;
 				}
@@ -1242,7 +1256,7 @@
 			}
 			else if (address == 0xFF4F)
 			{
-				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
 					// TODO: CGB support.
 					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
@@ -1256,7 +1270,7 @@
 			}
 			else if (address == 0xFF51)
 			{
-				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
 					// TODO: CGB support.
 					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
@@ -1270,7 +1284,7 @@
 			}
 			else if (address == 0xFF52)
 			{
-				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
 					// TODO: CGB support.
 					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
@@ -1284,7 +1298,7 @@
 			}
 			else if (address == 0xFF53)
 			{
-				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
 					// TODO: CGB support.
 					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
@@ -1298,7 +1312,7 @@
 			}
 			else if (address == 0xFF54)
 			{
-				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
 					// TODO: CGB support.
 					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
@@ -1312,7 +1326,7 @@
 			}
 			else if (address == 0xFF55)
 			{
-				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
 					// TODO: CGB support.
 					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
@@ -1326,7 +1340,7 @@
 			}
 			else if (address == 0xFF68)
 			{
-				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
 					// TODO: CGB support.
 					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
@@ -1340,7 +1354,7 @@
 			}
 			else if (address == 0xFF69)
 			{
-				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
 					// TODO: CGB support.
 					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
@@ -1354,7 +1368,7 @@
 			}
 			else if (address == 0xFF6A)
 			{
-				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
 					// TODO: CGB support.
 					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
@@ -1368,7 +1382,21 @@
 			}
 			else if (address == 0xFF6B)
 			{
-				if (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly)
+				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				{
+					// TODO: CGB support.
+					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+				else
+				{
+					GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+			}
+			else if (address == 0xFF70)
+			{
+				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
 					// TODO: CGB support.
 					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";

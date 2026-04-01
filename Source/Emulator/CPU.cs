@@ -40,6 +40,9 @@
 		private const ushort kSerialTransferTime = 128;
 		private ushort _serialTransferTimeRemaining;
 
+		// Are we a Game Boy Color?
+		public bool IsCGB = false;
+
 		// CGB double speed.
 		public bool DoubleSpeed { get; private set; }
 		public bool DoubleSpeedArmed;
