@@ -191,11 +191,8 @@
 				}
 			}
 
-			if (_logFile != null)
-			{
-				_logFile.Close();
-				_logFile = null;
-			}
+			_logFile?.Close();
+			_logFile = null;
 		}
 
 		// Stop the emulator and the thread.
@@ -245,25 +242,25 @@
 		}
 
 		// Mute individual channels.
-		public void MuteChannel(int channel, bool mute)
+		public static void MuteChannel(int channel, bool mute)
 		{
 			APU.Instance.MuteChannels[channel] = mute;
 		}
 
 		// Should the background be rendered?
-		public void ShouldRenderBackground(bool shouldRender)
+		public static void ShouldRenderBackground(bool shouldRender)
 		{
 			PPU.Instance.ShouldRenderBackground = shouldRender;
 		}
 
 		// Should the window be rendered?
-		public void ShouldRenderWindow(bool shouldRender)
+		public static void ShouldRenderWindow(bool shouldRender)
 		{
 			PPU.Instance.ShouldRenderWindow = shouldRender;
 		}
 
 		// Should the objects be rendered?
-		public void ShouldRenderObjects(bool shouldRender)
+		public static void ShouldRenderObjects(bool shouldRender)
 		{
 			PPU.Instance.ShouldRenderObjects = shouldRender;
 		}

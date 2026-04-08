@@ -453,7 +453,23 @@
 						{
 							y += 256;
 						}
-						RenderTile(tileAddress, x, y, BGPaletteData);
+
+						if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+						{
+							// The CGB has an additional map for BG tile rendering.
+							byte attributes = Memory.Instance.ReadVRAM(mapAddress, 1);
+							bool priority = Utilities.GetBoolFromByte(attributes, 7);
+							bool yFlip = Utilities.GetBoolFromByte(attributes, 6);
+							bool xFlip = Utilities.GetBoolFromByte(attributes, 5);
+							uint vramBank = (uint)(Utilities.GetBoolFromByte(attributes, 3) ? 1 : 0);
+							int colorPalette = Utilities.GetBitsFromByte(attributes, 0, 2);
+
+							RenderTile(tileAddress, x, y, BGPaletteData, false, false, xFlip, yFlip, priority, 0, vramBank);
+						}
+						else
+						{
+							RenderTile(tileAddress, x, y, BGPaletteData);
+						}
 
 						// Report any pixel tracing results.
 						if (_didRenderPixel)
@@ -500,6 +516,8 @@
 					// The X and Y values are actually offset.
 					y -= 16;
 					x -= 8;
+
+					// Find the tile address and its attributes.
 					byte tileNumber = Memory.Instance.Read(objAddress + 2);
 					int tileAddress = 0x8000;
 					if (OBJSize)
@@ -515,20 +533,22 @@
 					bool yFlip = Utilities.GetBoolFromByte(attributes, 6);
 					bool xFlip = Utilities.GetBoolFromByte(attributes, 5);
 					byte objPaletteData = Utilities.GetBoolFromByte(attributes, 4) ? OBJPaletteData1 : OBJPaletteData0;
+					uint vramBank = (uint)(Utilities.GetBoolFromByte(attributes, 3) ? 1 : 0);
+					int colorPalette = Utilities.GetBitsFromByte(attributes, 0, 2);
 
 					// Render tile(s) for 8x8 or 8x16 mode.
-					bool rendered = false;
+					bool rendered;
 					if (!OBJSize)
 					{
-						rendered = RenderTile(tileAddress, x, y, objPaletteData, true, true, xFlip, yFlip, priority, objAddress);
+						rendered = RenderTile(tileAddress, x, y, objPaletteData, true, true, xFlip, yFlip, priority, objAddress, vramBank);
 					}
 					else
 					{
-						rendered = RenderTile(tileAddress, x, yFlip ? y + 8 : y, objPaletteData, true, true, xFlip, yFlip, priority, objAddress);
+						RenderTile(tileAddress, x, yFlip ? y + 8 : y, objPaletteData, true, true, xFlip, yFlip, priority, objAddress, vramBank);
 
 						// In 8x16 mode, also render the next tile immediately below.
 						tileAddress = 0x8000 + (tileNumber | 0x01) * 16;
-						rendered = RenderTile(tileAddress, x, yFlip ? y : y + 8, objPaletteData, true, true, xFlip, yFlip, priority, objAddress);
+						rendered = RenderTile(tileAddress, x, yFlip ? y : y + 8, objPaletteData, true, true, xFlip, yFlip, priority, objAddress, vramBank);
 					}
 
 					if (rendered)
@@ -539,7 +559,7 @@
 					// Report any pixel tracing results.
 					if (_didRenderPixel)
 					{
-						_tracingStringInProgress += $"Rendered the pixel with color {LCDBackBuffer[TracePixelX, TracePixelY].Color}, tileAddress 0x{tileAddress:X4}.\n";
+						_tracingStringInProgress += $"Rendered the pixel with color {LCDBackBuffer[TracePixelX, TracePixelY].Color}, tileAddress 0x{tileAddress:X4}, VRAM bank {vramBank}.\n";
 						_didRenderPixel = false;
 						_didTracePixel = true;
 					}
@@ -597,8 +617,26 @@
 						// NOTE: The window has a 7 pixel x-offset.
 						int x = tileX * 8 + WX - 7;
 						int y = tileY * 8 + WY;
-						bool didRender = RenderTile(tileAddress, x, y, BGPaletteData);
-						renderedWindow |= didRender;
+
+						if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+						{
+							// The CGB has an additional map for object tile rendering.
+							int mapAddressWithoutLookup = (WindowTileMapArea ? 0x9C00 : 0x9800) + tileY * 32 + tileX;
+							byte attributes = Memory.Instance.ReadVRAM(mapAddressWithoutLookup, 1);
+							bool priority = Utilities.GetBoolFromByte(attributes, 7);
+							bool yFlip = Utilities.GetBoolFromByte(attributes, 6);
+							bool xFlip = Utilities.GetBoolFromByte(attributes, 5);
+							uint vramBank = (uint)(Utilities.GetBoolFromByte(attributes, 3) ? 1 : 0);
+							int colorPalette = Utilities.GetBitsFromByte(attributes, 0, 2);
+
+							bool didRender = RenderTile(tileAddress, x, y, BGPaletteData, false, false, xFlip, yFlip, priority, 0, vramBank);
+							renderedWindow |= didRender;
+						}
+						else
+						{
+							bool didRender = RenderTile(tileAddress, x, y, BGPaletteData);
+							renderedWindow |= didRender;
+						}
 
 						// Report any pixel tracing results.
 						if (_didRenderPixel)
@@ -620,7 +658,7 @@
 
 		// Draw an individual tile with data from an address at a location with a palette.
 		private bool RenderTile(int tileAddress, int x, int y, byte palette,
-			bool useOamLimit = false, bool transparency = false, bool xFlip = false, bool yFlip = false, bool priority = false, int objAddress = 0x000)
+			bool useOamLimit = false, bool transparency = false, bool xFlip = false, bool yFlip = false, bool priority = false, int objAddress = 0x00, uint vramBank = 0)
 		{
 			// Exit early if we wouldn't render on this particular scanline.
 			if (LY < y || LY > y + 7)
@@ -655,8 +693,8 @@
 
 					// Each line in the tile is two bytes (each pixel is 2-bits of color).
 					int pixelAddress = tileAddress + pixelY * 2;
-					byte byte1 = Memory.Instance.Read(pixelAddress);
-					byte byte2 = Memory.Instance.Read(pixelAddress + 1);
+					byte byte1 = Memory.Instance.ReadVRAM(pixelAddress, vramBank);
+					byte byte2 = Memory.Instance.ReadVRAM(pixelAddress + 1, vramBank);
 					byte colorId = Utilities.GetBitsFromByte(byte1, 7 - pixelX, 7 - pixelX);
 					colorId += (byte)(Utilities.GetBitsFromByte(byte2, 7 - pixelX, 7 - pixelX) << 1);
 

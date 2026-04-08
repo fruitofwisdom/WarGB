@@ -3,30 +3,37 @@
 	internal class Memory
 	{
 		// Character data, BG display data, etc. - 0x8000 to 0x9FFF
-		public byte[] VRAM { get; private set; }
+		private readonly byte[] VRAMBank0;
+		private readonly byte[] VRAMBank1;
 		// External expansion working RAM - 0xA000 to 0xBFFF
 		private byte[] ExternalRAM;
 		// Unit working RAM - 0xC000 to 0xDFFF
-		private readonly byte[] WRAMBank0;
-		// TODO: Support bank switching for CGB.
-		private readonly byte[] WRAMBank1;
-		private readonly byte[] OAM;             // sprite attribute table
+		private readonly byte[][] WRAM;
+		private readonly byte[] OAM;				// sprite attribute table
 		// Working and stack RAM - OxFF80 to 0xFFFE
-		private readonly byte[] HRAM;            // high RAM
+		private readonly byte[] HRAM;				// high RAM
 
+		// For the serial cable.
 		public byte SerialData;
 		public bool SerialTransferEnabled;
-		private byte _serialTransferControl;        // bits 2 through 6
+		private byte _serialTransferControl;		// bits 2 through 6
 		// TODO: Implement the link cable?
 		private bool _serialClockSpeed;
 		public bool SerialClockSelect;
 
+		// Various MBC-related variables.
 		public uint ROMBank { get; private set; }
 		private bool RAMEnabled;
 		private uint RAMBank;
 		private bool MBC1BankingMode;		// true is simple mode, false is advanced
 		private uint MBC1ROMBank;
 		private uint MBC3RAMOrTimer;		// selects the RAM bank or timer register
+
+		// Game Boy Color-specific variables.
+		private uint VRAMBank;
+		private ushort VDMASource;
+		private ushort VDMADestination;
+		private uint WRAMBank;
 
 		public bool SaveNeeded { get; private set; }
 
@@ -42,12 +49,14 @@
 
 		public Memory()
 		{
-			// TODO: Support VRAM of 16 KB for CGB via bank switching.
-			VRAM = new byte[8 * 1024];
+			VRAMBank0 = new byte[8 * 1024];
+			VRAMBank1 = new byte[8 * 1024];
 			ExternalRAM = new byte[8 * 1024];
-			WRAMBank0 = new byte[4 * 1024];
-			// TODO: Support bank switching for CGB.
-			WRAMBank1 = new byte[4 * 1024];
+			WRAM = new byte[8][];
+			for (int i = 0; i < 8; ++i)
+			{
+				WRAM[i] = new byte[4 * 1024];
+			}
 			OAM = new byte[160];
 			HRAM = new byte[127];
 
@@ -63,10 +72,13 @@
 				ExternalRAM = new byte[ROM.Instance.RAMSize];
 			}
 
-			Array.Clear(VRAM, 0, VRAM.Length);
+			Array.Clear(VRAMBank0, 0, VRAMBank0.Length);
+			Array.Clear(VRAMBank1, 0, VRAMBank1.Length);
 			Array.Clear(ExternalRAM, 0, ExternalRAM.Length);
-			Array.Clear(WRAMBank0, 0, WRAMBank0.Length);
-			Array.Clear(WRAMBank1, 0, WRAMBank1.Length);
+			for (int i = 0; i < 8; ++i)
+			{
+				Array.Clear(WRAM[i], 0, WRAM[i].Length);
+			}
 			Array.Clear(OAM, 0, OAM.Length);
 			Array.Clear(HRAM, 0, HRAM.Length);
 
@@ -84,6 +96,11 @@
 			MBC1ROMBank = 0;
 			MBC3RAMOrTimer = 0;
 
+			VRAMBank = 0;
+			VDMASource = 0x0000;
+			VDMADestination = 0x8000;
+			WRAMBank = 1;
+
 			SaveNeeded = false;
 			if (ROM.Instance.HasBattery)
 			{
@@ -91,10 +108,8 @@
 				string savePath = Environment.CurrentDirectory + "\\" + ROM.Instance.Filename + ".sav";
 				if (File.Exists(savePath))
 				{
-					using (Stream reader = File.OpenRead(savePath))
-					{
-						reader.ReadExactly(ExternalRAM);
-					}
+					using Stream reader = File.OpenRead(savePath);
+					reader.ReadExactly(ExternalRAM);
 				}
 			}
 		}
@@ -105,12 +120,36 @@
 			{
 				// Write external RAM into the save file.
 				string savePath = Environment.CurrentDirectory + "\\" + ROM.Instance.Filename + ".sav";
-				using (Stream writer = File.OpenWrite(savePath))
-				{
-					writer.Write(ExternalRAM, 0, ExternalRAM.Length);
-				}
+				using Stream writer = File.OpenWrite(savePath);
+				writer.Write(ExternalRAM, 0, ExternalRAM.Length);
 			}
 			SaveNeeded = false;
+		}
+
+		// Return the correct VRAM bank.
+		public byte[] VRAM()
+		{
+			if (VRAMBank == 0)
+			{
+				return VRAMBank0;
+			}
+			else
+			{
+				return VRAMBank1;
+			}
+		}
+
+		// Read from the specified VRAM bank.
+		public byte ReadVRAM(int address, uint vramBank)
+		{
+			if (vramBank == 0)
+			{
+				return VRAMBank0[address - 0x8000];
+			}
+			else
+			{
+				return VRAMBank1[address - 0x8000];
+			}
 		}
 
 		public byte Read(int address)
@@ -145,13 +184,15 @@
 			}
 			else if (address >= 0x4000 && address <= 0x7FFF)
 			{
-				uint bankOffset = (ROMBank - 1) * 0x4000;
+				// NOTE: MBC5's ROM bank can point to bank 0, unlike others.
+				// TODO: Is this correct???
+				uint romBank = ROMBank == 0 ? 0 : ROMBank - 1;
+				uint bankOffset = romBank * 0x4000;
 				data = ROM.Instance.Data[address + bankOffset];
 			}
 			else if (address >= 0x8000 && address <= 0x9FFF)
 			{
-				// TODO: Support VRAM of 16 KB for CGB via bank switching.
-				data = VRAM[address - 0x8000];
+				data = ReadVRAM(address, VRAMBank);
 			}
 			else if (address >= 0xA000 && address <= 0xBFFF)
 			{
@@ -192,22 +233,28 @@
 			}
 			else if (address >= 0xC000 && address <= 0xCFFF)
 			{
-				data = WRAMBank0[address - 0xC000];
+				data = WRAM[0][address - 0xC000];
 			}
 			else if (address >= 0xD000 && address <= 0xDFFF)
 			{
-				// TODO: Support WRAMBank1 switching for CGB.
-				data = WRAMBank1[address - 0xD000];
+				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				{
+					data = WRAM[WRAMBank][address - 0xD000];
+				}
+				else
+				{
+					data = WRAM[1][address - 0xD000];
+				}
 			}
 			else if (address >= 0xE000 && address <= 0xEFFF)
 			{
 				// NOTE: ECHO memory that maps to WRAMBank0
-				data = WRAMBank0[address - 0xE000];
+				data = WRAM[0][address - 0xE000];
 			}
 			else if (address >= 0xF000 && address <= 0xFDFF)
 			{
 				// NOTE: ECHO memory that maps to WRAMBank1
-				data = WRAMBank1[address - 0xF000];
+				data = WRAM[1][address - 0xF000];
 			}
 			else if (address >= 0xFE00 && address <= 0xFE9F)
 			{
@@ -485,7 +532,9 @@
 				}
 				else
 				{
-					GameBoy.DebugOutput += $"Reading from CGB register in non-CGB game: 0x{address:X4}!\n";
+					data = 0xFF;
+					// NOTE: Ignore?
+					//GameBoy.DebugOutput += $"Reading from CGB register in non-CGB game: 0x{address:X4}!\n";
 					//MainForm.Pause();
 				}
 			}
@@ -493,13 +542,13 @@
 			{
 				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
-					// TODO: CGB support.
-					GameBoy.DebugOutput += $"Reading from unimplemented CGB register: 0x{address:X4}!\n";
-					//MainForm.Pause();
+					data = (byte)(0xFE | VRAMBank);
 				}
 				else
 				{
-					GameBoy.DebugOutput += $"Reading from CGB register in non-CGB game: 0x{address:X4}!\n";
+					data = 0xFF;
+					// NOTE: Ignore?
+					//GameBoy.DebugOutput += $"Reading from CGB register in non-CGB game: 0x{address:X4}!\n";
 					//MainForm.Pause();
 				}
 			}
@@ -513,7 +562,38 @@
 				}
 				else
 				{
-					GameBoy.DebugOutput += $"Reading from CGB register in non-CGB game: 0x{address:X4}!\n";
+					data = 0xFF;
+					// NOTE: Ignore?
+					//GameBoy.DebugOutput += $"Reading from CGB register in non-CGB game: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+			}
+			else if (address == 0xFF55)
+			{
+				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				{
+					// TODO: Actually transfer data during h-blanks?
+					data = 0xFF;
+				}
+				else
+				{
+					data = 0xFF;
+					// NOTE: Ignore?
+					//GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+			}
+			else if (address == 0xFF56)
+			{
+				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				{
+					// TODO: Something for IR?
+				}
+				else
+				{
+					data = 0xFF;
+					// NOTE: Ignore?
+					//GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
 					//MainForm.Pause();
 				}
 			}
@@ -521,13 +601,13 @@
 			{
 				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
-					// TODO: CGB support.
-					GameBoy.DebugOutput += $"Reading from unimplemented CGB register: 0x{address:X4}!\n";
-					//MainForm.Pause();
+					data = (byte)WRAMBank;
 				}
 				else
 				{
-					GameBoy.DebugOutput += $"Reading from CGB register in non-CGB game: 0x{address:X4}!\n";
+					data = 0xFF;
+					// NOTE: Ignore?
+					//GameBoy.DebugOutput += $"Reading from CGB register in non-CGB game: 0x{address:X4}!\n";
 					//MainForm.Pause();
 				}
 			}
@@ -537,7 +617,7 @@
 				//GameBoy.DebugOutput += $"Reading from undocumented register: 0x{address:X4}!\n";
 				//MainForm.Pause();
 			}
-			// TODO: The other registers.
+			// TODO: Any other registers?
 			else
 			{
 				if (!GameBoy.ShouldLogOpcodes)
@@ -689,16 +769,16 @@
 					uint romBank = (uint)(data & 0x7F);
 					// Mask down to the correct number of ROM banks.
 					uint numROMBanks = ROM.Instance.ROMSize / 1024 / 16;
-					romBank &= (numROMBanks - 1);
+					romBank &= numROMBanks - 1;
 
 					// Set only the lower 8 bits of the ROM bank.
-					ROMBank = ROMBank & 0x0100;
+					ROMBank &= 0x0100;
 					ROMBank |= romBank;
 				}
 				else if (address >= 0x3000 && address <= 0x3FFF)
 				{
 					// Set or reset the 9th bit of the ROM bank.
-					ROMBank = ROMBank & 0x00FF;
+					ROMBank &= 0x00FF;
 					ROMBank |= (uint)((data & 0x01) << 8);
 				}
 				else if (address >= 0x4000 && address <= 0x5FFF)
@@ -708,7 +788,7 @@
 					// TODO: Handle the rumble bit somehow?
 				}
 			}
-			// TODO: Support other MBCs.
+			// TODO: Support other MBCs?
 			else
 			{
 				if (address >= 0x0000 && address <= 0x7FFF)
@@ -721,7 +801,14 @@
 
 			if (address >= 0x8000 && address <= 0x9FFF)
 			{
-				VRAM[address - 0x8000] = data;
+				if (VRAMBank == 0)
+				{
+					VRAMBank0[address - 0x8000] = data;
+				}
+				else
+				{
+					VRAMBank1[address - 0x8000] = data;
+				}
 			}
 			else if (address >= 0xA000 && address <= 0xBFFF)
 			{
@@ -777,21 +864,21 @@
 			}
 			else if (address >= 0xC000 && address <= 0xCFFF)
 			{
-				WRAMBank0[address - 0xC000] = data;
+				WRAM[0][address - 0xC000] = data;
 			}
 			else if (address >= 0xD000 && address <= 0xDFFF)
 			{
-				WRAMBank1[address - 0xD000] = data;
+				WRAM[WRAMBank][address - 0xD000] = data;
 			}
 			else if (address >= 0xE000 && address <= 0xEFFF)
 			{
 				// NOTE: ECHO memory that maps to WRAMBank0
-				WRAMBank0[address - 0xE000] = data;
+				WRAM[0][address - 0xE000] = data;
 			}
 			else if (address >= 0xF000 && address <= 0xFDFF)
 			{
 				// NOTE: ECHO memory that maps to WRAMBank1
-				WRAMBank1[address - 0xF000] = data;
+				WRAM[1][address - 0xF000] = data;
 			}
 			else if (address >= 0xFE00 && address <= 0xFE9F)
 			{
@@ -1258,13 +1345,12 @@
 			{
 				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
-					// TODO: CGB support.
-					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
-					//MainForm.Pause();
+					VRAMBank = (uint)(data & 0x01);
 				}
 				else
 				{
-					GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					// NOTE: Ignore?
+					//GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
 					//MainForm.Pause();
 				}
 			}
@@ -1272,13 +1358,16 @@
 			{
 				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
-					// TODO: CGB support.
-					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
-					//MainForm.Pause();
+					byte lower = (byte)(VDMASource & 0x00FF);
+					ushort higher = (ushort)(data << 8);
+					VDMASource = (ushort)(higher + lower);
+					// Lower four bits are 0.
+					VDMASource = (ushort)(VDMASource & 0xFFF0);
 				}
 				else
 				{
-					GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					// NOTE: Ignore?
+					//GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
 					//MainForm.Pause();
 				}
 			}
@@ -1286,13 +1375,16 @@
 			{
 				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
-					// TODO: CGB support.
-					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
-					//MainForm.Pause();
+					byte lower = data;
+					ushort higher = (ushort)(VDMASource & 0xFF00);
+					VDMASource = (ushort)(higher + lower);
+					// Lower four bits are 0.
+					VDMASource = (ushort)(VDMASource & 0xFFF0);
 				}
 				else
 				{
-					GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					// NOTE: Ignore?
+					//GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
 					//MainForm.Pause();
 				}
 			}
@@ -1300,13 +1392,16 @@
 			{
 				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
-					// TODO: CGB support.
-					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
-					//MainForm.Pause();
+					byte lower = (byte)(VDMADestination & 0x00FF);
+					ushort higher = (ushort)(data << 8);
+					VDMADestination = (ushort)(higher + lower);
+					// Lower four bits are 0.
+					VDMADestination = (ushort)(VDMADestination & 0xFFF0);
 				}
 				else
 				{
-					GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					// NOTE: Ignore?
+					//GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
 					//MainForm.Pause();
 				}
 			}
@@ -1314,13 +1409,16 @@
 			{
 				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
-					// TODO: CGB support.
-					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
-					//MainForm.Pause();
+					byte lower = data;
+					ushort higher = (ushort)(VDMADestination & 0xFF00);
+					VDMADestination = (ushort)(higher + lower);
+					// Lower four bits are 0.
+					VDMADestination = (ushort)(VDMADestination & 0xFFF0);
 				}
 				else
 				{
-					GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					// NOTE: Ignore?
+					//GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
 					//MainForm.Pause();
 				}
 			}
@@ -1328,13 +1426,36 @@
 			{
 				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
-					// TODO: CGB support.
-					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
-					//MainForm.Pause();
+					int length = ((data & 0x7F) + 1) * 0x10;
+					//int mode = data & 0x80;
+					// TODO: Actually transfer data during h-blanks?
+
+					// Perform a DMA transfer from ROM or RAM to VRAM.
+					for (int i = 0; i < length; ++i)
+					{
+						int transferFrom = VDMASource + i;
+						byte d8 = Read(transferFrom);
+						int transferTo = VDMADestination + i;
+						Write(transferTo, d8);
+					}
 				}
 				else
 				{
-					GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					// NOTE: Ignore?
+					//GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+			}
+			else if (address == 0xFF56)
+			{
+				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				{
+					// TODO: Something for IR?
+				}
+				else
+				{
+					// NOTE: Ignore?
+					//GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
 					//MainForm.Pause();
 				}
 			}
@@ -1348,7 +1469,8 @@
 				}
 				else
 				{
-					GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					// NOTE: Ignore?
+					//GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
 					//MainForm.Pause();
 				}
 			}
@@ -1362,7 +1484,8 @@
 				}
 				else
 				{
-					GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					// NOTE: Ignore?
+					//GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
 					//MainForm.Pause();
 				}
 			}
@@ -1376,7 +1499,8 @@
 				}
 				else
 				{
-					GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					// NOTE: Ignore?
+					//GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
 					//MainForm.Pause();
 				}
 			}
@@ -1390,7 +1514,8 @@
 				}
 				else
 				{
-					GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					// NOTE: Ignore?
+					//GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
 					//MainForm.Pause();
 				}
 			}
@@ -1398,13 +1523,16 @@
 			{
 				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
-					// TODO: CGB support.
-					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
-					//MainForm.Pause();
+					WRAMBank = (uint)(data & 0x07);
+					if (WRAMBank == 0)
+					{
+						WRAMBank = 1;
+					}
 				}
 				else
 				{
-					GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
+					// NOTE: Ignore?
+					//GameBoy.DebugOutput += $"Writing to CGB register in non-CGB game: 0x{address:X4}!\n";
 					//MainForm.Pause();
 				}
 			}

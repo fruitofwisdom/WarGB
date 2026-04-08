@@ -42,7 +42,7 @@
 			exitToolStripMenuItem = new ToolStripMenuItem();
 			optionsToolStripMenuItem = new ToolStripMenuItem();
 			controlsToolStripMenuItem = new ToolStripMenuItem();
-			gameBoyTypeToolStripMenuItem = new ToolStripMenuItem();
+			gameBoyHardwareToolStripMenuItem = new ToolStripMenuItem();
 			originalGreenToolStripMenuItem = new ToolStripMenuItem();
 			originalGreenWithGhostingToolStripMenuItem = new ToolStripMenuItem();
 			blackAndWhiteToolStripMenuItem = new ToolStripMenuItem();
@@ -170,7 +170,7 @@
 			// 
 			// optionsToolStripMenuItem
 			// 
-			optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { controlsToolStripMenuItem, gameBoyTypeToolStripMenuItem, lcdSizeToolStripMenuItem, renderToolStripMenuItem, muteSoundToolStripMenuItem, soundChannelsToolStripMenuItem });
+			optionsToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { controlsToolStripMenuItem, gameBoyHardwareToolStripMenuItem, lcdSizeToolStripMenuItem, renderToolStripMenuItem, muteSoundToolStripMenuItem, soundChannelsToolStripMenuItem });
 			optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
 			optionsToolStripMenuItem.Size = new Size(61, 20);
 			optionsToolStripMenuItem.Text = "Options";
@@ -183,12 +183,12 @@
 			controlsToolStripMenuItem.Text = "Controls...";
 			controlsToolStripMenuItem.Click += ControlsToolStripMenuItemClick;
 			// 
-			// lcdColorToolStripMenuItem
+			// gameBoyTypeToolStripMenuItem
 			// 
-			gameBoyTypeToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { originalGreenToolStripMenuItem, originalGreenWithGhostingToolStripMenuItem, blackAndWhiteToolStripMenuItem, superGameBoyToolStripMenuItem, gameBoyColorToolStripMenuItem });
-			gameBoyTypeToolStripMenuItem.Name = "lcdColorToolStripMenuItem";
-			gameBoyTypeToolStripMenuItem.Size = new Size(184, 22);
-			gameBoyTypeToolStripMenuItem.Text = "Game Boy Type";
+			gameBoyHardwareToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { originalGreenToolStripMenuItem, originalGreenWithGhostingToolStripMenuItem, blackAndWhiteToolStripMenuItem, superGameBoyToolStripMenuItem, gameBoyColorToolStripMenuItem });
+			gameBoyHardwareToolStripMenuItem.Name = "gameBoyTypeToolStripMenuItem";
+			gameBoyHardwareToolStripMenuItem.Size = new Size(184, 22);
+			gameBoyHardwareToolStripMenuItem.Text = "Game Boy Hardware";
 			// 
 			// originalGreenToolStripMenuItem
 			// 
@@ -594,7 +594,7 @@
 		private ToolStripMenuItem exitToolStripMenuItem;
 		private ToolStripMenuItem optionsToolStripMenuItem;
 		private ToolStripMenuItem controlsToolStripMenuItem;
-		private ToolStripMenuItem gameBoyTypeToolStripMenuItem;
+		private ToolStripMenuItem gameBoyHardwareToolStripMenuItem;
 		private ToolStripMenuItem originalGreenToolStripMenuItem;
 		private ToolStripMenuItem originalGreenWithGhostingToolStripMenuItem;
 		private ToolStripMenuItem blackAndWhiteToolStripMenuItem;

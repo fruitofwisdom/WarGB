@@ -365,7 +365,7 @@
 						}
 
 						// Immediately transfer the palette data from VRAM starting at 0x8800.
-						Array.Copy(Memory.Instance.VRAM, 0x0800, _paletteData, 0, _paletteData.Length);
+						Array.Copy(Memory.Instance.VRAM(), 0x0800, _paletteData, 0, _paletteData.Length);
 					}
 					break;
 
@@ -470,7 +470,7 @@
 						}
 
 						// Immediately transfer the attribute files from VRAM starting at 0x8800.
-						Array.Copy(Memory.Instance.VRAM, 0x0800, _attributeFileData, 0, _attributeFileData.Length);
+						Array.Copy(Memory.Instance.VRAM(), 0x0800, _attributeFileData, 0, _attributeFileData.Length);
 					}
 					break;
 
@@ -569,7 +569,7 @@
 		}
 
 		// Return a Color from the given ushort 5-bit color data.
-		private Color GetColorFromData(ushort colorData)
+		private static Color GetColorFromData(ushort colorData)
 		{
 			Color color;
 

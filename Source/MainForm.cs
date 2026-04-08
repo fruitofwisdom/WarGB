@@ -290,21 +290,21 @@ namespace WarGB
 		private void backgroundToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			backgroundToolStripMenuItem.Checked = !backgroundToolStripMenuItem.Checked;
-			_gameBoy.ShouldRenderBackground(backgroundToolStripMenuItem.Checked);
+			GameBoy.ShouldRenderBackground(backgroundToolStripMenuItem.Checked);
 			Settings.Default.ShouldRenderBackground = backgroundToolStripMenuItem.Checked;
 		}
 
 		private void windowToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			windowToolStripMenuItem.Checked = !windowToolStripMenuItem.Checked;
-			_gameBoy.ShouldRenderWindow(windowToolStripMenuItem.Checked);
+			GameBoy.ShouldRenderWindow(windowToolStripMenuItem.Checked);
 			Settings.Default.ShouldRenderWindow = windowToolStripMenuItem.Checked;
 		}
 
 		private void objectsToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			objectsToolStripMenuItem.Checked = !objectsToolStripMenuItem.Checked;
-			_gameBoy.ShouldRenderObjects(objectsToolStripMenuItem.Checked);
+			GameBoy.ShouldRenderObjects(objectsToolStripMenuItem.Checked);
 			Settings.Default.ShouldRenderObjects = objectsToolStripMenuItem.Checked;
 		}
 
@@ -318,28 +318,28 @@ namespace WarGB
 		private void pulseWaveChannel1ToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			pulseWaveChannel1ToolStripMenuItem.Checked = !pulseWaveChannel1ToolStripMenuItem.Checked;
-			_gameBoy.MuteChannel(0, !pulseWaveChannel1ToolStripMenuItem.Checked);
+			GameBoy.MuteChannel(0, !pulseWaveChannel1ToolStripMenuItem.Checked);
 			Settings.Default.MuteChannel0 = !pulseWaveChannel1ToolStripMenuItem.Checked;
 		}
 
 		private void pulseWaveChannel2ToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			pulseWaveChannel2ToolStripMenuItem.Checked = !pulseWaveChannel2ToolStripMenuItem.Checked;
-			_gameBoy.MuteChannel(1, !pulseWaveChannel2ToolStripMenuItem.Checked);
+			GameBoy.MuteChannel(1, !pulseWaveChannel2ToolStripMenuItem.Checked);
 			Settings.Default.MuteChannel1 = !pulseWaveChannel2ToolStripMenuItem.Checked;
 		}
 
 		private void waveTableChannel3ToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			waveTableChannel3ToolStripMenuItem.Checked = !waveTableChannel3ToolStripMenuItem.Checked;
-			_gameBoy.MuteChannel(2, !waveTableChannel3ToolStripMenuItem.Checked);
+			GameBoy.MuteChannel(2, !waveTableChannel3ToolStripMenuItem.Checked);
 			Settings.Default.MuteChannel2 = !waveTableChannel3ToolStripMenuItem.Checked;
 		}
 
 		private void noiseGeneratorChannel4ToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			noiseGeneratorChannel4ToolStripMenuItem.Checked = !noiseGeneratorChannel4ToolStripMenuItem.Checked;
-			_gameBoy.MuteChannel(3, !noiseGeneratorChannel4ToolStripMenuItem.Checked);
+			GameBoy.MuteChannel(3, !noiseGeneratorChannel4ToolStripMenuItem.Checked);
 			Settings.Default.MuteChannel3 = !noiseGeneratorChannel4ToolStripMenuItem.Checked;
 		}
 

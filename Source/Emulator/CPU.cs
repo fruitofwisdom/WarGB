@@ -73,16 +73,16 @@
 		public void Reset()
 		{
 			// Initial CPU state after the boot ROM.
-			A = 0x11; //0x01;		// old no$gmb values
+			A = 0x01;
 			Z = true;
 			N = false;
-			H = false; //true;
-			CY = false; //true;
+			H = false;
+			CY = false;
 			B = 0x00;
-			C = 0x00; //0x13;
-			D = 0xFF; //0x00;
-			E = 0x56; //0xD8;
-			HL = 0x000D; //0x014D;
+			C = 0x13;
+			D = 0xFF;
+			E = 0x56;
+			HL = 0x000D;
 			PC = 0x0100;
 			SP = 0xFFFE;
 
@@ -109,11 +109,16 @@
 			_stopped = false;
 			_was16BitOpcode = false;
 
-			// TODO: Set up sets of registers another way?
-			if (ROM.Instance.SGBCompatible)
+			// A and C have different initial values depending on hardware.
+			if (SGB.Instance.Allowed)
 			{
 				A = 0xFF;
 				C = 0x14;
+			}
+			if (IsCGB)
+			{
+				A = 0x11;
+				C = 0x00;
 			}
 		}
 
