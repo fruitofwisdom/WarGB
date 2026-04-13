@@ -82,11 +82,16 @@
 						}
 					}
 
-					if (brushIndex != 0)		// Don't bother rendering the clear color again.
+					// TODO: Can't rely on this for CGB? Use another optimization?
+					//if (brushIndex != 0)		// Don't bother rendering the clear color again.
 					{
 						if (SGB.Instance.Enabled)
 						{
 							brush = new SolidBrush(PPU.Instance.LCDFrontBuffer[x, y].SGBPalette.Colors[brushIndex]);
+						}
+						else if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+						{
+							brush = new SolidBrush(PPU.Instance.LCDFrontBuffer[x, y].CGBPalette.Colors[brushIndex]);
 						}
 						else
 						{

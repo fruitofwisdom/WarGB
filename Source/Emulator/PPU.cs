@@ -8,7 +8,8 @@
 			// These two are needed for priority handling.
 			public int X = 0;
 			public int ObjAddress = 0x0000;
-			public SGB.Palette SGBPalette = new();
+			public Palette SGBPalette = new();
+			public Palette CGBPalette = new();
 
 			public Pixel() { }
 		}
@@ -414,6 +415,7 @@
 				return;
 			}
 
+			// TODO: RenderBackground();
 			// Draw the background by iterating over each of its tiles.
 			if (ShouldRenderBackground && BGWindowEnable)
 			{
@@ -463,8 +465,10 @@
 							bool xFlip = Utilities.GetBoolFromByte(attributes, 5);
 							uint vramBank = (uint)(Utilities.GetBoolFromByte(attributes, 3) ? 1 : 0);
 							int colorPalette = Utilities.GetBitsFromByte(attributes, 0, 2);
+							Palette cgbPalette = Memory.Instance.BGPalettes[colorPalette];
 
-							RenderTile(tileAddress, x, y, BGPaletteData, false, false, xFlip, yFlip, priority, 0, vramBank);
+							RenderTile(tileAddress, x, y, BGPaletteData,
+								false, false, xFlip, yFlip, priority, 0, vramBank, cgbPalette);
 						}
 						else
 						{
@@ -484,6 +488,7 @@
 
 			RenderWindow();
 
+			// TODO: RenderObjects();
 			// Draw the objects by iterating over each of their tiles.
 			if (ShouldRenderObjects && OBJEnabled)
 			{
@@ -533,22 +538,33 @@
 					bool yFlip = Utilities.GetBoolFromByte(attributes, 6);
 					bool xFlip = Utilities.GetBoolFromByte(attributes, 5);
 					byte objPaletteData = Utilities.GetBoolFromByte(attributes, 4) ? OBJPaletteData1 : OBJPaletteData0;
-					uint vramBank = (uint)(Utilities.GetBoolFromByte(attributes, 3) ? 1 : 0);
-					int colorPalette = Utilities.GetBitsFromByte(attributes, 0, 2);
+					uint vramBank = 0;
+					int colorPalette = 0;
+					Palette? cgbPalette = null;
+
+					if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+					{
+						vramBank = (uint)(Utilities.GetBoolFromByte(attributes, 3) ? 1 : 0);
+						colorPalette = Utilities.GetBitsFromByte(attributes, 0, 2);
+						cgbPalette = Memory.Instance.OBJPalettes[colorPalette];
+					}
 
 					// Render tile(s) for 8x8 or 8x16 mode.
 					bool rendered;
 					if (!OBJSize)
 					{
-						rendered = RenderTile(tileAddress, x, y, objPaletteData, true, true, xFlip, yFlip, priority, objAddress, vramBank);
+						rendered = RenderTile(tileAddress, x, y, objPaletteData,
+							true, true, xFlip, yFlip, priority, objAddress, vramBank, cgbPalette);
 					}
 					else
 					{
-						RenderTile(tileAddress, x, yFlip ? y + 8 : y, objPaletteData, true, true, xFlip, yFlip, priority, objAddress, vramBank);
+						RenderTile(tileAddress, x, yFlip ? y + 8 : y, objPaletteData,
+							true, true, xFlip, yFlip, priority, objAddress, vramBank, cgbPalette);
 
 						// In 8x16 mode, also render the next tile immediately below.
 						tileAddress = 0x8000 + (tileNumber | 0x01) * 16;
-						rendered = RenderTile(tileAddress, x, yFlip ? y : y + 8, objPaletteData, true, true, xFlip, yFlip, priority, objAddress, vramBank);
+						rendered = RenderTile(tileAddress, x, yFlip ? y : y + 8, objPaletteData,
+							true, true, xFlip, yFlip, priority, objAddress, vramBank, cgbPalette);
 					}
 
 					if (rendered)
@@ -628,8 +644,10 @@
 							bool xFlip = Utilities.GetBoolFromByte(attributes, 5);
 							uint vramBank = (uint)(Utilities.GetBoolFromByte(attributes, 3) ? 1 : 0);
 							int colorPalette = Utilities.GetBitsFromByte(attributes, 0, 2);
+							Palette cgbPalette = Memory.Instance.BGPalettes[colorPalette];
 
-							bool didRender = RenderTile(tileAddress, x, y, BGPaletteData, false, false, xFlip, yFlip, priority, 0, vramBank);
+							bool didRender = RenderTile(tileAddress, x, y, BGPaletteData,
+								false, false, xFlip, yFlip, priority, 0, vramBank, cgbPalette);
 							renderedWindow |= didRender;
 						}
 						else
@@ -658,7 +676,8 @@
 
 		// Draw an individual tile with data from an address at a location with a palette.
 		private bool RenderTile(int tileAddress, int x, int y, byte palette,
-			bool useOamLimit = false, bool transparency = false, bool xFlip = false, bool yFlip = false, bool priority = false, int objAddress = 0x00, uint vramBank = 0)
+			bool useOamLimit = false, bool transparency = false, bool xFlip = false, bool yFlip = false, bool priority = false, int objAddress = 0x00,
+			uint vramBank = 0, Palette? cgbPalette = null)
 		{
 			// Exit early if we wouldn't render on this particular scanline.
 			if (LY < y || LY > y + 7)
@@ -702,9 +721,24 @@
 					// color 0 is not drawn.
 					if (!(transparency && colorId == 0))
 					{
-						int lcdColor = Utilities.GetBitsFromByte(palette, colorId * 2, colorId * 2 + 1);
+						int lcdColor;
+						// The color comes from the appropriate palette...
+						if (!isCGB)
+						{
+							lcdColor = Utilities.GetBitsFromByte(palette, colorId * 2, colorId * 2 + 1);
+						}
+						// ...except on CGB, where the color is directly specified.
+						else
+						{
+							lcdColor = colorId;
+						}
+
 						if (lcdX >= 0 && lcdX < kWidth && lcdY >= 0 && lcdY < kHeight)
 						{
+							// TODO: Make this one block.
+							//int bgColor0 = Utilities.GetBitsFromByte(BGPaletteData, 0, 1);
+							// If priority is on, only render above BG color 0.
+							//if (!priority || LCDBackBuffer[lcdX, lcdY].Color == bgColor0)
 							if (!priority)
 							{
 								if (LCDBackBuffer[lcdX, lcdY].ObjAddress == 0x0000 ||
@@ -714,9 +748,15 @@
 									LCDBackBuffer[lcdX, lcdY].Color = lcdColor;
 									LCDBackBuffer[lcdX, lcdY].X = x;
 									LCDBackBuffer[lcdX, lcdY].ObjAddress = objAddress;
+
+									// Specify which palette to use.
 									if (SGB.Instance.Enabled)
 									{
 										LCDBackBuffer[lcdX, lcdY].SGBPalette = SGB.Instance.GetPaletteAt(lcdX, lcdY);
+									}
+									if (isCGB && cgbPalette != null)
+									{
+										LCDBackBuffer[lcdX, lcdY].CGBPalette = (Palette)cgbPalette;
 									}
 
 									if (_tracingPixel && TracePixelX == lcdX && TracePixelY == lcdY)
@@ -739,9 +779,15 @@
 										LCDBackBuffer[lcdX, lcdY].Color = lcdColor;
 										LCDBackBuffer[lcdX, lcdY].X = x;
 										LCDBackBuffer[lcdX, lcdY].ObjAddress = objAddress;
+
+										// Specify which palette to use.
 										if (SGB.Instance.Enabled)
 										{
 											LCDBackBuffer[lcdX, lcdY].SGBPalette = SGB.Instance.GetPaletteAt(lcdX, lcdY);
+										}
+										if (isCGB && cgbPalette != null)
+										{
+											LCDBackBuffer[lcdX, lcdY].CGBPalette = (Palette)cgbPalette;
 										}
 
 										if (_tracingPixel && TracePixelX == lcdX && TracePixelY == lcdY)

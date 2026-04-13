@@ -12,22 +12,6 @@
 			}
 		}
 
-		public struct Palette
-		{
-			public Color[] Colors;
-
-			public Palette()
-			{
-				Colors =
-				[
-					Color.White,
-					Color.White,
-					Color.White,
-					Color.White
-				];
-			}
-		}
-
 		// Emulator SGB options.
 		public bool Allowed = false;
 
@@ -181,14 +165,14 @@
 						ushort palette1Color3 = (ushort)(_packets[0]._data[13] + (ushort)(_packets[0]._data[14] << 8));
 
 						// Update the in-use Palettes based on the new colors.
-						Palettes[0].Colors[0] = GetColorFromData(color0);
-						Palettes[0].Colors[1] = GetColorFromData(palette0Color1);
-						Palettes[0].Colors[2] = GetColorFromData(palette0Color2);
-						Palettes[0].Colors[3] = GetColorFromData(palette0Color3);
-						Palettes[1].Colors[0] = GetColorFromData(color0);
-						Palettes[1].Colors[1] = GetColorFromData(palette1Color1);
-						Palettes[1].Colors[2] = GetColorFromData(palette1Color2);
-						Palettes[1].Colors[3] = GetColorFromData(palette1Color3);
+						Palettes[0].Colors[0] = Palette.GetColorFromData(color0);
+						Palettes[0].Colors[1] = Palette.GetColorFromData(palette0Color1);
+						Palettes[0].Colors[2] = Palette.GetColorFromData(palette0Color2);
+						Palettes[0].Colors[3] = Palette.GetColorFromData(palette0Color3);
+						Palettes[1].Colors[0] = Palette.GetColorFromData(color0);
+						Palettes[1].Colors[1] = Palette.GetColorFromData(palette1Color1);
+						Palettes[1].Colors[2] = Palette.GetColorFromData(palette1Color2);
+						Palettes[1].Colors[3] = Palette.GetColorFromData(palette1Color3);
 
 						// Clear color is the most recently set color 0.
 						ClearColor = Palettes[0].Colors[0];
@@ -212,14 +196,14 @@
 						ushort palette3Color3 = (ushort)(_packets[0]._data[13] + (ushort)(_packets[0]._data[14] << 8));
 
 						// Update the in-use Palettes based on the new colors.
-						Palettes[2].Colors[0] = GetColorFromData(color0);
-						Palettes[2].Colors[1] = GetColorFromData(palette2Color1);
-						Palettes[2].Colors[2] = GetColorFromData(palette2Color2);
-						Palettes[2].Colors[3] = GetColorFromData(palette2Color3);
-						Palettes[3].Colors[0] = GetColorFromData(color0);
-						Palettes[3].Colors[1] = GetColorFromData(palette3Color1);
-						Palettes[3].Colors[2] = GetColorFromData(palette3Color2);
-						Palettes[3].Colors[3] = GetColorFromData(palette3Color3);
+						Palettes[2].Colors[0] = Palette.GetColorFromData(color0);
+						Palettes[2].Colors[1] = Palette.GetColorFromData(palette2Color1);
+						Palettes[2].Colors[2] = Palette.GetColorFromData(palette2Color2);
+						Palettes[2].Colors[3] = Palette.GetColorFromData(palette2Color3);
+						Palettes[3].Colors[0] = Palette.GetColorFromData(color0);
+						Palettes[3].Colors[1] = Palette.GetColorFromData(palette3Color1);
+						Palettes[3].Colors[2] = Palette.GetColorFromData(palette3Color2);
+						Palettes[3].Colors[3] = Palette.GetColorFromData(palette3Color3);
 
 						// Clear color is the most recently set color 0.
 						ClearColor = Palettes[2].Colors[0];
@@ -568,20 +552,6 @@
 			return Palettes[_attributeChars[x / 8, y / 8]];
 		}
 
-		// Return a Color from the given ushort 5-bit color data.
-		private static Color GetColorFromData(ushort colorData)
-		{
-			Color color;
-
-			// Convert each channel from 5-bit to 8-bit RGB.
-			int red = (int)((float)(ushort)(colorData & 0x001F) / 0x001F * 255);
-			int green = (int)((float)(ushort)((colorData & 0x03E0) >> 5) / 0x001F * 255);
-			int blue = (int)((float)(ushort)((colorData & 0x7C00) >> 10) / 0x001F * 255);
-			color = Color.FromArgb(255, red, green, blue);
-
-			return color;
-		}
-
 		// Return a new Palette from the palette data.
 		private Palette GetPaletteFromPaletteData(ushort palette)
 		{
@@ -594,10 +564,10 @@
 			ushort color3 = (ushort)(_paletteData[palette * 8 + 6] + (ushort)(_paletteData[palette * 8 + 7] << 8));
 
 			// Convert each color from 5-bit to 8-bit RGB.
-			newPalette.Colors[0] = GetColorFromData(color0);
-			newPalette.Colors[1] = GetColorFromData(color1);
-			newPalette.Colors[2] = GetColorFromData(color2);
-			newPalette.Colors[3] = GetColorFromData(color3);
+			newPalette.Colors[0] = Palette.GetColorFromData(color0);
+			newPalette.Colors[1] = Palette.GetColorFromData(color1);
+			newPalette.Colors[2] = Palette.GetColorFromData(color2);
+			newPalette.Colors[3] = Palette.GetColorFromData(color3);
 
 			return newPalette;
 		}

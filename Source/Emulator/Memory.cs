@@ -12,6 +12,8 @@
 		private readonly byte[] OAM;				// sprite attribute table
 		// Working and stack RAM - OxFF80 to 0xFFFE
 		private readonly byte[] HRAM;				// high RAM
+		private readonly byte[] BGPaletteRAM;
+		private readonly byte[] OBJPaletteRAM;
 
 		// For the serial cable.
 		public byte SerialData;
@@ -34,6 +36,13 @@
 		private ushort VDMASource;
 		private ushort VDMADestination;
 		private uint WRAMBank;
+		private bool BGPaletteAutoIncrement;
+		private uint BGPaletteAddress;
+		private bool OBJPaletteAutoIncrement;
+		private uint OBJPaletteAddress;
+
+		public Palette[] BGPalettes = new Palette[8];
+		public Palette[] OBJPalettes = new Palette[8];
 
 		public bool SaveNeeded { get; private set; }
 
@@ -59,6 +68,8 @@
 			}
 			OAM = new byte[160];
 			HRAM = new byte[127];
+			BGPaletteRAM = new byte[64];
+			OBJPaletteRAM = new byte[64];
 
 			Reset();
 		}
@@ -81,6 +92,8 @@
 			}
 			Array.Clear(OAM, 0, OAM.Length);
 			Array.Clear(HRAM, 0, HRAM.Length);
+			Array.Clear(BGPaletteRAM, 0, BGPaletteRAM.Length);
+			Array.Clear(OBJPaletteRAM, 0, OBJPaletteRAM.Length);
 
 			SerialData = 0x00;
 			SerialTransferEnabled = false;
@@ -100,6 +113,16 @@
 			VDMASource = 0x0000;
 			VDMADestination = 0x8000;
 			WRAMBank = 1;
+			BGPaletteAutoIncrement = false;
+			BGPaletteAddress = 0;
+			OBJPaletteAutoIncrement = false;
+			OBJPaletteAddress = 0;
+
+			for (int i = 0; i < 8; ++i)
+			{
+				BGPalettes[i] = new Palette();
+				OBJPalettes[i] = new Palette();
+			}
 
 			SaveNeeded = false;
 			if (ROM.Instance.HasBattery)
@@ -150,6 +173,46 @@
 			{
 				return VRAMBank1[address - 0x8000];
 			}
+		}
+
+		// Return a new palette from the BG palette data.
+		private Palette GetBGPalette(uint paletteAddress)
+		{
+			Palette newPalette = new();
+
+			// Read the color data from the palette data.
+			ushort color0 = (ushort)(BGPaletteRAM[paletteAddress * 8] + (ushort)(BGPaletteRAM[paletteAddress * 8 + 1] << 8));
+			ushort color1 = (ushort)(BGPaletteRAM[paletteAddress * 8 + 2] + (ushort)(BGPaletteRAM[paletteAddress * 8 + 3] << 8));
+			ushort color2 = (ushort)(BGPaletteRAM[paletteAddress * 8 + 4] + (ushort)(BGPaletteRAM[paletteAddress * 8 + 5] << 8));
+			ushort color3 = (ushort)(BGPaletteRAM[paletteAddress * 8 + 6] + (ushort)(BGPaletteRAM[paletteAddress * 8 + 7] << 8));
+
+			// Convert each color from 5-bit to 8-bit RGB.
+			newPalette.Colors[0] = Palette.GetColorFromData(color0);
+			newPalette.Colors[1] = Palette.GetColorFromData(color1);
+			newPalette.Colors[2] = Palette.GetColorFromData(color2);
+			newPalette.Colors[3] = Palette.GetColorFromData(color3);
+
+			return newPalette;
+		}
+
+		// Return a new palette from the OBJ palette data.
+		private Palette GetOBJPalette(uint paletteAddress)
+		{
+			Palette newPalette = new();
+
+			// Read the color data from the palette data.
+			ushort color0 = (ushort)(OBJPaletteRAM[paletteAddress * 8] + (ushort)(OBJPaletteRAM[paletteAddress * 8 + 1] << 8));
+			ushort color1 = (ushort)(OBJPaletteRAM[paletteAddress * 8 + 2] + (ushort)(OBJPaletteRAM[paletteAddress * 8 + 3] << 8));
+			ushort color2 = (ushort)(OBJPaletteRAM[paletteAddress * 8 + 4] + (ushort)(OBJPaletteRAM[paletteAddress * 8 + 5] << 8));
+			ushort color3 = (ushort)(OBJPaletteRAM[paletteAddress * 8 + 6] + (ushort)(OBJPaletteRAM[paletteAddress * 8 + 7] << 8));
+
+			// Convert each color from 5-bit to 8-bit RGB.
+			newPalette.Colors[0] = Palette.GetColorFromData(color0);
+			newPalette.Colors[1] = Palette.GetColorFromData(color1);
+			newPalette.Colors[2] = Palette.GetColorFromData(color2);
+			newPalette.Colors[3] = Palette.GetColorFromData(color3);
+
+			return newPalette;
 		}
 
 		public byte Read(int address)
@@ -597,6 +660,34 @@
 					//MainForm.Pause();
 				}
 			}
+			else if (address == 0xFF69)
+			{
+				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				{
+					data = BGPaletteRAM[BGPaletteAddress];
+				}
+				else
+				{
+					data = 0xFF;
+					// NOTE: Ignore?
+					//GameBoy.DebugOutput += $"Reading from CGB register in non-CGB game: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+			}
+			else if (address == 0xFF6B)
+			{
+				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				{
+					data = OBJPaletteRAM[OBJPaletteAddress];
+				}
+				else
+				{
+					data = 0xFF;
+					// NOTE: Ignore?
+					//GameBoy.DebugOutput += $"Reading from CGB register in non-CGB game: 0x{address:X4}!\n";
+					//MainForm.Pause();
+				}
+			}
 			else if (address == 0xFF70)
 			{
 				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
@@ -784,6 +875,12 @@
 				else if (address >= 0x4000 && address <= 0x5FFF)
 				{
 					RAMBank = (uint)(data & 0x0F);
+
+					// NOTE: Why is this necessary?
+					if (RAMBank * 0x2000 > ExternalRAM.Length)
+					{
+						RAMBank = 0;
+					}
 
 					// TODO: Handle the rumble bit somehow?
 				}
@@ -1463,9 +1560,8 @@
 			{
 				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
-					// TODO: CGB support.
-					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
-					//MainForm.Pause();
+					BGPaletteAutoIncrement = Utilities.GetBoolFromByte(data, 7);
+					BGPaletteAddress = Utilities.GetBitsFromByte(data, 0, 5);
 				}
 				else
 				{
@@ -1478,9 +1574,23 @@
 			{
 				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
-					// TODO: CGB support.
-					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
-					//MainForm.Pause();
+					BGPaletteRAM[BGPaletteAddress] = data;
+					if (BGPaletteAutoIncrement)
+					{
+						BGPaletteAddress++;
+
+						// If this is the last byte of a palette, create the Palette.
+						if (BGPaletteAddress % 8 == 0)
+						{
+							uint paletteIndex = BGPaletteAddress / 8 - 1;
+							BGPalettes[paletteIndex] = GetBGPalette(paletteIndex);
+						}
+
+						if (BGPaletteAddress == 64)
+						{
+							BGPaletteAddress = 0;
+						}
+					}
 				}
 				else
 				{
@@ -1493,9 +1603,8 @@
 			{
 				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
-					// TODO: CGB support.
-					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
-					//MainForm.Pause();
+					OBJPaletteAutoIncrement = Utilities.GetBoolFromByte(data, 7);
+					OBJPaletteAddress = Utilities.GetBitsFromByte(data, 0, 5);
 				}
 				else
 				{
@@ -1508,9 +1617,23 @@
 			{
 				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 				{
-					// TODO: CGB support.
-					GameBoy.DebugOutput += $"Writing to unimplemented CGB register: 0x{address:X4}!\n";
-					//MainForm.Pause();
+					OBJPaletteRAM[OBJPaletteAddress] = data;
+					if (OBJPaletteAutoIncrement)
+					{
+						OBJPaletteAddress++;
+
+						// If this is the last byte of a palette, create the Palette.
+						if (OBJPaletteAddress % 8 == 0)
+						{
+							uint paletteIndex = OBJPaletteAddress / 8 - 1;
+							OBJPalettes[paletteIndex] = GetOBJPalette(paletteIndex);
+						}
+
+						if (OBJPaletteAddress == 64)
+						{
+							OBJPaletteAddress = 0;
+						}
+					}
 				}
 				else
 				{
