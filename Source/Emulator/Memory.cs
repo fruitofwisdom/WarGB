@@ -300,7 +300,7 @@
 			}
 			else if (address >= 0xD000 && address <= 0xDFFF)
 			{
-				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				if (CPU.Instance.PlayingCGBGame)
 				{
 					data = WRAM[WRAMBank][address - 0xD000];
 				}
@@ -586,7 +586,7 @@
 			}
 			else if (address == 0xFF4D)
 			{
-				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				if (CPU.Instance.PlayingCGBGame)
 				{
 					data = 0x7E;
 					byte doubleSpeed = (byte)(CPU.Instance.DoubleSpeed ? 0x80 : 0x00);
@@ -603,7 +603,7 @@
 			}
 			else if (address == 0xFF4F)
 			{
-				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				if (CPU.Instance.PlayingCGBGame)
 				{
 					data = (byte)(0xFE | VRAMBank);
 				}
@@ -617,7 +617,7 @@
 			}
 			else if (address == 0xFF53)
 			{
-				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				if (CPU.Instance.PlayingCGBGame)
 				{
 					// TODO: CGB support.
 					GameBoy.DebugOutput += $"Reading from unimplemented CGB register: 0x{address:X4}!\n";
@@ -633,7 +633,7 @@
 			}
 			else if (address == 0xFF55)
 			{
-				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				if (CPU.Instance.PlayingCGBGame)
 				{
 					// TODO: Actually transfer data during h-blanks?
 					data = 0xFF;
@@ -648,7 +648,7 @@
 			}
 			else if (address == 0xFF56)
 			{
-				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				if (CPU.Instance.PlayingCGBGame)
 				{
 					// TODO: Something for IR?
 				}
@@ -662,7 +662,7 @@
 			}
 			else if (address == 0xFF69)
 			{
-				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				if (CPU.Instance.PlayingCGBGame)
 				{
 					data = BGPaletteRAM[BGPaletteAddress];
 				}
@@ -676,7 +676,7 @@
 			}
 			else if (address == 0xFF6B)
 			{
-				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				if (CPU.Instance.PlayingCGBGame)
 				{
 					data = OBJPaletteRAM[OBJPaletteAddress];
 				}
@@ -690,7 +690,7 @@
 			}
 			else if (address == 0xFF70)
 			{
-				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				if (CPU.Instance.PlayingCGBGame)
 				{
 					data = (byte)WRAMBank;
 				}
@@ -1428,7 +1428,7 @@
 			}
 			else if (address == 0xFF4D)
 			{
-				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				if (CPU.Instance.PlayingCGBGame)
 				{
 					CPU.Instance.DoubleSpeedArmed = true;
 				}
@@ -1440,7 +1440,7 @@
 			}
 			else if (address == 0xFF4F)
 			{
-				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				if (CPU.Instance.PlayingCGBGame)
 				{
 					VRAMBank = (uint)(data & 0x01);
 				}
@@ -1453,7 +1453,7 @@
 			}
 			else if (address == 0xFF51)
 			{
-				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				if (CPU.Instance.PlayingCGBGame)
 				{
 					byte lower = (byte)(VDMASource & 0x00FF);
 					ushort higher = (ushort)(data << 8);
@@ -1470,7 +1470,7 @@
 			}
 			else if (address == 0xFF52)
 			{
-				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				if (CPU.Instance.PlayingCGBGame)
 				{
 					byte lower = data;
 					ushort higher = (ushort)(VDMASource & 0xFF00);
@@ -1487,7 +1487,7 @@
 			}
 			else if (address == 0xFF53)
 			{
-				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				if (CPU.Instance.PlayingCGBGame)
 				{
 					byte lower = (byte)(VDMADestination & 0x00FF);
 					ushort higher = (ushort)(data << 8);
@@ -1504,7 +1504,7 @@
 			}
 			else if (address == 0xFF54)
 			{
-				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				if (CPU.Instance.PlayingCGBGame)
 				{
 					byte lower = data;
 					ushort higher = (ushort)(VDMADestination & 0xFF00);
@@ -1521,7 +1521,7 @@
 			}
 			else if (address == 0xFF55)
 			{
-				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				if (CPU.Instance.PlayingCGBGame)
 				{
 					int length = ((data & 0x7F) + 1) * 0x10;
 					//int mode = data & 0x80;
@@ -1545,7 +1545,7 @@
 			}
 			else if (address == 0xFF56)
 			{
-				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				if (CPU.Instance.PlayingCGBGame)
 				{
 					// TODO: Something for IR?
 				}
@@ -1558,7 +1558,7 @@
 			}
 			else if (address == 0xFF68)
 			{
-				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				if (CPU.Instance.PlayingCGBGame)
 				{
 					BGPaletteAutoIncrement = Utilities.GetBoolFromByte(data, 7);
 					BGPaletteAddress = Utilities.GetBitsFromByte(data, 0, 5);
@@ -1572,7 +1572,7 @@
 			}
 			else if (address == 0xFF69)
 			{
-				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				if (CPU.Instance.PlayingCGBGame)
 				{
 					BGPaletteRAM[BGPaletteAddress] = data;
 					if (BGPaletteAutoIncrement)
@@ -1601,7 +1601,7 @@
 			}
 			else if (address == 0xFF6A)
 			{
-				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				if (CPU.Instance.PlayingCGBGame)
 				{
 					OBJPaletteAutoIncrement = Utilities.GetBoolFromByte(data, 7);
 					OBJPaletteAddress = Utilities.GetBitsFromByte(data, 0, 5);
@@ -1615,7 +1615,7 @@
 			}
 			else if (address == 0xFF6B)
 			{
-				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				if (CPU.Instance.PlayingCGBGame)
 				{
 					OBJPaletteRAM[OBJPaletteAddress] = data;
 					if (OBJPaletteAutoIncrement)
@@ -1644,7 +1644,7 @@
 			}
 			else if (address == 0xFF70)
 			{
-				if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+				if (CPU.Instance.PlayingCGBGame)
 				{
 					WRAMBank = (uint)(data & 0x07);
 					if (WRAMBank == 0)

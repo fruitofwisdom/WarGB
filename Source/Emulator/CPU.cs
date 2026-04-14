@@ -42,6 +42,8 @@
 
 		// Are we a Game Boy Color?
 		public bool IsCGB = false;
+		// Are we playing a Game Boy Color game?
+		public bool PlayingCGBGame = false;
 
 		// CGB double speed.
 		public bool DoubleSpeed { get; private set; }
@@ -120,6 +122,8 @@
 				A = 0x11;
 				C = 0x00;
 			}
+
+			PlayingCGBGame = IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly);
 		}
 
 		// Step through one instruction and return the number of cycles elapsed.

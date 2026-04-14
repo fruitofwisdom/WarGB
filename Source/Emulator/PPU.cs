@@ -2,18 +2,6 @@
 {
 	internal class PPU
 	{
-		internal struct Pixel
-		{
-			public int Color = 0;
-			// These two are needed for priority handling.
-			public int X = 0;
-			public int ObjAddress = 0x0000;
-			public Palette SGBPalette = new();
-			public Palette CGBPalette = new();
-
-			public Pixel() { }
-		}
-
 		public const int kWidth = 160;
 		public const int kHeight = 144;
 		// Represents each pixel of the LCD, where the data is the palette color.
@@ -301,11 +289,12 @@
 					}
 
 					// When done, copy the back buffer to the front buffer.
-					Array.Copy(LCDBackBuffer, LCDFrontBuffer, LCDFrontBuffer.Length);
 					for (int x = 0; x < kWidth; ++x)
 					{
 						for (int y = 0; y < kHeight; ++y)
 						{
+							// NOTE: These are shallow copies, so we have to make a new Pixel. Boo.
+							LCDFrontBuffer[x, y] = LCDBackBuffer[x, y];
 							LCDBackBuffer[x, y] = new Pixel();
 						}
 					}
@@ -415,8 +404,27 @@
 				return;
 			}
 
-			// TODO: RenderBackground();
-			// Draw the background by iterating over each of its tiles.
+			RenderBackground();
+
+			RenderWindow();
+
+			RenderObjects();
+
+			// Report any pixel tracing results.
+			if (_tracingPixel)
+			{
+				if (_didTracePixel)
+				{
+					_tracingString += _tracingStringInProgress;
+					_didTracePixel = false;
+				}
+				_tracingStringInProgress = "";
+			}
+		}
+
+		// Draw the background by iterating over each of its tiles.
+		private void RenderBackground()
+		{
 			if (ShouldRenderBackground && BGWindowEnable)
 			{
 				if (_tracingPixel)
@@ -456,7 +464,7 @@
 							y += 256;
 						}
 
-						if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+						if (CPU.Instance.PlayingCGBGame)
 						{
 							// The CGB has an additional map for BG tile rendering.
 							byte attributes = Memory.Instance.ReadVRAM(mapAddress, 1);
@@ -485,11 +493,91 @@
 					}
 				}
 			}
+		}
 
-			RenderWindow();
+		// Render the window layer, if it's enabled.
+		private void RenderWindow()
+		{
+			// Draw the window as well.
+			if (ShouldRenderWindow && WindowEnabled && BGWindowEnable)
+			{
+				if (_tracingPixel)
+				{
+					_tracingStringInProgress += "Rendering the window.\n";
+				}
 
-			// TODO: RenderObjects();
-			// Draw the objects by iterating over each of their tiles.
+				bool renderedWindow = false;
+
+				for (int tileY = 0; tileY < 32; ++tileY)
+				{
+					for (int tileX = 0; tileX < 32; ++tileX)
+					{
+						// The window uses its own internal line counter to look up which tiles to render.
+						int tileLookupY = tileY - (LY - _wly - WY) / 8;
+
+						int mapAddress = WindowTileMapArea ? 0x9C00 : 0x9800;
+						mapAddress += tileLookupY * 32 + tileX;
+
+						// Each tile is 16 bytes, but can be addressed in one of two ways.
+						int tileAddress;
+						if (BGWindowTileDataArea)
+						{
+							byte tileNumber = Memory.Instance.Read(mapAddress);
+							tileAddress = 0x8000 + tileNumber * 16;
+						}
+						else
+						{
+							sbyte tileNumber = (sbyte)Memory.Instance.Read(mapAddress);
+							tileAddress = 0x9000 + tileNumber * 16;
+						}
+
+						// NOTE: The window has a 7 pixel x-offset.
+						int x = tileX * 8 + WX - 7;
+						int y = tileY * 8 + WY;
+
+						if (CPU.Instance.PlayingCGBGame)
+						{
+							// The CGB has an additional map for object tile rendering.
+							int mapAddressWithoutLookup = (WindowTileMapArea ? 0x9C00 : 0x9800) + tileY * 32 + tileX;
+							byte attributes = Memory.Instance.ReadVRAM(mapAddressWithoutLookup, 1);
+							bool priority = Utilities.GetBoolFromByte(attributes, 7);
+							bool yFlip = Utilities.GetBoolFromByte(attributes, 6);
+							bool xFlip = Utilities.GetBoolFromByte(attributes, 5);
+							uint vramBank = (uint)(Utilities.GetBoolFromByte(attributes, 3) ? 1 : 0);
+							int colorPalette = Utilities.GetBitsFromByte(attributes, 0, 2);
+							Palette cgbPalette = Memory.Instance.BGPalettes[colorPalette];
+
+							bool didRender = RenderTile(tileAddress, x, y, BGPaletteData,
+								false, false, xFlip, yFlip, priority, 0, vramBank, cgbPalette);
+							renderedWindow |= didRender;
+						}
+						else
+						{
+							bool didRender = RenderTile(tileAddress, x, y, BGPaletteData);
+							renderedWindow |= didRender;
+						}
+
+						// Report any pixel tracing results.
+						if (_didRenderPixel)
+						{
+							_tracingStringInProgress += $"Rendered the pixel with color {LCDBackBuffer[TracePixelX, TracePixelY].Color}, tileAddress 0x{tileAddress:X4}.\n";
+							_didRenderPixel = false;
+							_didTracePixel = true;
+						}
+					}
+				}
+
+				// The internal window line counter only increments if the window was actually rendered this scanline.
+				if (renderedWindow)
+				{
+					_wly++;
+				}
+			}
+		}
+
+		// Draw the objects by iterating over each of their tiles.
+		private void RenderObjects()
+		{
 			if (ShouldRenderObjects && OBJEnabled)
 			{
 				if (_tracingPixel)
@@ -542,7 +630,7 @@
 					int colorPalette = 0;
 					Palette? cgbPalette = null;
 
-					if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+					if (CPU.Instance.PlayingCGBGame)
 					{
 						vramBank = (uint)(Utilities.GetBoolFromByte(attributes, 3) ? 1 : 0);
 						colorPalette = Utilities.GetBitsFromByte(attributes, 0, 2);
@@ -581,97 +669,6 @@
 					}
 				}
 			}
-
-			// Report any pixel tracing results.
-			if (_tracingPixel)
-			{
-				if (_didTracePixel)
-				{
-					_tracingString += _tracingStringInProgress;
-					_didTracePixel = false;
-				}
-				_tracingStringInProgress = "";
-			}
-		}
-
-		// Render the window layer, if it's enabled.
-		private void RenderWindow()
-		{
-			// Draw the window as well.
-			if (ShouldRenderWindow && WindowEnabled && BGWindowEnable)
-			{
-				if (_tracingPixel)
-				{
-					_tracingStringInProgress += "Rendering the window.\n";
-				}
-
-				bool renderedWindow = false;
-
-				for (int tileY = 0; tileY < 32; ++tileY)
-				{
-					for (int tileX = 0; tileX < 32; ++tileX)
-					{
-						// The window uses its own internal line counter to look up which tiles to render.
-						int tileLookupY = tileY - (LY - _wly - WY) / 8;
-
-						int mapAddress = WindowTileMapArea ? 0x9C00 : 0x9800;
-						mapAddress += tileLookupY * 32 + tileX;
-
-						// Each tile is 16 bytes, but can be addressed in one of two ways.
-						int tileAddress;
-						if (BGWindowTileDataArea)
-						{
-							byte tileNumber = Memory.Instance.Read(mapAddress);
-							tileAddress = 0x8000 + tileNumber * 16;
-						}
-						else
-						{
-							sbyte tileNumber = (sbyte)Memory.Instance.Read(mapAddress);
-							tileAddress = 0x9000 + tileNumber * 16;
-						}
-
-						// NOTE: The window has a 7 pixel x-offset.
-						int x = tileX * 8 + WX - 7;
-						int y = tileY * 8 + WY;
-
-						if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
-						{
-							// The CGB has an additional map for object tile rendering.
-							int mapAddressWithoutLookup = (WindowTileMapArea ? 0x9C00 : 0x9800) + tileY * 32 + tileX;
-							byte attributes = Memory.Instance.ReadVRAM(mapAddressWithoutLookup, 1);
-							bool priority = Utilities.GetBoolFromByte(attributes, 7);
-							bool yFlip = Utilities.GetBoolFromByte(attributes, 6);
-							bool xFlip = Utilities.GetBoolFromByte(attributes, 5);
-							uint vramBank = (uint)(Utilities.GetBoolFromByte(attributes, 3) ? 1 : 0);
-							int colorPalette = Utilities.GetBitsFromByte(attributes, 0, 2);
-							Palette cgbPalette = Memory.Instance.BGPalettes[colorPalette];
-
-							bool didRender = RenderTile(tileAddress, x, y, BGPaletteData,
-								false, false, xFlip, yFlip, priority, 0, vramBank, cgbPalette);
-							renderedWindow |= didRender;
-						}
-						else
-						{
-							bool didRender = RenderTile(tileAddress, x, y, BGPaletteData);
-							renderedWindow |= didRender;
-						}
-
-						// Report any pixel tracing results.
-						if (_didRenderPixel)
-						{
-							_tracingStringInProgress += $"Rendered the pixel with color {LCDBackBuffer[TracePixelX, TracePixelY].Color}, tileAddress 0x{tileAddress:X4}.\n";
-							_didRenderPixel = false;
-							_didTracePixel = true;
-						}
-					}
-				}
-
-				// The internal window line counter only increments if the window was actually rendered this scanline.
-				if (renderedWindow)
-				{
-					_wly++;
-				}
-			}
 		}
 
 		// Draw an individual tile with data from an address at a location with a palette.
@@ -692,9 +689,6 @@
 			}
 
 			bool rendered = false;
-
-			// Are we a Game Boy Color with a CGB game?
-			bool isCGB = CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly);
 
 			// Draw each tile, pixel by pixel.
 			for (int pixelY = 0; pixelY < 8; ++pixelY)
@@ -723,7 +717,7 @@
 					{
 						int lcdColor;
 						// The color comes from the appropriate palette...
-						if (!isCGB)
+						if (!CPU.Instance.PlayingCGBGame)
 						{
 							lcdColor = Utilities.GetBitsFromByte(palette, colorId * 2, colorId * 2 + 1);
 						}
@@ -735,14 +729,13 @@
 
 						if (lcdX >= 0 && lcdX < kWidth && lcdY >= 0 && lcdY < kHeight)
 						{
-							// TODO: Make this one block.
-							//int bgColor0 = Utilities.GetBitsFromByte(BGPaletteData, 0, 1);
+							int bgColor0 = Utilities.GetBitsFromByte(BGPaletteData, 0, 1);
+
 							// If priority is on, only render above BG color 0.
-							//if (!priority || LCDBackBuffer[lcdX, lcdY].Color == bgColor0)
-							if (!priority)
+							if (!priority || LCDBackBuffer[lcdX, lcdY].Color == bgColor0)
 							{
 								if (LCDBackBuffer[lcdX, lcdY].ObjAddress == 0x0000 ||
-									(!isCGB && LCDBackBuffer[lcdX, lcdY].X > x) ||		// Only applies in non-CGB mode.
+									(!CPU.Instance.PlayingCGBGame && LCDBackBuffer[lcdX, lcdY].X > x) ||		// Only applies in non-CGB mode.
 									(LCDBackBuffer[lcdX, lcdY].X == x && LCDBackBuffer[lcdX, lcdY].ObjAddress > objAddress))
 								{
 									LCDBackBuffer[lcdX, lcdY].Color = lcdColor;
@@ -752,11 +745,11 @@
 									// Specify which palette to use.
 									if (SGB.Instance.Enabled)
 									{
-										LCDBackBuffer[lcdX, lcdY].SGBPalette = SGB.Instance.GetPaletteAt(lcdX, lcdY);
+										LCDBackBuffer[lcdX, lcdY].Palette = SGB.Instance.GetPaletteAt(lcdX, lcdY);
 									}
-									if (isCGB && cgbPalette != null)
+									if (CPU.Instance.PlayingCGBGame && cgbPalette != null)
 									{
-										LCDBackBuffer[lcdX, lcdY].CGBPalette = (Palette)cgbPalette;
+										LCDBackBuffer[lcdX, lcdY].Palette = (Palette)cgbPalette;
 									}
 
 									if (_tracingPixel && TracePixelX == lcdX && TracePixelY == lcdY)
@@ -765,38 +758,6 @@
 									}
 								}
 								rendered = true;
-							}
-							else
-							{
-								// If priority is on, only render above BG color 0.
-								int bgColor0 = Utilities.GetBitsFromByte(BGPaletteData, 0, 1);
-								if (LCDBackBuffer[lcdX, lcdY].Color == bgColor0)
-								{
-									if (LCDBackBuffer[lcdX, lcdY].ObjAddress == 0x0000 ||
-										(!isCGB && LCDBackBuffer[lcdX, lcdY].X > x) ||      // Only applies in non-CGB mode.
-										(LCDBackBuffer[lcdX, lcdY].X == x && LCDBackBuffer[lcdX, lcdY].ObjAddress > objAddress))
-									{
-										LCDBackBuffer[lcdX, lcdY].Color = lcdColor;
-										LCDBackBuffer[lcdX, lcdY].X = x;
-										LCDBackBuffer[lcdX, lcdY].ObjAddress = objAddress;
-
-										// Specify which palette to use.
-										if (SGB.Instance.Enabled)
-										{
-											LCDBackBuffer[lcdX, lcdY].SGBPalette = SGB.Instance.GetPaletteAt(lcdX, lcdY);
-										}
-										if (isCGB && cgbPalette != null)
-										{
-											LCDBackBuffer[lcdX, lcdY].CGBPalette = (Palette)cgbPalette;
-										}
-
-										if (_tracingPixel && TracePixelX == lcdX && TracePixelY == lcdY)
-										{
-											_didRenderPixel = true;
-										}
-									}
-									rendered = true;
-								}
 							}
 						}
 					}

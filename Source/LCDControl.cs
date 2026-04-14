@@ -6,6 +6,7 @@ namespace WarGB
 	{
 		public bool UseOriginalGreen = true;
 		public bool WithGhosting = false;
+		public bool AccurateColors = false;
 
 		public float LCDScale = 1.0f;
 
@@ -76,14 +77,14 @@ namespace WarGB
 
 					if (SGB.Instance.Enabled)
 					{
-						brush = new SolidBrush(PPU.Instance.LCDFrontBuffer[x, y].SGBPalette.Colors[brushIndex]);
+						brush = new SolidBrush(PPU.Instance.LCDFrontBuffer[x, y].Palette.Colors[brushIndex]);
 					}
-					else if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+					else if (CPU.Instance.PlayingCGBGame)
 					{
-						Color color = PPU.Instance.LCDFrontBuffer[x, y].CGBPalette.Colors[brushIndex];
+						Color color = PPU.Instance.LCDFrontBuffer[x, y].Palette.Colors[brushIndex];
 
 						// If we want accurate colors, wash the color out some.
-						if (Settings.Default.AccurateColors)
+						if (AccurateColors)
 						{
 							// TODO: Improve this algorithm?
 							int newR = Math.Min((int)(color.R * 1.42f), 255);

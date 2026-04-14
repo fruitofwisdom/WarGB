@@ -1,5 +1,20 @@
 ﻿namespace WarGB
 {
+	internal struct Pixel
+	{
+		// The brush index (basically color).
+		public int Color = 0;
+
+		// These two are needed for priority handling.
+		public int X = 0;
+		public int ObjAddress = 0x0000;
+
+		// Palette data, if it's available.
+		public Palette Palette = new();
+
+		public Pixel() { }
+	}
+
 	internal struct Palette
 	{
 		public Color[] Colors;

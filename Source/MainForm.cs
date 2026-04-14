@@ -123,6 +123,7 @@ namespace WarGB
 				gameBoyColorWithAccurateColorsToolStripMenuItem.Checked = false;
 				lcdControl.UseOriginalGreen = true;
 				lcdControl.WithGhosting = false;
+				lcdControl.AccurateColors = false;
 				SGB.Instance.Allowed = false;
 				SGB.Instance.Reset();
 				CPU.Instance.IsCGB = false;
@@ -146,6 +147,7 @@ namespace WarGB
 				gameBoyColorWithAccurateColorsToolStripMenuItem.Checked = false;
 				lcdControl.UseOriginalGreen = true;
 				lcdControl.WithGhosting = true;
+				lcdControl.AccurateColors = false;
 				SGB.Instance.Allowed = false;
 				SGB.Instance.Reset();
 				CPU.Instance.IsCGB = false;
@@ -169,6 +171,7 @@ namespace WarGB
 				gameBoyColorWithAccurateColorsToolStripMenuItem.Checked = false;
 				lcdControl.UseOriginalGreen = false;
 				lcdControl.WithGhosting = false;
+				lcdControl.AccurateColors = false;
 				SGB.Instance.Allowed = false;
 				SGB.Instance.Reset();
 				CPU.Instance.IsCGB = false;
@@ -192,6 +195,7 @@ namespace WarGB
 				gameBoyColorWithAccurateColorsToolStripMenuItem.Checked = false;
 				lcdControl.UseOriginalGreen = false;
 				lcdControl.WithGhosting = false;
+				lcdControl.AccurateColors = false;
 				SGB.Instance.Allowed = true;
 				SGB.Instance.Reset();
 				CPU.Instance.IsCGB = false;
@@ -215,6 +219,7 @@ namespace WarGB
 				gameBoyColorWithAccurateColorsToolStripMenuItem.Checked = false;
 				lcdControl.UseOriginalGreen = false;
 				lcdControl.WithGhosting = false;
+				lcdControl.AccurateColors = false;
 				SGB.Instance.Allowed = false;
 				SGB.Instance.Reset();
 				CPU.Instance.IsCGB = true;
@@ -238,6 +243,7 @@ namespace WarGB
 				gameBoyColorWithAccurateColorsToolStripMenuItem.Checked = true;
 				lcdControl.UseOriginalGreen = false;
 				lcdControl.WithGhosting = false;
+				lcdControl.AccurateColors = true;
 				SGB.Instance.Allowed = false;
 				SGB.Instance.Reset();
 				CPU.Instance.IsCGB = true;
