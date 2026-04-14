@@ -165,6 +165,12 @@
 		// Read from the specified VRAM bank.
 		public byte ReadVRAM(int address, uint vramBank)
 		{
+			// Out of range?
+			if (address >= 0xA000)
+			{
+				return 0xFF;
+			}
+
 			if (vramBank == 0)
 			{
 				return VRAMBank0[address - 0x8000];

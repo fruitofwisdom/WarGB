@@ -443,12 +443,12 @@
 						int tileAddress;
 						if (BGWindowTileDataArea)
 						{
-							byte tileNumber = Memory.Instance.Read(mapAddress);
+							byte tileNumber = Memory.Instance.ReadVRAM(mapAddress, 0);
 							tileAddress = 0x8000 + tileNumber * 16;
 						}
 						else
 						{
-							sbyte tileNumber = (sbyte)Memory.Instance.Read(mapAddress);
+							sbyte tileNumber = (sbyte)Memory.Instance.ReadVRAM(mapAddress, 0);
 							tileAddress = 0x9000 + tileNumber * 16;
 						}
 
@@ -522,12 +522,12 @@
 						int tileAddress;
 						if (BGWindowTileDataArea)
 						{
-							byte tileNumber = Memory.Instance.Read(mapAddress);
+							byte tileNumber = Memory.Instance.ReadVRAM(mapAddress, 0);
 							tileAddress = 0x8000 + tileNumber * 16;
 						}
 						else
 						{
-							sbyte tileNumber = (sbyte)Memory.Instance.Read(mapAddress);
+							sbyte tileNumber = (sbyte)Memory.Instance.ReadVRAM(mapAddress, 0);
 							tileAddress = 0x9000 + tileNumber * 16;
 						}
 
