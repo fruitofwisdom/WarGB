@@ -334,5 +334,17 @@ namespace WarGB.Properties {
                 this["CGBEnabled"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool AccurateColors {
+            get {
+                return ((bool)(this["AccurateColors"]));
+            }
+            set {
+                this["AccurateColors"] = value;
+            }
+        }
     }
 }

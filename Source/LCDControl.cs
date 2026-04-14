@@ -1,4 +1,6 @@
-﻿namespace WarGB
+﻿using WarGB.Properties;
+
+namespace WarGB
 {
 	public partial class LCDControl : UserControl
 	{
@@ -13,7 +15,7 @@
 		private readonly SolidBrush[] _blackAndWhiteBrushes;
 
 		// Used for ghosting.
-		private int[,] _lastColor = new int[PPU.kWidth, PPU.kHeight];
+		private readonly int[,] _lastBrushIndex = new int[PPU.kWidth, PPU.kHeight];
 
 		public LCDControl()
 		{
@@ -37,13 +39,26 @@
 				new(Color.Black),
 			];
 
-			Array.Clear(_lastColor);
+			Array.Clear(_lastBrushIndex);
 		}
 
 		private void LCDControl_Paint(object sender, PaintEventArgs e)
 		{
 			LCDScale = (float)Size.Width / PPU.kWidth;
 
+			// SGB screen masks 2 and 3 are just solid colors.
+			if (PPU.Instance.ScreenMask == 2)
+			{
+				e.Graphics.Clear(Color.Black);
+				return;
+			}
+			else if (PPU.Instance.ScreenMask == 3)
+			{
+				e.Graphics.Clear(Color.White);
+				return;
+			}
+
+			// Clear the screen with the appropriate color.
 			Color clearColor = UseOriginalGreen ? _originalGreenBrushes[0].Color : _blackAndWhiteBrushes[0].Color;
 			if (SGB.Instance.Enabled)
 			{
@@ -59,48 +74,51 @@
 					Brush brush;
 					int brushIndex = PPU.Instance.LCDFrontBuffer[x, y].Color;
 
-					// SGB screen masks 2 and 3 are just solid colors.
-					if (PPU.Instance.ScreenMask == 2)
+					if (SGB.Instance.Enabled)
 					{
-						brush = new SolidBrush(Color.Black);
-						e.Graphics.FillRectangle(brush, x * LCDScale, y * LCDScale, LCDScale, LCDScale);
-						continue;
+						brush = new SolidBrush(PPU.Instance.LCDFrontBuffer[x, y].SGBPalette.Colors[brushIndex]);
 					}
-					else if (PPU.Instance.ScreenMask == 3)
+					else if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
 					{
-						brush = new SolidBrush(Color.White);
-						e.Graphics.FillRectangle(brush, x * LCDScale, y * LCDScale, LCDScale, LCDScale);
-						continue;
-					}
+						Color color = PPU.Instance.LCDFrontBuffer[x, y].CGBPalette.Colors[brushIndex];
 
-					// When original green ghosting is enabled, "ramp" down the color.
-					if (WithGhosting)
-					{
-						if (brushIndex < _lastColor[x, y])
+						// If we want accurate colors, wash the color out some.
+						if (Settings.Default.AccurateColors)
 						{
-							brushIndex = _lastColor[x, y] - 1;
+							// TODO: Improve this algorithm?
+							int newR = Math.Min((int)(color.R * 1.42f), 255);
+							int newG = Math.Min((int)(color.G * 1.42f), 255);
+							int newB = Math.Min((int)(color.B * 1.42f), 255);
+							color = Color.FromArgb(color.A, newR, newG, newB);
 						}
-					}
 
-					// TODO: Can't rely on this for CGB? Use another optimization?
-					//if (brushIndex != 0)		// Don't bother rendering the clear color again.
+						brush = new SolidBrush(color);
+					}
+					else
 					{
-						if (SGB.Instance.Enabled)
+						// When original green ghosting is enabled, "ramp" down the color.
+						if (WithGhosting)
 						{
-							brush = new SolidBrush(PPU.Instance.LCDFrontBuffer[x, y].SGBPalette.Colors[brushIndex]);
+							if (brushIndex < _lastBrushIndex[x, y])
+							{
+								brushIndex = _lastBrushIndex[x, y] - 1;
+							}
+							_lastBrushIndex[x, y] = brushIndex;
 						}
-						else if (CPU.Instance.IsCGB && (ROM.Instance.CGBCompatible || ROM.Instance.CGBOnly))
+
+						// No need to render this pixel again.
+						if (brushIndex == 0)
 						{
-							brush = new SolidBrush(PPU.Instance.LCDFrontBuffer[x, y].CGBPalette.Colors[brushIndex]);
+							continue;
 						}
 						else
 						{
 							brush = UseOriginalGreen ? _originalGreenBrushes[brushIndex] : _blackAndWhiteBrushes[brushIndex];
 						}
-						e.Graphics.FillRectangle(brush, x * LCDScale, y * LCDScale, LCDScale, LCDScale);
 					}
 
-					_lastColor[x, y] = brushIndex;
+					// Draw the pixel.
+					e.Graphics.FillRectangle(brush, x * LCDScale, y * LCDScale, LCDScale, LCDScale);
 				}
 			}
 		}

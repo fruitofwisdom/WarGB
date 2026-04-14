@@ -120,6 +120,7 @@ namespace WarGB
 				blackAndWhiteToolStripMenuItem.Checked = false;
 				superGameBoyToolStripMenuItem.Checked = false;
 				gameBoyColorToolStripMenuItem.Checked = false;
+				gameBoyColorWithAccurateColorsToolStripMenuItem.Checked = false;
 				lcdControl.UseOriginalGreen = true;
 				lcdControl.WithGhosting = false;
 				SGB.Instance.Allowed = false;
@@ -129,6 +130,7 @@ namespace WarGB
 				Settings.Default.LCDGhosting = false;
 				Settings.Default.SGBEnabled = false;
 				Settings.Default.CGBEnabled = false;
+				Settings.Default.AccurateColors = false;
 			}
 		}
 
@@ -141,6 +143,7 @@ namespace WarGB
 				blackAndWhiteToolStripMenuItem.Checked = false;
 				superGameBoyToolStripMenuItem.Checked = false;
 				gameBoyColorToolStripMenuItem.Checked = false;
+				gameBoyColorWithAccurateColorsToolStripMenuItem.Checked = false;
 				lcdControl.UseOriginalGreen = true;
 				lcdControl.WithGhosting = true;
 				SGB.Instance.Allowed = false;
@@ -150,6 +153,7 @@ namespace WarGB
 				Settings.Default.LCDGhosting = true;
 				Settings.Default.SGBEnabled = false;
 				Settings.Default.CGBEnabled = false;
+				Settings.Default.AccurateColors = false;
 			}
 		}
 
@@ -162,6 +166,7 @@ namespace WarGB
 				blackAndWhiteToolStripMenuItem.Checked = true;
 				superGameBoyToolStripMenuItem.Checked = false;
 				gameBoyColorToolStripMenuItem.Checked = false;
+				gameBoyColorWithAccurateColorsToolStripMenuItem.Checked = false;
 				lcdControl.UseOriginalGreen = false;
 				lcdControl.WithGhosting = false;
 				SGB.Instance.Allowed = false;
@@ -171,6 +176,7 @@ namespace WarGB
 				Settings.Default.LCDGhosting = false;
 				Settings.Default.SGBEnabled = false;
 				Settings.Default.CGBEnabled = false;
+				Settings.Default.AccurateColors = false;
 			}
 		}
 
@@ -183,6 +189,7 @@ namespace WarGB
 				blackAndWhiteToolStripMenuItem.Checked = false;
 				superGameBoyToolStripMenuItem.Checked = true;
 				gameBoyColorToolStripMenuItem.Checked = false;
+				gameBoyColorWithAccurateColorsToolStripMenuItem.Checked = false;
 				lcdControl.UseOriginalGreen = false;
 				lcdControl.WithGhosting = false;
 				SGB.Instance.Allowed = true;
@@ -192,6 +199,7 @@ namespace WarGB
 				Settings.Default.LCDGhosting = false;
 				Settings.Default.SGBEnabled = true;
 				Settings.Default.CGBEnabled = false;
+				Settings.Default.AccurateColors = false;
 			}
 		}
 
@@ -204,6 +212,7 @@ namespace WarGB
 				blackAndWhiteToolStripMenuItem.Checked = false;
 				superGameBoyToolStripMenuItem.Checked = false;
 				gameBoyColorToolStripMenuItem.Checked = true;
+				gameBoyColorWithAccurateColorsToolStripMenuItem.Checked = false;
 				lcdControl.UseOriginalGreen = false;
 				lcdControl.WithGhosting = false;
 				SGB.Instance.Allowed = false;
@@ -213,6 +222,30 @@ namespace WarGB
 				Settings.Default.LCDGhosting = false;
 				Settings.Default.SGBEnabled = false;
 				Settings.Default.CGBEnabled = true;
+				Settings.Default.AccurateColors = false;
+			}
+		}
+
+		private void GameBoyColorWithAccurateColorsToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (!gameBoyColorWithAccurateColorsToolStripMenuItem.Checked)
+			{
+				originalGreenToolStripMenuItem.Checked = false;
+				originalGreenWithGhostingToolStripMenuItem.Checked = false;
+				blackAndWhiteToolStripMenuItem.Checked = false;
+				superGameBoyToolStripMenuItem.Checked = false;
+				gameBoyColorToolStripMenuItem.Checked = false;
+				gameBoyColorWithAccurateColorsToolStripMenuItem.Checked = true;
+				lcdControl.UseOriginalGreen = false;
+				lcdControl.WithGhosting = false;
+				SGB.Instance.Allowed = false;
+				SGB.Instance.Reset();
+				CPU.Instance.IsCGB = true;
+				Settings.Default.LCDColorOriginalGreen = false;
+				Settings.Default.LCDGhosting = false;
+				Settings.Default.SGBEnabled = false;
+				Settings.Default.CGBEnabled = true;
+				Settings.Default.AccurateColors = true;
 			}
 		}
 
@@ -963,6 +996,10 @@ namespace WarGB
 			else if (Settings.Default.SGBEnabled)
 			{
 				SuperGameBoyToolStripMenuItemClick(sender, e);
+			}
+			else if (Settings.Default.AccurateColors)
+			{
+				GameBoyColorWithAccurateColorsToolStripMenuItem_Click(sender, e);
 			}
 			else if (Settings.Default.CGBEnabled)
 			{
