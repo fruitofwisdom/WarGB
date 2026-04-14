@@ -8,9 +8,9 @@
 	<ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>WarGB.ico</ApplicationIcon>
-    <VersionPrefix>0.3-beta</VersionPrefix> 
-    <AssemblyVersion>0.3</AssemblyVersion>
-    <FileVersion>0.3</FileVersion>
+    <VersionPrefix>0.4-beta</VersionPrefix> 
+    <AssemblyVersion>0.4</AssemblyVersion>
+    <FileVersion>0.4</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
