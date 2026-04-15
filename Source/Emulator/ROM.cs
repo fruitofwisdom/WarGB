@@ -43,10 +43,10 @@
 		}
 
 		public byte[]? Data {  get; private set; }
-		public string Filename { get; private set; }
+		public string? Filename { get; private set; }
 
 		// ROM header and other information.
-		public string Title { get; private set; }
+		public string? Title { get; private set; }
 		public bool CGBCompatible { get; private set; }
 		public bool CGBOnly { get; private set; }
 		public bool SGBCompatible { get; private set; }
@@ -68,6 +68,11 @@
 
 		public ROM()
 		{
+			Reset();
+		}
+
+		public void Reset()
+		{
 			Filename = "none";
 			Title = "unknown";
 			CGBCompatible = false;
@@ -81,6 +86,8 @@
 		public bool Load(string romFilename)
 		{
 			bool loaded = false;
+
+			Reset();
 
 			try
 			{
