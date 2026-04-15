@@ -282,7 +282,6 @@ namespace WarGB
 		// The circular audio buffer holds five seconds of two-channel audio.
 		private const int kAudioBufferSize = kSampleRate * 2 * 5;
 		private readonly float[] _audioBuffer;
-		private int _bytesPending = 2;		// HACK: Can't start reading 0 bytes?
 		private int _readPosition = 0;
 		private int _writePosition = 0;
 
@@ -303,14 +302,20 @@ namespace WarGB
 		{
 			int read = 0;
 
+			int bytesPending = _writePosition - _readPosition;
+			if (bytesPending < 0)
+			{
+				bytesPending += _audioBuffer.Length;
+			}
+
 			// Fill the NAudio output buffer.
-			for (int i = 0; i < count && _bytesPending > 0; i += 2)
+			for (int i = 0; i < count && bytesPending > 0; i += 2)
 			{
 				buffer[i + offset] = _audioBuffer[_readPosition];
 				buffer[i + offset + 1] = _audioBuffer[_readPosition + 1];
 				read += 2;
 
-				_bytesPending -= 2;
+				bytesPending -= 2;
 				_readPosition += 2;
 				if (_readPosition >= _audioBuffer.Length)
 				{
@@ -334,7 +339,9 @@ namespace WarGB
 			float phaseStep = _waveTable.Length * (_frequency / WaveFormat.SampleRate);
 
 			// Fill the circular audio buffer.
-			for (int i = 0; i < (int)(kSampleRate / GameBoy.kFps); ++i)
+			//for (int i = 0; i < (int)(kSampleRate / GameBoy.kFps); ++i)
+			// HACK: This magic number is just enough to keep the audio buffer from starving.
+			for (int i = 0; i < (int)(kSampleRate / 59.34); ++i)
 			{
 				int waveTableIndex = (int)_phase % _waveTable.Length;
 				float leftVolume = _leftVolume * (APU.Instance.LeftOutputVolume / 7.0f) * kMaxVolume;
@@ -350,13 +357,21 @@ namespace WarGB
 					_phase -= _waveTable.Length;
 				}
 
-				_bytesPending += 2;
 				_writePosition += 2;
 				if (_writePosition >= _audioBuffer.Length)
 				{
 					_writePosition -= _writePosition;
 				}
 			}
+
+			/*
+			int writeAhead = _writePosition - _readPosition;
+			if (writeAhead < 0)
+			{
+				writeAhead += _audioBuffer.Length;
+			}
+			GameBoy.DebugStatus = $"Buffer write-ahead is {writeAhead} bytes.\n";
+			*/
 		}
 	}
 }
