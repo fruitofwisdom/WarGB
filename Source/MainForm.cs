@@ -2,6 +2,8 @@ using SharpDX.XInput;
 using WarGB.Properties;
 //using Windows.Gaming.Input;
 
+using Timer = System.Windows.Forms.Timer;
+
 namespace WarGB
 {
 	public partial class MainForm : Form
@@ -10,10 +12,13 @@ namespace WarGB
 		private Thread? _gameBoyThread;
 
 		// A timer used to poll and render the state of the Game Boy.
-		private readonly System.Windows.Forms.Timer _gameBoyTimer = new();
+		private readonly Timer _gameBoyTimer = new();
 
 		// A timer used to poll any inputs.
-		private readonly System.Windows.Forms.Timer _gamepadTimer = new();
+		private readonly Timer _gamepadTimer = new();
+
+		// A timer used to stop rumbling after a delay.
+		private readonly Timer _rumbleTimer = new();
 
 		// For XInput controllers.
 		private const int kThumbThreshold = 15000;
@@ -42,6 +47,10 @@ namespace WarGB
 			_gamepadTimer.Tick += new EventHandler(ProcessInput);
 			_gamepadTimer.Interval = 1000 / 60;
 			_gamepadTimer.Start();
+
+			// Set up the rumble timer.
+			_rumbleTimer.Tick += new EventHandler(StopRumbling);
+			_rumbleTimer.Interval = 250;
 
 			_xInputController = new SharpDX.XInput.Controller(UserIndex.One);
 		}
@@ -483,8 +492,10 @@ namespace WarGB
 			_gameBoy.Reset();
 
 			// Start a new thread to run the Game Boy.
-			_gameBoyThread = new Thread(new ThreadStart(_gameBoy.Run));
-			_gameBoyThread.IsBackground = true;
+			_gameBoyThread = new Thread(new ThreadStart(_gameBoy.Run))
+			{
+				IsBackground = true
+			};
 			_gameBoyThread.Start();
 
 			if (wasPlaying)
@@ -576,7 +587,7 @@ namespace WarGB
 			}
 		}
 
-		private void lcdControl_KeyDown(object sender, KeyEventArgs e)
+		private void LcdControl_KeyDown(object sender, KeyEventArgs e)
 		{
 			bool needJoypadInterrupt = false;
 
@@ -628,7 +639,7 @@ namespace WarGB
 			}
 		}
 
-		private void lcdControl_KeyUp(object sender, KeyEventArgs e)
+		private void LcdControl_KeyUp(object sender, KeyEventArgs e)
 		{
 			if (e.KeyCode == _keyMapping.Up1Key)
 			{
@@ -664,7 +675,7 @@ namespace WarGB
 			}
 		}
 
-		private void lcdControl_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+		private void LcdControl_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
 		{
 			// NOTE: Arrow key (and some other) inputs aren't normally passed along. Fix that.
 			switch (e.KeyCode)
@@ -761,7 +772,32 @@ namespace WarGB
 				Controller.Instance.Down = false;
 			}
 
+			// Check if rumble is requested.
+			if (Memory.Instance.RumbleRequested)
+			{
+				Memory.Instance.RumbleRequested = false;
+
+				Vibration vibration = new()
+				{
+					LeftMotorSpeed = 32767,
+					RightMotorSpeed = 32767
+				};
+				_xInputController.SetVibration(vibration);
+				_rumbleTimer.Start();
+			}
+
 			return needJoypadInterrupt;
+		}
+
+		private void StopRumbling(object? sender, EventArgs e)
+		{
+			Vibration vibration = new()
+			{
+				LeftMotorSpeed = 0,
+				RightMotorSpeed = 0
+			};
+			_xInputController.SetVibration(vibration);
+			_rumbleTimer.Stop();
 		}
 
 		// TODO: Poll and process DirectInput controllers.
@@ -855,8 +891,10 @@ namespace WarGB
 				Text = "WarGB - " + ROM.Instance.Title + " (" + ROM.Instance.CartridgeType.ToString().Replace("_", "+") + ")";
 
 				// Start a new thread to run the Game Boy.
-				_gameBoyThread = new Thread(new ThreadStart(_gameBoy.Run));
-				_gameBoyThread.IsBackground = true;
+				_gameBoyThread = new Thread(new ThreadStart(_gameBoy.Run))
+				{
+					IsBackground = true
+				};
 				_gameBoyThread.Start();
 				resetButton.Enabled = true;
 

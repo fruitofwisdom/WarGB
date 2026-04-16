@@ -30,6 +30,7 @@
 		private bool MBC1BankingMode;		// true is simple mode, false is advanced
 		private uint MBC1ROMBank;
 		private uint MBC3RAMOrTimer;		// selects the RAM bank or timer register
+		public bool RumbleRequested;		// For MBC5 rumble cartridges.
 
 		// Game Boy Color-specific variables.
 		private uint VRAMBank;
@@ -108,6 +109,7 @@
 			MBC1BankingMode = false;        // simple or advanced
 			MBC1ROMBank = 0;
 			MBC3RAMOrTimer = 0;
+			RumbleRequested = false;
 
 			VRAMBank = 0;
 			VDMASource = 0x0000;
@@ -459,7 +461,7 @@
 			else if (address == 0xFF1A)
 			{
 				data = 0x7F;
-				byte soundEnabled = (byte)(((WaveTableChannel)APU.Instance.Channels[2]).SoundOn ? 0x80 : 0x00);
+				byte soundEnabled = (byte)(((WaveTableChannel)APU.Instance.Channels[2]).DACEnabled ? 0x80 : 0x00);
 				data = (byte)(data | soundEnabled);
 			}
 			else if (address == 0xFF1B)
@@ -962,6 +964,18 @@
 						// TODO: The RTC register.
 						GameBoy.DebugOutput += $"Writing to unimplemented RTC register: 0x{address:X4}!\n";
 						//MainForm.Pause();
+					}
+				}
+
+				// Check for the rumble bit.
+				if (ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC5_RUMBLE ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC5_RUMBLE_RAM ||
+					ROM.Instance.CartridgeType == ROM.CartridgeTypes.MBC5_RUMBLE_RAM_BATTERY)
+				{
+					bool rumble = Utilities.GetBoolFromByte(data, 3);
+					if (rumble)
+					{
+						RumbleRequested = true;
 					}
 				}
 			}

@@ -529,10 +529,10 @@
 			lcdControl.Name = "lcdControl";
 			lcdControl.Size = new Size(640, 576);
 			lcdControl.TabIndex = 2;
-			lcdControl.KeyDown += lcdControl_KeyDown;
-			lcdControl.KeyUp += lcdControl_KeyUp;
+			lcdControl.KeyDown += LcdControl_KeyDown;
+			lcdControl.KeyUp += LcdControl_KeyUp;
 			lcdControl.MouseClick += LcdControlMouseClick;
-			lcdControl.PreviewKeyDown += lcdControl_PreviewKeyDown;
+			lcdControl.PreviewKeyDown += LcdControl_PreviewKeyDown;
 			// 
 			// debugRichTextBox
 			// 

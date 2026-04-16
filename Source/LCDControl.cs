@@ -1,6 +1,4 @@
-﻿using WarGB.Properties;
-
-namespace WarGB
+﻿namespace WarGB
 {
 	public partial class LCDControl : UserControl
 	{
